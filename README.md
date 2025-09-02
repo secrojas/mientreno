@@ -1,61 +1,80 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MiEntreno
+MiEntreno es una plataforma multi-actividad (multi-tenant por URL) construida con Laravel, pensada para clubes, studios y equipos. Cada actividad tiene su propio registro, login y dashboard). Arquitectura service-repository, Sanctum para API, y Pest para tests.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# MiEntreno
 
-## About Laravel
+[![Laravel](https://img.shields.io/badge/Laravel-11-red)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.2%2B-777bb3)](https://www.php.net/)
+[![Pest](https://img.shields.io/badge/Tests-Pest-9146FF)](https://pestphp.com/)
+[![Style](https://img.shields.io/badge/Architecture-Service--Repository-0aa262)](#arquitectura)
+[![Multi-tenant](https://img.shields.io/badge/Multi--tenant-Path%20based-0ea5e9)](#multi-actividad--multi-tenant)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**MiEntreno** es una plataforma **multi-actividad** para administrar entrenamientos y comunidades (run clubs, pilates, yoga, etc.).  
+Cada actividad vive en su propia URL, con **registro**, **login** y **dashboard** aislados.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+> Pensada para escalar con una arquitectura clara (**service-repository**), API segura con **Sanctum** y tests con **Pest**.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🚀 Características
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- **Multi-actividad (multi-tenant por path)**: aislamiento por `/{business:slug}`.
+- **Auth scoped por actividad**: el usuario se registra/loguea dentro del negocio actual.
+- **API de plataforma (superadmin)**: crear/editar actividades vía API (Sanctum).
+- **Arquitectura limpia**: Services + Repositories + Contracts (interfaces).
+- **UI neutra**: layout básico con Tailwind listo para personalizar.
+- **Tests**: feature + unit con Pest.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🧭 Multi-actividad / Multi-tenant
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Tabla `businesses` con `slug` **único** (p. ej. `run-club-mdp`).
+- Rutas con prefijo `/{business:slug}` y middleware que fija el *tenant actual*.
+- Modelos con `business_id` (+ trait `Tenantable`) para scoping automático.
+- Registro/login **dentro** del negocio actual.
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 🧱 Stack
 
-## Contributing
+- **Backend**: Laravel 11, PHP 8.2+
+- **Auth**: Laravel Breeze (Blade + Tailwind) y **Sanctum** (API tokens)
+- **Tests**: Pest
+- **DB**: MySQL o PostgreSQL
+- **Front**: Tailwind (puede reemplazarse por Bootstrap si se prefiere)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🛠️ Requisitos
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- PHP 8.2+, Composer 2.x
+- Node 18/20, NPM
+- MySQL 8+ o PostgreSQL 13+
+- Extensiones típicas de Laravel (mbstring, pdo, etc.)
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## ⚡ Quick Start
 
-## License
+```bash
+# 1) Clonar
+git clone https://github.com/<tu-usuario>/mientreno.git
+cd mientreno
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# 2) Dependencias
+composer install
+npm install && npm run build
+
+# 3) Env & Key
+cp .env.example .env
+php artisan key:generate
+
+# 4) Configurar DB en .env y migrar
+php artisan migrate --seed
+
+# 5) Iniciar servidor
+php artisan serve
+
+
