@@ -139,7 +139,7 @@ Creados 4 archivos de documentación en `docs/`:
 - Documentación: Completa y lista para desarrollo
 
 ### Tiempo invertido
-~60 minutos (análisis + documentación)
+~90 minutos (análisis + documentación + setup de repo)
 
 ---
 
