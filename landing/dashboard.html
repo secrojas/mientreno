@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard · MiEntreno</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #05060A;
+            --bg-card: #0B0C12;
+            --bg-sidebar: #050814;
+            --border-subtle: #111827;
+            --text-main: #F9FAFB;
+            --text-muted: #9CA3AF;
+            --accent-primary: #FF3B5C;
+            --accent-secondary: #2DE38E;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #05060A 45%, #020308 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Layout */
+
+        .dashboard-shell {
+            display: grid;
+            grid-template-columns: 260px minmax(0, 1fr);
+            min-height: 100vh;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-shell {
+                grid-template-columns: 80px minmax(0, 1fr);
+            }
+
+            .sidebar-expanded-text {
+                display: none;
+            }
+
+            .sidebar-header-title {
+                display: none;
+            }
+
+            .sidebar-footer-user {
+                display: none;
+            }
+
+            .sidebar-nav-link {
+                justify-content: center;
+            }
+        }
+
+        /* Sidebar */
+
+        .sidebar {
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 1rem 1rem 1rem;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .25rem .25rem 1rem;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.9);
+            margin-bottom: 1rem;
+        }
+
+        .logo-dev {
+            font-size: .8rem;
+            font-family: 'Space Grotesk', monospace;
+            color: var(--accent-secondary);
+        }
+
+        .logo-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: .2rem .55rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--accent-primary), #FF4FA3);
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            font-size: .7rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            font-size: .8rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            margin-top: .5rem;
+            display: flex;
+            flex-direction: column;
+            gap: .25rem;
+        }
+
+        .sidebar-section-label {
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: .14em;
+            color: var(--text-muted);
+            padding: .75rem .4rem .25rem;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            padding: .55rem .6rem;
+            border-radius: .7rem;
+            font-size: .86rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: background .15s ease-out, color .15s ease-out, transform .1s ease-out;
+        }
+
+        .sidebar-nav-link svg {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+        }
+
+        .sidebar-nav-link:hover {
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--text-main);
+            transform: translateY(-1px);
+        }
+
+        .sidebar-nav-link.active {
+            background: linear-gradient(135deg, rgba(255, 59, 92, 0.16), rgba(255, 79, 163, 0.08));
+            color: var(--text-main);
+            border: 1px solid rgba(255, 59, 92, 0.5);
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid rgba(15, 23, 42, 0.9);
+            padding-top: .75rem;
+            margin-top: .5rem;
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+            font-size: .8rem;
+            color: var(--text-muted);
+        }
+
+        .sidebar-footer-user {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        .avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 20% 20%, #FF4FA3, #05060A);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+            font-weight: 600;
+        }
+
+        .sidebar-footer-actions a {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            cursor: pointer;
+        }
+
+        .sidebar-footer-actions svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Main */
+
+        .main {
+            padding: 1.75rem 1.75rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 1120px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .main-header-title {
+            display: flex;
+            flex-direction: column;
+            gap: .2rem;
+        }
+
+        .main-header-title h1 {
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            font-size: 1.6rem;
+        }
+
+        .main-header-title p {
+            font-size: .9rem;
+            color: var(--text-muted);
+        }
+
+        .main-header-actions {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .btn-primary, .btn-secondary, .btn-ghost {
+            border-radius: 999px;
+            padding: .45rem .9rem;
+            font-size: .8rem;
+            font-weight: 500;
+            border: 1px solid transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+            transition: all .18s ease-out;
+            background: transparent;
+            color: var(--text-main);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #FF4FA3);
+            color: #0B0C12;
+            box-shadow: 0 8px 24px rgba(255, 59, 92, .35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(255, 59, 92, .45);
+        }
+
+        .btn-secondary {
+            border-color: var(--accent-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(45, 227, 142, .08);
+        }
+
+        .btn-ghost {
+            color: var(--text-muted);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(15, 23, 42, .85);
+            color: var(--text-main);
+        }
+
+        .btn-icon {
+            padding: .3rem .45rem;
+            border-radius: 999px;
+            border-color: var(--border-subtle);
+            background: rgba(15, 23, 42, .9);
+        }
+
+        .btn-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Metrics */
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-card {
+            padding: 1rem;
+            border-radius: .9rem;
+            background: rgba(15, 23, 42, .95);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .metric-label {
+            font-size: .75rem;
+            color: var(--text-muted);
+            margin-bottom: .25rem;
+        }
+
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .metric-sub {
+            font-size: .78rem;
+            color: var(--accent-secondary);
+            margin-top: .2rem;
+        }
+
+        /* Main grid */
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr);
+            gap: 1.5rem;
+        }
+
+        .card {
+            padding: 1rem;
+            border-radius: .9rem;
+            background: rgba(15, 23, 42, .95);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .75rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+        }
+
+        .card-subtitle {
+            font-size: .8rem;
+            color: var(--text-muted);
+        }
+
+        .link-sm {
+            font-size: .8rem;
+            color: var(--accent-secondary);
+        }
+
+        .empty-state {
+            font-size: .85rem;
+            color: var(--text-muted);
+        }
+
+        .list-plain {
+            list-style: none;
+            display: grid;
+            gap: .35rem;
+            font-size: .82rem;
+            color: var(--text-muted);
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            border-radius: 999px;
+            padding: .18rem .6rem;
+            font-size: .7rem;
+            border: 1px solid rgba(148, 163, 184, .5);
+            color: var(--text-muted);
+        }
+
+        .pill-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: var(--accent-secondary);
+        }
+
+        @media (max-width: 1024px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .content-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main {
+                padding: 1.25rem 1rem 1rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .main-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .main-header-actions {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-shell">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span class="logo-dev">&lt;/&gt;</span>
+            <span class="logo-mark">Mi</span>
+            <div class="sidebar-header-title">
+                <span class="logo-text">ENTRENO</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-label">Panel</div>
+
+            <a class="sidebar-nav-link active">
+                <!-- Dashboard icon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                    <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                    <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                    <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                </svg>
+                <span class="sidebar-expanded-text">Dashboard</span>
+            </a>
+
+            <a class="sidebar-nav-link">
+                <!-- Workouts icon (line chart) -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19L9 10L13 15L20 5"></path>
+                    <path d="M20 10V5H15"></path>
+                </svg>
+                <span class="sidebar-expanded-text">Entrenamientos</span>
+            </a>
+
+            <a class="sidebar-nav-link">
+                <!-- Races icon (flag) -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 3v18"></path>
+                    <path d="M6 4h9l-1.5 3L18 10H6z"></path>
+                </svg>
+                <span class="sidebar-expanded-text">Carreras</span>
+            </a>
+
+            <a class="sidebar-nav-link">
+                <!-- Goals icon (target) -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="8"></circle>
+                    <circle cx="12" cy="12" r="4"></circle>
+                    <path d="M12 8v2"></path>
+                    <path d="M12 14v2"></path>
+                </svg>
+                <span class="sidebar-expanded-text">Objetivos</span>
+            </a>
+
+            <div class="sidebar-section-label">Coaching</div>
+
+            <a class="sidebar-nav-link">
+                <!-- Groups icon (users/group) -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="9" r="2.5"></circle>
+                    <circle cx="17" cy="9" r="2.5"></circle>
+                    <path d="M4 19c.6-2.2 2.6-3.5 5-3.5s4.4 1.3 5 3.5"></path>
+                    <path d="M12 15.5c.6-2.2 2.6-3.5 5-3.5 2.4 0 4.4 1.3 5 3.5"></path>
+                </svg>
+                <span class="sidebar-expanded-text">Grupos</span>
+            </a>
+
+            <a class="sidebar-nav-link">
+                <!-- Coach icon (whistle-ish) -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="10" width="9" height="5" rx="1.5"></rect>
+                    <path d="M12 12h3.5a3.5 3.5 0 1 1-2.47 6"></path>
+                    <circle cx="17.5" cy="10" r="1.2"></circle>
+                </svg>
+                <span class="sidebar-expanded-text">Alumnos</span>
+            </a>
+
+            <div class="sidebar-section-label">Sistema</div>
+
+            <a class="sidebar-nav-link">
+                <!-- Settings icon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a1.8 1.8 0 0 1-2.54 2.54l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .31 1.7 1.7 0 0 0-.8 1.44V21a1.8 1.8 0 0 1-3.6 0v-.15a1.7 1.7 0 0 0-.8-1.44 1.7 1.7 0 0 0-1-.31 1.7 1.7 0 0 0-1.87.34l-.06.06a1.8 1.8 0 0 1-2.54-2.54l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.31-1 1.7 1.7 0 0 0-1.44-.8H3a1.8 1.8 0 0 1 0-3.6h.15a1.7 1.7 0 0 0 1.44-.8 1.7 1.7 0 0 0 .31-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a1.8 1.8 0 0 1 2.54-2.54l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.31 1.7 1.7 0 0 0 .8-1.44V3a1.8 1.8 0 0 1 3.6 0v.15a1.7 1.7 0 0 0 .8 1.44 1.7 1.7 0 0 0 1 .31 1.7 1.7 0 0 0 1.87-.34l.06-.06a1.8 1.8 0 0 1 2.54 2.54l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 .31 1 1.7 1.7 0 0 0 1.44.8H21a1.8 1.8 0 0 1 0 3.6h-.15a1.7 1.7 0 0 0-1.44.8 1.7 1.7 0 0 0-.01 1.8z"></path>
+                </svg>
+                <span class="sidebar-expanded-text">Configuración</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-user">
+                <div class="avatar">SR</div>
+                <div>
+                    <div style="font-size:.8rem;">Sebastián</div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">Runner · Coach</div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer-actions">
+                <a>
+                    <!-- Logout icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"></path>
+                        <path d="M16 17l5-5-5-5"></path>
+                        <path d="M21 12H9"></path>
+                    </svg>
+                    <span>Salir</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+        <header class="main-header">
+            <div class="main-header-title">
+                <h1>Dashboard</h1>
+                <p>Resumen de tus entrenamientos y actividad reciente.</p>
+            </div>
+            <div class="main-header-actions">
+                <button class="btn-ghost btn-icon" title="Notificaciones">
+                    <!-- Bell icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </button>
+                <button class="btn-secondary">
+                    <!-- Plus icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14"></path>
+                        <path d="M5 12h14"></path>
+                    </svg>
+                    Nuevo entreno
+                </button>
+                <button class="btn-primary">
+                    <!-- Lightning icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13 2L4 14h7l-1 8 9-12h-7z"></path>
+                    </svg>
+                    Generar semana
+                </button>
+            </div>
+        </header>
+
+        <!-- METRIC CARDS -->
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Km esta semana</div>
+                <div class="metric-value">00.0</div>
+                <div class="metric-sub">Objetivo: 40 km</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Tiempo total</div>
+                <div class="metric-value">00:00:00</div>
+                <div class="metric-sub">5 sesiones planificadas</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Pace medio</div>
+                <div class="metric-value">–</div>
+                <div class="metric-sub">Se calcula con tus últimos entrenos</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Próxima carrera</div>
+                <div class="metric-value">—</div>
+                <div class="metric-sub">Agregá una carrera para seguir tu objetivo</div>
+            </div>
+        </section>
+
+        <!-- CONTENT -->
+        <section class="content-grid">
+            <!-- Entrenamientos -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Entrenamientos recientes</div>
+                        <div class="card-subtitle">Cuando empieces a registrar, vas a verlos acá.</div>
+                    </div>
+                    <a href="#" class="link-sm">Ver todos</a>
+                </div>
+
+                <div class="empty-state">
+                    No hay entrenamientos cargados todavía.<br>
+                    <br>
+                    <span class="pill">
+                        <span class="pill-dot"></span>
+                        Empezá creando tu primer entreno desde <strong style="margin-left:.15rem;">“Nuevo entreno”</strong>.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Panel Coach -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Panel coach</div>
+                        <div class="card-subtitle">Vista rápida de grupos y alumnos.</div>
+                    </div>
+                </div>
+
+                <ul class="list-plain">
+                    <li>· Totalizadores semanales y mensuales por alumno.</li>
+                    <li>· Estado de planes de entrenamiento (pendiente, en curso, completo).</li>
+                    <li>· Próximas carreras y objetivos marcados por cada runner.</li>
+                    <li>· Asistencias a entrenamientos de grupo.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

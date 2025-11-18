@@ -1,6 +1,8 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\v1\LoginController;
+use App\Http\Controllers\Auth\v1\RegisterController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -18,12 +20,12 @@ use Illuminate\Support\Facades\Route;
 // });
 
 Route::prefix('{business}')->middleware(['set.business'])->group(function () {
-    Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('biz.register');
-    Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('biz.register');
+    Route::post('/register', [RegisterController::class, 'register']);
 
-    Route::get('/login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('biz.login');
-    Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
-    Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('biz.logout');
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('biz.login');
+    Route::post('/login', [LoginController::class, 'login']);
+    Route::post('/logout', [LoginController::class, 'logout'])->name('biz.logout');
 
     Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('biz.dashboard');
