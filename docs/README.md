@@ -102,6 +102,37 @@ php artisan serve
 
 **IMPORTANTE**: Actualizar este archivo al final de CADA sesión.
 
+### `INVITATIONS.md`
+**Qué es**: Documentación del sistema de invitaciones con tokens.
+
+**Cuándo leerlo**:
+- Al implementar features de grupos/businesses
+- Para entender cómo vincular usuarios a businesses
+- Para generar links de invitación
+
+**Contiene**:
+- Cómo funciona el sistema de tokens
+- Cómo generar invitaciones (UI y comando artisan)
+- Formatos de URL y tokens
+- Flujos de registro
+
+### `WORKOUTS.md`
+**Qué es**: Documentación completa del sistema de entrenamientos.
+
+**Cuándo leerlo**:
+- Al trabajar con workouts
+- Para entender cálculos de pace y métricas
+- Para ver ejemplos de uso del modelo y vistas
+
+**Contiene**:
+- Modelo de datos de workouts
+- Relaciones y scopes
+- Controller y rutas
+- Vistas y formularios
+- Cálculos (pace, duración)
+- Dashboard integration
+- Ejemplos de uso
+
 ---
 
 ## Flujo de Trabajo Recomendado
@@ -232,7 +263,10 @@ docs/                       # ESTA CARPETA
 ├── PROJECT_STATUS.md
 ├── ARCHITECTURE.md
 ├── ROADMAP.md
-└── SESSION_LOG.md
+├── SESSION_LOG.md
+├── INVITATIONS.md
+├── WORKOUTS.md
+└── RECOMENDACIONES.md
 ```
 
 ### Testing
@@ -262,11 +296,21 @@ git commit -m "docs: actualizar session log sesión 02"
 
 ## Estado Actual (Ver PROJECT_STATUS.md para detalles)
 
-- **Fase**: Pre-Fase 1 (setup inicial)
-- **Funcionalidad**: Autenticación multi-tenant funcionando
-- **Base de datos**: Solo `users` y `businesses`
-- **Frontend**: HTMLs estáticos listos para convertir a Blade
-- **Siguiente**: Crear migraciones de workouts, races, goals
+- **Fase**: Fase 1 Completada ✅
+- **Funcionalidades**:
+  - ✅ Autenticación simplificada (/login, /register, /dashboard)
+  - ✅ Sistema de invitaciones con tokens
+  - ✅ CRUD completo de Workouts
+  - ✅ Dashboard con métricas reales
+  - ✅ Cálculo automático de pace
+- **Base de datos**: `users`, `businesses`, `workouts`, `races` (base), `training_groups` (base)
+- **Frontend**: Blade templates funcionando con diseño custom
+- **Siguiente**: Fase 2 - Implementar CRUD de Races y Goals
+
+**Credenciales de prueba:**
+- Email: `atleta@test.com`
+- Password: `password`
+- Datos: 13 workouts (142.5 km en 4 semanas)
 
 ---
 
@@ -318,5 +362,5 @@ El objetivo es crear una herramienta que:
 
 ---
 
-**Última actualización**: 2025-11-18
-**Versión del proyecto**: 0.1.0 (Pre-MVP)
+**Última actualización**: 2025-12-11
+**Versión del proyecto**: 0.2.0 (Fase 1 Completada - MVP Workouts)

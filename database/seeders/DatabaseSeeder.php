@@ -13,11 +13,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Create a test athlete user
+        $user = User::factory()->create([
+            'name' => 'Juan Pérez',
+            'email' => 'atleta@test.com',
+            'role' => 'athlete',
+            'business_id' => null, // Individual user, not linked to any business yet
         ]);
+
+        $this->command->info("✅ Usuario creado: {$user->name} ({$user->email})");
+
+        // Seed workouts for this user
+        $this->call(WorkoutSeeder::class);
     }
 }

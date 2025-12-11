@@ -9,31 +9,31 @@ Plan de desarrollo en fases iterativas, priorizando funcionalidad core sobre fea
 **Objetivo**: Sistema funcional para que un corredor individual registre y visualice sus entrenamientos.
 
 ### 1.1 Base de Datos - Workouts & Races
-- [ ] Crear migración `create_workouts_table`
-- [ ] Crear migración `create_races_table`
+- [x] Crear migración `create_workouts_table` ✅
+- [x] Crear migración `create_races_table` ✅ (base)
 - [ ] Crear migración `create_goals_table`
-- [ ] Ejecutar migraciones
-- [ ] Crear seeders con datos de ejemplo
+- [x] Ejecutar migraciones ✅
+- [x] Crear seeders con datos de ejemplo ✅
 
 ### 1.2 Modelos y Relaciones
-- [ ] Modelo `Workout` con relaciones y scopes
-- [ ] Modelo `Race` con relaciones
+- [x] Modelo `Workout` con relaciones y scopes ✅
+- [x] Modelo `Race` con relaciones ✅ (base)
 - [ ] Modelo `Goal` con relaciones
-- [ ] Completar modelo `User` con relaciones nuevas
+- [x] Completar modelo `User` con relaciones nuevas ✅
 - [ ] Tests de relaciones básicas
 
 ### 1.3 Controllers - Workouts
-- [ ] `WorkoutController` (CRUD completo)
-- [ ] Form Requests: `StoreWorkoutRequest`, `UpdateWorkoutRequest`
-- [ ] Rutas RESTful para workouts
-- [ ] Policy `WorkoutPolicy` (ownership)
+- [x] `WorkoutController` (CRUD completo) ✅
+- [x] Validación inline en controller (sin Form Requests separados) ✅
+- [x] Rutas RESTful para workouts ✅
+- [x] Ownership validation en controller ✅
 
 ### 1.4 Views - Sistema de Templates
-- [ ] Convertir `landing/index.html` a `welcome.blade.php`
-- [ ] Convertir `landing/login.html` a `auth/login.blade.php`
-- [ ] Convertir `landing/register.html` a `auth/register.blade.php`
-- [ ] Crear layout base `layouts/app.blade.php` (con sidebar)
-- [ ] Crear layout `layouts/guest.blade.php`
+- [x] Convertir `landing/index.html` a `welcome.blade.php` ✅
+- [x] Convertir `landing/login.html` a `auth/login.blade.php` ✅
+- [x] Convertir `landing/register.html` a `auth/register.blade.php` ✅
+- [x] Crear layout base `layouts/app.blade.php` (con sidebar) ✅
+- [x] Crear layout `layouts/guest.blade.php` ✅
 - [ ] Crear components Blade reutilizables:
   - [ ] `<x-card>`
   - [ ] `<x-metric-card>`
@@ -41,27 +41,27 @@ Plan de desarrollo en fases iterativas, priorizando funcionalidad core sobre fea
   - [ ] `<x-sidebar-link>`
 
 ### 1.5 Dashboard Runner
-- [ ] Convertir `landing/dashboard.html` a `dashboard.blade.php`
-- [ ] Métricas semanales (km, tiempo, pace, sesiones)
-- [ ] Lista de entrenamientos recientes
-- [ ] Integrar datos reales desde BD
+- [x] Convertir `landing/dashboard.html` a `dashboard.blade.php` ✅
+- [x] Métricas semanales (km, tiempo, pace, sesiones) ✅
+- [x] Lista de entrenamientos recientes ✅
+- [x] Integrar datos reales desde BD ✅
 
 ### 1.6 Formularios de Entrenamientos
-- [ ] Vista `workouts/create.blade.php`
-- [ ] Vista `workouts/edit.blade.php`
-- [ ] Vista `workouts/index.blade.php` (lista completa)
-- [ ] Vista `workouts/show.blade.php` (detalle)
-- [ ] Validación y mensajes de error/éxito
+- [x] Vista `workouts/create.blade.php` ✅
+- [x] Vista `workouts/edit.blade.php` ✅
+- [x] Vista `workouts/index.blade.php` (lista completa) ✅
+- [ ] Vista `workouts/show.blade.php` (detalle) - opcional
+- [x] Validación y mensajes de error/éxito ✅
 
 ### 1.7 Cálculos y Métricas
-- [ ] Service `MetricsService` para cálculos
-  - [ ] Calcular pace promedio
-  - [ ] Totalizadores semanales/mensuales
+- [ ] Service `MetricsService` para cálculos (futuro)
+  - [x] Calcular pace promedio ✅ (en modelo)
+  - [x] Totalizadores semanales/mensuales ✅ (en controller)
   - [ ] Calcular racha de entrenamientos
-- [ ] Agregar computed attributes en modelo Workout
+- [x] Agregar computed attributes en modelo Workout ✅
 - [ ] Tests de cálculos
 
-**Entregable Fase 1**: Un corredor puede registrarse, crear entrenamientos, ver sus métricas semanales/mensuales.
+**Entregable Fase 1**: Un corredor puede registrarse, crear entrenamientos, ver sus métricas semanales/mensuales. ✅ **COMPLETADO**
 
 ---
 

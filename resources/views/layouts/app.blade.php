@@ -247,7 +247,7 @@
                 <span class="sidebar-expanded-text">Dashboard</span>
             </a>
 
-            <a href="#" class="sidebar-nav-link">
+            <a href="{{ route('workouts.index') }}" class="sidebar-nav-link {{ request()->routeIs('workouts.*') ? 'active' : '' }}">
                 <!-- Workouts icon (line chart) -->
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M4 19L9 10L13 15L20 5"></path>

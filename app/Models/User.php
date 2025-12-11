@@ -54,4 +54,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Business::class);
     }
+
+    public function workouts()
+    {
+        return $this->hasMany(Workout::class);
+    }
 }

@@ -6,7 +6,7 @@
 
 ---
 
-## Estado Actual (2025-11-18)
+## Estado Actual (2025-12-11)
 
 ### Lo que ya está implementado
 
@@ -60,19 +60,66 @@ Carpeta `landing/` con 4 HTMLs completos y profesionales:
 - Estilo dev-friendly con código embebido
 
 #### 5. Modelos Existentes
-- `User`: Con relación a Business y campo role
+- `User`: Con relación a Business, campo role, y relación workouts
 - `Business`: Modelo básico para grupos de entrenamiento
+- `Workout`: Modelo completo con relaciones, scopes y helpers ✅
+- `Race`: Modelo base creado (funcionalidad pendiente)
+- `TrainingGroup`: Modelo base creado (funcionalidad pendiente)
+
+#### 6. Sistema de Autenticación Refactorizado
+- **Rutas simplificadas**: /login, /register, /dashboard (sin business en URL)
+- **Sistema de invitaciones con tokens**: Base64 encoding de business_id
+- **Comando artisan**: `invitation:generate {business_slug}`
+- **Usuarios individuales**: business_id nullable permite corredores sin grupo
+- **Login unificado**: Busca usuario por email sin importar business
+
+#### 7. Funcionalidad de Workouts (FASE 1 COMPLETADA) ✅
+
+**Base de datos:**
+- Tabla `workouts` con 18 campos
+- Relaciones: user, training_group (nullable), race (nullable)
+- Indices optimizados para queries frecuentes
+
+**Modelo Workout:**
+- 6 tipos de entrenamiento: easy_run, intervals, tempo, long_run, recovery, race
+- Scopes: thisWeek(), thisMonth(), thisYear(), byType(), forUser()
+- Helpers: calculatePace(), formattedPace, formattedDuration, typeLabel
+- Casts automáticos para dates, decimals y JSON
+
+**WorkoutController (CRUD completo):**
+- index: Lista paginada (15 por página)
+- create/store: Formulario con validación y cálculo automático de pace
+- edit/update: Edición con ownership validation
+- destroy: Eliminación con confirmación
+- Seguridad: Solo el dueño puede ver/editar/eliminar sus workouts
+
+**Vistas Blade:**
+- `workouts/create.blade.php`: Formulario con inputs de duración (H:M:S) y selector visual de dificultad
+- `workouts/index.blade.php`: Lista responsive con paginación y estado vacío
+- `workouts/edit.blade.php`: Edición pre-cargada con datos
+
+**Dashboard Integrado:**
+- Métricas semanales: km totales, tiempo total, pace medio, número de sesiones
+- Lista de 5 entrenamientos más recientes con links a editar
+- Panel de resumen: totales históricos y fecha de registro
+- Datos reales desde la base de datos (no hardcodeados)
+
+**Seeder con datos de prueba:**
+- 13 workouts distribuidos en 4 semanas
+- 142.5 km totales, 11h 55min de entrenamiento
+- Variedad de tipos, distancias y dificultades
+- Usuario de prueba: atleta@test.com / password
 
 ---
 
 ## Lo que falta implementar
 
-### 1. Modelos Core de Running
-- `Workout` / `Training`: Entrenamientos individuales
-- `Race`: Carreras (participadas y futuras)
+### 1. Modelos Core de Running (Pendientes)
+- ~~`Workout`~~ ✅ **COMPLETADO**
+- `Race`: Implementar CRUD y funcionalidad completa
 - `Goal`: Objetivos del corredor
 - `TrainingPlan`: Planes de entrenamiento
-- `TrainingGroup`: Grupos de entrenamiento dentro de un business
+- ~~`TrainingGroup`~~ (base creada, falta funcionalidad)
 - `Attendance`: Asistencias a entrenamientos grupales
 
 ### 2. Base de Datos
