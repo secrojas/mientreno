@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Support\BusinessContext;
-
 class DashboardController extends Controller
 {
-    public function index(BusinessContext $ctx)
+    public function index()
     {
-        $biz = $ctx->get();
-        return view('dashboard', compact('biz'));
+        return view('dashboard');
     }
 }

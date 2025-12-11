@@ -11,8 +11,10 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => ['required','string','max:120'],
-            'email' => ['required','string','email','max:255'],
+            'email' => ['required','string','email','max:255','unique:users,email'],
             'password' => ['required','string','min:8','confirmed'],
+            'role' => ['nullable','string','in:runner,coach'],
+            'invitation_token' => ['nullable','string'],
         ];
     }
 }

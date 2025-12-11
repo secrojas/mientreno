@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'business_id',
+        'role',
+        'profile',
     ];
 
     /**
@@ -43,6 +46,12 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'profile' => 'array',
         ];
+    }
+
+    public function business()
+    {
+        return $this->belongsTo(Business::class);
     }
 }

@@ -1,47 +1,92 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
-
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+    <section style="max-width:420px;width:100%;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:1.75rem;">
+            <div class="badge" style="margin-bottom:.75rem;display:inline-flex;">
+                <span>Bienvenido de vuelta</span>
+            </div>
+            <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.7rem;margin-bottom:.4rem;">
+                Iniciar sesión
+            </h1>
+            <p style="font-size:.9rem;color:var(--text-muted);">
+                Accedé a tus entrenamientos y dashboards.
+            </p>
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        <form method="POST" action="{{ route('login') }}" style="
+            background:rgba(15,23,42,.9);
+            border-radius:1rem;
+            padding:1.5rem;
+            border:1px solid var(--border-subtle);
+            display:grid;
+            gap:1rem;
+        ">
+            @csrf
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
+            @if ($errors->any())
+                <div style="padding:.75rem;background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.3);border-radius:.6rem;font-size:.85rem;color:#ff6b6b;">
+                    @foreach ($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
+                </div>
             @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
+            <div>
+                <label for="email" style="display:block;font-size:.8rem;margin-bottom:.25rem;">Email</label>
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    autocomplete="email"
+                    value="{{ old('email') }}"
+                    style="
+                        width:100%;
+                        padding:.6rem .75rem;
+                        border-radius:.6rem;
+                        border:1px solid #1F2937;
+                        background:#050814;
+                        color:var(--text-main);
+                        font-size:.9rem;
+                    "
+                >
+            </div>
+
+            <div>
+                <label for="password" style="display:block;font-size:.8rem;margin-bottom:.25rem;">Password</label>
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                    style="
+                        width:100%;
+                        padding:.6rem .75rem;
+                        border-radius:.6rem;
+                        border:1px solid #1F2937;
+                        background:#050814;
+                        color:var(--text-main);
+                        font-size:.9rem;
+                    "
+                >
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--text-muted);">
+                <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer;">
+                    <input type="checkbox" name="remember" style="accent-color:var(--accent-primary);">
+                    <span>Recordarme</span>
+                </label>
+                <a href="#" style="color:var(--accent-secondary);">¿Olvidaste tu contraseña?</a>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">
+                Entrar
+            </button>
+        </form>
+
+        <p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);text-align:center;">
+            ¿No tenés cuenta?
+            <a href="{{ route('register') }}" style="color:var(--accent-primary);">Crear cuenta</a>
+        </p>
+    </section>
 </x-guest-layout>

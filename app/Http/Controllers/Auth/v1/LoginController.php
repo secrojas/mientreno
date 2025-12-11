@@ -5,36 +5,38 @@ namespace App\Http\Controllers\Auth\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\v1\LoginRequest;
 use App\Models\User;
-use App\Support\BusinessContext;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
-    public function showLoginForm(BusinessContext $ctx)
+    public function showLoginForm()
     {
-        return view('auth.login', ['biz' => $ctx->get()]);
+        return view('auth.login');
     }
 
-    public function login(LoginRequest $request, BusinessContext $ctx)
+    public function login(LoginRequest $request)
     {
-        $user = User::where('email', $request->email)
-            ->where('business_id', $ctx->id())
-            ->first();
+        // Buscar usuario por email (puede tener o no business)
+        $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return back()->withErrors(['email' => 'Credenciales inválidas para esta actividad.']);
+            return back()->withErrors(['email' => 'Credenciales inválidas.']);
         }
 
         Auth::login($user, $request->boolean('remember'));
-        return redirect()->route('biz.dashboard', ['business' => $ctx->get()->slug]);
+
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('dashboard'));
     }
 
-    public function logout(BusinessContext $ctx)
+    public function logout()
     {
         Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
-        return redirect()->route('biz.login', ['business' => $ctx->get()->slug]);
+
+        return redirect()->route('login');
     }
 }
