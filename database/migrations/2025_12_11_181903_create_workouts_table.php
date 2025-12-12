@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('race_id')->nullable();
 
             $table->date('date');
-            $table->enum('type', ['easy_run', 'intervals', 'tempo', 'long_run', 'recovery', 'race']);
+            $table->enum('type', ['easy_run', 'intervals', 'tempo', 'long_run', 'recovery', 'race', 'training_run']);
             $table->decimal('distance', 8, 2); // Kilómetros (ej: 10.50 km)
             $table->integer('duration'); // Segundos (ej: 3600 = 1 hora)
             $table->integer('avg_pace')->nullable(); // Segundos por km (calculado)

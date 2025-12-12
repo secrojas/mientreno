@@ -66,7 +66,7 @@ class WorkoutController extends Controller
     {
         $validated = $request->validate([
             'date' => 'required|date',
-            'type' => 'required|in:easy_run,intervals,tempo,long_run,recovery,race',
+            'type' => 'required|in:easy_run,intervals,tempo,long_run,recovery,race,training_run',
             'distance' => 'required|numeric|min:0.1|max:999',
             'duration' => 'required|integer|min:1',
             'avg_heart_rate' => 'nullable|integer|min:40|max:250',
@@ -128,7 +128,7 @@ class WorkoutController extends Controller
 
         $validated = $request->validate([
             'date' => 'required|date',
-            'type' => 'required|in:easy_run,intervals,tempo,long_run,recovery,race',
+            'type' => 'required|in:easy_run,intervals,tempo,long_run,recovery,race,training_run',
             'distance' => 'required|numeric|min:0.1|max:999',
             'duration' => 'required|integer|min:1',
             'avg_heart_rate' => 'nullable|integer|min:40|max:250',
