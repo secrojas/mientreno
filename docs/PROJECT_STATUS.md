@@ -260,6 +260,120 @@ Carpeta `landing/` con 4 HTMLs completos y profesionales:
 - ✅ Mejor seguimiento de preparación para carreras
 - ✅ Experiencia de usuario fluida y profesional
 
+#### 14. Sistema de Reportes (Workout Reports) 📋
+
+**ESTADO: PLANIFICADO - EN DISEÑO** 📝
+
+**Propósito:**
+Sistema para generar reportes semanales y mensuales de entrenamientos con exportación a PDF, pensado principalmente para compartir progreso con entrenadores.
+
+**Documento de diseño:** `docs/WORKOUT_REPORTS.md` (completado)
+
+**Funcionalidades Planificadas:**
+
+**A) Vistas de Reportes:**
+- `/reports/weekly` - Resumen semanal con navegación anterior/siguiente
+- `/reports/monthly` - Resumen mensual con navegación anterior/siguiente
+- Selector para cambiar entre vista semanal/mensual
+- Navegación temporal (semanas/meses anteriores)
+
+**B) Contenido de Reportes:**
+- **Métricas Generales:**
+  - Total km, tiempo, sesiones, pace promedio, FC promedio, desnivel
+- **Cumplimiento del Plan:**
+  - % adherencia (completados/planificados)
+  - Lista de entrenamientos saltados con razones
+- **Distribución por Tipo:**
+  - Gráficos y tablas mostrando tipos de entrenamientos realizados
+  - Porcentajes y distancias por categoría
+- **Comparativas:**
+  - Semana actual vs semana anterior
+  - Mes actual vs mes anterior
+  - Tendencias (mejorando/estable/bajando)
+- **Progreso de Objetivos:**
+  - Estado de goals activos en el período
+- **Insights Automáticos:**
+  - Mejor entrenamiento del período
+  - Rachas de días consecutivos
+  - Recomendaciones basadas en datos
+- **Detalle de Entrenamientos:**
+  - Tabla completa con todos los workouts del período
+
+**C) Exportación PDF:**
+- Generación de PDF con librería DomPDF
+- Diseño optimizado para impresión
+- Incluye logo, métricas, gráficos y tablas
+- Nombre de archivo: `reporte-semanal-{year}-{week}.pdf`
+
+**D) Optimizaciones:**
+- Cache de reportes (1 hora TTL)
+- Invalidación automática al modificar workouts
+- Eager loading para evitar N+1 queries
+- Loading states durante generación de PDF
+
+**Fases de Implementación:**
+
+**Fase 1 - Core Report Views (⏸️ Pendiente):**
+- ReportController con métodos weekly() y monthly()
+- ReportService con lógica de cálculos
+- Vistas Blade para reportes semanales y mensuales
+- Componentes reutilizables (report-card, metric-comparison, workout-table)
+- Estimación: ~3 horas
+
+**Fase 2 - Exportación PDF (⏸️ Pendiente):**
+- Instalación y configuración de DomPDF
+- Templates PDF optimizados
+- Métodos de exportación en controller
+- Botones de descarga con loading states
+- Estimación: ~2 horas
+
+**Fase 3 - Gráficos y Visualizaciones (⏸️ Pendiente):**
+- Integración de Chart.js
+- Gráficos de distribución, volumen, evolución
+- Tablas visuales para PDF (CSS)
+- Estimación: ~2 horas
+
+**Fase 4 - Comparativas e Insights (⏸️ Pendiente):**
+- Algoritmos de comparación período a período
+- Generación automática de insights
+- Detección de tendencias
+- Mensajes motivacionales basados en datos
+- Estimación: ~2.5 horas
+
+**Fase 5 - UX Enhancements (⏸️ Pendiente):**
+- Dropdown para selección rápida de períodos
+- Calendario visual
+- Historial de reportes generados
+- Vista responsive optimizada
+- Estimación: ~2 horas
+
+**Tiempo Total Estimado:** ~12 horas
+
+**Rutas Planificadas:**
+```php
+/reports                           → Vista principal
+/reports/weekly                    → Semana actual
+/reports/weekly/{year}/{week}     → Semana específica
+/reports/weekly/{year}/{week}/pdf → PDF semanal
+/reports/monthly                   → Mes actual
+/reports/monthly/{year}/{month}   → Mes específico
+/reports/monthly/{year}/{month}/pdf → PDF mensual
+```
+
+**Beneficios:**
+- ✅ Compartir progreso con entrenador de forma profesional
+- ✅ Análisis visual de cumplimiento y tendencias
+- ✅ Comparativas que motivan a mejorar
+- ✅ Insights automáticos sin intervención manual
+- ✅ PDF descargable y compartible
+
+**Estado Actual:**
+- Planificación completa ✅
+- Diseño de vistas definido ✅
+- Estructura de datos diseñada ✅
+- Fases de implementación priorizadas ✅
+- Pendiente: Desarrollo (esperando aprobación)
+
 ---
 
 ## Lo que falta implementar
