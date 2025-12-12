@@ -30,6 +30,17 @@ class DashboardController extends Controller
         // Objetivos activos
         $activeGoals = $user->goals()->active()->limit(3)->get();
 
-        return view('dashboard', compact('weekStats', 'recentWorkouts', 'nextRace', 'activeGoals'));
+        // Estadísticas de cumplimiento de la semana
+        $weeklyCompletion = [
+            'planned' => $user->workouts()->thisWeekPlanned()->count(),
+            'completed' => $user->workouts()->thisWeekCompleted()->count(),
+            'skipped' => $user->workouts()->thisWeek()->skipped()->count(),
+        ];
+        $weeklyCompletion['total'] = $weeklyCompletion['planned'] + $weeklyCompletion['completed'];
+        $weeklyCompletion['percentage'] = $weeklyCompletion['total'] > 0
+            ? round(($weeklyCompletion['completed'] / $weeklyCompletion['total']) * 100)
+            : 0;
+
+        return view('dashboard', compact('weekStats', 'recentWorkouts', 'nextRace', 'activeGoals', 'weeklyCompletion'));
     }
 }

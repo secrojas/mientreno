@@ -27,6 +27,11 @@ class WorkoutController extends Controller
             $query->where('type', $request->type);
         }
 
+        // Filtrar por estado
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
         // Filtrar por rango de fechas
         if ($request->filled('date_from')) {
             $query->whereDate('date', '>=', $request->date_from);
@@ -67,25 +72,39 @@ class WorkoutController extends Controller
         $validated = $request->validate([
             'date' => 'required|date',
             'type' => 'required|in:easy_run,intervals,tempo,long_run,recovery,race,training_run',
+            'status' => 'nullable|in:planned,completed',
             'distance' => 'required|numeric|min:0.1|max:999',
-            'duration' => 'required|integer|min:1',
+            'duration' => 'nullable|integer|min:1', // Nullable para workouts planificados
             'avg_heart_rate' => 'nullable|integer|min:40|max:250',
             'elevation_gain' => 'nullable|integer|min:0',
-            'difficulty' => 'required|integer|min:1|max:5',
+            'difficulty' => 'nullable|integer|min:1|max:5',
             'notes' => 'nullable|string|max:5000',
             'race_id' => 'nullable|exists:races,id',
         ]);
 
-        // Calcular pace automáticamente
-        $validated['avg_pace'] = Workout::calculatePace($validated['distance'], $validated['duration']);
         $validated['user_id'] = Auth::id();
+        $validated['status'] = $validated['status'] ?? 'completed';
+
+        // Calcular pace automáticamente solo si hay duration
+        if (isset($validated['duration']) && $validated['duration'] > 0) {
+            $validated['avg_pace'] = Workout::calculatePace($validated['distance'], $validated['duration']);
+        }
+
+        // Si no tiene difficulty, poner 3 por defecto
+        if (!isset($validated['difficulty'])) {
+            $validated['difficulty'] = 3;
+        }
 
         Workout::create($validated);
 
         // Recalcular progreso de goals del usuario
         $this->goalProgressService->updateUserGoalsProgress(Auth::user());
 
-        return redirect()->route('workouts.index')->with('success', 'Entrenamiento creado exitosamente!');
+        $message = $validated['status'] === 'planned'
+            ? 'Entrenamiento planificado creado!'
+            : 'Entrenamiento creado exitosamente!';
+
+        return redirect()->route('workouts.index')->with('success', $message);
     }
 
     /**
@@ -165,5 +184,75 @@ class WorkoutController extends Controller
         $this->goalProgressService->updateUserGoalsProgress(Auth::user());
 
         return redirect()->route('workouts.index')->with('success', 'Entrenamiento eliminado exitosamente!');
+    }
+
+    /**
+     * Show form to mark workout as completed
+     */
+    public function showMarkCompleted(Workout $workout)
+    {
+        // Verificar ownership
+        if ($workout->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Solo workouts planificados pueden marcarse como completados
+        if (!$workout->isPlanned()) {
+            return redirect()->route('workouts.index')->with('error', 'Solo entrenamientos planificados pueden marcarse como completados.');
+        }
+
+        $types = Workout::typeLabels();
+        $upcomingRaces = Auth::user()->races()->upcoming()->get();
+
+        return view('workouts.mark-completed', compact('workout', 'types', 'upcomingRaces'));
+    }
+
+    /**
+     * Mark workout as completed
+     */
+    public function markCompleted(Request $request, Workout $workout)
+    {
+        // Verificar ownership
+        if ($workout->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'distance' => 'required|numeric|min:0.1|max:999',
+            'duration' => 'required|integer|min:1',
+            'avg_heart_rate' => 'nullable|integer|min:40|max:250',
+            'elevation_gain' => 'nullable|integer|min:0',
+            'difficulty' => 'required|integer|min:1|max:5',
+            'notes' => 'nullable|string|max:5000',
+        ]);
+
+        $workout->markAsCompleted($validated);
+
+        // Recalcular progreso de goals del usuario
+        $this->goalProgressService->updateUserGoalsProgress(Auth::user());
+
+        return redirect()->route('workouts.index')->with('success', 'Entrenamiento marcado como completado!');
+    }
+
+    /**
+     * Mark workout as skipped
+     */
+    public function markSkipped(Request $request, Workout $workout)
+    {
+        // Verificar ownership
+        if ($workout->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'skip_reason' => 'nullable|string|max:255',
+        ]);
+
+        $workout->markAsSkipped($validated['skip_reason'] ?? null);
+
+        // Recalcular progreso de goals del usuario
+        $this->goalProgressService->updateUserGoalsProgress(Auth::user());
+
+        return redirect()->route('workouts.index')->with('success', 'Entrenamiento marcado como saltado.');
     }
 }

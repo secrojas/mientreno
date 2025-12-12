@@ -159,14 +159,47 @@ class WorkoutSeeder extends Seeder
                 'avg_heart_rate' => 146,
                 'elevation_gain' => 40,
             ],
+
+            // Entrenamientos planificados para el resto de la semana
+            [
+                'date' => now()->startOfWeek()->addDays(5), // Sábado
+                'type' => 'long_run',
+                'distance' => 20.0,
+                'status' => 'planned',
+                'notes' => 'Long run planificado - 20km a ritmo cómodo',
+            ],
+            [
+                'date' => now()->startOfWeek()->addDays(6), // Domingo
+                'type' => 'recovery',
+                'distance' => 6.0,
+                'status' => 'planned',
+                'notes' => 'Recuperación post long run',
+            ],
+
+            // Ejemplo de entrenamiento saltado de la semana pasada
+            [
+                'date' => now()->subWeeks(1)->startOfWeek()->addDays(5), // Viernes semana pasada
+                'type' => 'intervals',
+                'distance' => 10.0,
+                'status' => 'skipped',
+                'skip_reason' => 'Lluvia intensa, no pude salir',
+            ],
         ];
 
         foreach ($workouts as $workoutData) {
-            // Calculate pace automatically
-            $workoutData['avg_pace'] = Workout::calculatePace(
-                $workoutData['distance'],
-                $workoutData['duration']
-            );
+            // Set default status if not specified
+            if (!isset($workoutData['status'])) {
+                $workoutData['status'] = 'completed';
+            }
+
+            // Calculate pace automatically only for completed workouts with duration
+            if ($workoutData['status'] === 'completed' && isset($workoutData['duration'])) {
+                $workoutData['avg_pace'] = Workout::calculatePace(
+                    $workoutData['distance'],
+                    $workoutData['duration']
+                );
+            }
+
             $workoutData['user_id'] = $user->id;
 
             Workout::create($workoutData);

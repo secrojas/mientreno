@@ -1453,4 +1453,522 @@ php artisan db:seed --class=GoalSeeder
 
 ---
 
+## Sesión 06 - 2025-12-12 (Noche)
+
+### Objetivos de la sesión
+- Implementar sistema de planificación de entrenamientos
+- Permitir crear workouts en estado "planificado", "completado" o "saltado"
+- Marcar entrenamientos planificados como completados con datos reales
+- Mostrar cumplimiento semanal en dashboard
+- Completar Fase 1 del sistema de planificación
+
+### Lo que se hizo
+
+#### 1. Migración: Workout Status System
+**Archivo creado:**
+- `database/migrations/2025_12_12_174434_add_status_to_workouts_table.php`
+
+**Campos agregados:**
+- `status` (enum: 'planned', 'completed', 'skipped') - default 'completed'
+- `planned_distance` (decimal) - para comparar plan vs realidad
+- `skip_reason` (string) - razón opcional cuando se salta
+- `duration` y `avg_pace` ahora nullable - no requeridos para planned workouts
+
+**Ejecutado:**
+```bash
+php artisan migrate
+```
+
+#### 2. Modelo Workout - Scopes y Helpers
+**Archivo modificado:** `app/Models/Workout.php`
+
+**Nuevos scopes agregados:**
+```php
+scopePlanned($query)           // WHERE status = 'planned'
+scopeCompleted($query)         // WHERE status = 'completed'
+scopeSkipped($query)           // WHERE status = 'skipped'
+scopeThisWeekPlanned($query)   // Planned de esta semana
+scopeThisWeekCompleted($query) // Completed de esta semana
+```
+
+**Nuevos métodos:**
+```php
+statusLabels()                 // Array con labels en español
+getStatusLabelAttribute()      // Accessor para label del status
+getDifferenceFromPlanAttribute() // Diferencia km planificados vs reales
+isPlanned()                    // Boolean helper
+isCompleted()                  // Boolean helper
+isSkipped()                    // Boolean helper
+markAsCompleted($data)         // Marca como completado con datos reales
+markAsSkipped($reason)         // Marca como saltado con razón opcional
+```
+
+**Lógica especial en markAsCompleted():**
+- Preserva `planned_distance` antes de actualizar
+- Calcula `avg_pace` automáticamente
+- Limpia `skip_reason` si existía
+- Retorna boolean de éxito
+
+#### 3. Rutas y Controller - Workflow de Estados
+**Archivo modificado:** `routes/web.php`
+
+**Rutas agregadas:**
+```php
+// Marcar como completado
+GET  /workouts/{workout}/mark-completed
+POST /workouts/{workout}/mark-completed
+
+// Marcar como saltado
+POST /workouts/{workout}/mark-skipped
+```
+
+**Archivo modificado:** `app/Http/Controllers/WorkoutController.php`
+
+**Métodos agregados:**
+1. **showMarkCompleted()**: Muestra formulario para completar planned workout
+2. **markCompleted()**: Procesa los datos reales y marca como completed
+3. **markSkipped()**: Marca workout como skipped con razón opcional
+
+**Validaciones actualizadas:**
+- `store()`: `status` opcional (planned/completed), `duration` nullable para planned
+- `update()`: Similar lógica
+- Todos los métodos verifican ownership (403 si no es del usuario)
+
+**Recálculo automático de progreso:**
+Todos los métodos que modifican workouts llaman:
+```php
+$this->goalProgressService->updateUserGoalsProgress(Auth::user());
+```
+
+#### 4. Vistas - Sistema de Badges y Acciones Condicionales
+
+**4.1 `workouts/index.blade.php` - Lista actualizada**
+
+**Cambios principales:**
+- **Filtro nuevo**: Selector de estado (Todos/Planificado/Completado/Saltado)
+- **Badges visuales**:
+  - "Planificado" (azul): Entrenamientos pendientes
+  - "Saltado" (amarillo): Entrenamientos no realizados
+- **Acciones condicionales** según estado:
+
+  **Si está planificado:**
+  - Botón verde "Completar" → abre formulario mark-completed
+  - Botón amarillo "Saltar" → marca como saltado con confirmación
+
+  **Si está completado/saltado:**
+  - Botón "Editar" (gris)
+  - Botón "Eliminar" (rojo)
+
+- **Columna Dificultad**: Muestra "–" si no está completado
+- **Notas/Razón**: Muestra `skip_reason` si fue saltado, sino muestra `notes`
+- **Grid actualizado**: 7 columnas con 200px para acciones
+
+**Código destacado - Badges:**
+```blade
+@if($workout->isPlanned())
+    <span style="...background:rgba(59,130,246,.1);...">
+        Planificado
+    </span>
+@elseif($workout->isSkipped())
+    <span style="...background:rgba(234,179,8,.1);...">
+        Saltado
+    </span>
+@endif
+```
+
+**4.2 `workouts/create.blade.php` - Crear con Estado**
+
+**Cambios:**
+- **Selector de estado agregado**:
+  - Grid de 3 columnas: Fecha / Tipo / Estado
+  - Opciones: "Completado" (default) o "Planificado"
+  - Helper text: "Planificado = para cargar después"
+
+- **Campos dinámicos con JavaScript**:
+  - Si status = 'planned': difficulty es opcional
+  - JavaScript actualiza label "*" a "(opcional)" dinámicamente
+  - Validación HTML5 se ajusta según estado seleccionado
+
+**JavaScript destacado:**
+```javascript
+const statusSelect = document.getElementById('status');
+
+function updateRequiredFields() {
+    const isPlanned = statusSelect.value === 'planned';
+
+    difficultyRadios.forEach(radio => {
+        radio.required = !isPlanned;
+    });
+
+    // Actualizar label visual
+    if (isPlanned) {
+        label.innerHTML += ' (opcional)';
+    }
+}
+
+statusSelect.addEventListener('change', updateRequiredFields);
+```
+
+**4.3 `workouts/mark-completed.blade.php` - Vista Nueva**
+
+**Propósito**: Formulario especializado para marcar workouts planificados como completados
+
+**Características:**
+- **Info box azul**: Muestra datos del workout planificado (fecha, tipo, distancia)
+- **Formulario con datos reales**:
+  - Distancia real (pre-filled con planned distance)
+  - Duración (H:M:S inputs, comienza en 0)
+  - FC promedio (opcional)
+  - Desnivel (opcional)
+  - Dificultad percibida (1-5, default 3)
+  - Notas ("¿Cómo te sentiste? ¿Hubo algo distinto al plan?")
+
+- **Comparación en vivo con JavaScript**:
+  ```javascript
+  function updateDistanceDiff() {
+      const plannedDistance = {{ $workout->distance }};
+      const actualDistance = parseFloat(distanceInput.value) || 0;
+      const diff = actualDistance - plannedDistance;
+
+      if (diff > 0) {
+          distanceDiff.textContent = `+${diff.toFixed(2)}km más que lo planificado`;
+          distanceDiff.style.color = '#22c55e'; // verde
+      } else if (diff < 0) {
+          distanceDiff.textContent = `${diff.toFixed(2)}km menos que lo planificado`;
+          distanceDiff.style.color = '#f59e0b'; // amarillo
+      }
+  }
+  ```
+
+- **Botones**: "Marcar como Completado" (verde) / "Cancelar"
+
+#### 5. Dashboard Widget - Cumplimiento Semanal
+
+**Archivo modificado:** `app/Http/Controllers/DashboardController.php`
+
+**Lógica agregada:**
+```php
+$weeklyCompletion = [
+    'planned' => $user->workouts()->thisWeekPlanned()->count(),
+    'completed' => $user->workouts()->thisWeekCompleted()->count(),
+    'skipped' => $user->workouts()->thisWeek()->skipped()->count(),
+];
+$weeklyCompletion['total'] = $weeklyCompletion['planned'] + $weeklyCompletion['completed'];
+$weeklyCompletion['percentage'] = $weeklyCompletion['total'] > 0
+    ? round(($weeklyCompletion['completed'] / $weeklyCompletion['total']) * 100)
+    : 0;
+```
+
+**Archivo modificado:** `resources/views/dashboard.blade.php`
+
+**Widget nuevo agregado: "Cumplimiento Semanal"**
+
+**Elementos visuales:**
+1. **Porcentaje grande**:
+   - Tipografía Space Grotesk, 2.5rem, color accent-secondary
+   - "X% completado"
+
+2. **Subtitle**:
+   - "X de Y entrenamientos completados"
+
+3. **Barra de progreso**:
+   - Altura 6px, fondo oscuro
+   - Relleno verde (accent-secondary) con width dinámico
+   - Transición suave
+
+4. **Breakdown en 3 columnas**:
+   - **Completados** (verde): Número grande + label
+   - **Planificados** (azul): Número grande + label
+   - **Saltados** (amarillo): Número grande + label
+
+5. **Alerta de pendientes** (si planned > 0):
+   - Box azul con mensaje
+   - "¡Tenés X entrenamiento(s) planificado(s) pendientes!"
+
+6. **Link header**: "Ver planificados" → filtra workouts por status=planned
+
+**Estado vacío:**
+- "No hay entrenamientos esta semana"
+- Link: "Planificar entrenamientos"
+
+#### 6. Seeders - Datos de Ejemplo
+
+**Archivo modificado:** `database/seeders/WorkoutSeeder.php`
+
+**Workouts agregados (total ahora: 16):**
+
+**Completados (13):** Los 13 existentes
+
+**Planificados (2):**
+```php
+[
+    'date' => now()->startOfWeek()->addDays(5), // Sábado
+    'type' => 'long_run',
+    'distance' => 20.0,
+    'status' => 'planned',
+    'notes' => 'Long run planificado - 20km a ritmo cómodo',
+],
+[
+    'date' => now()->startOfWeek()->addDays(6), // Domingo
+    'type' => 'recovery',
+    'distance' => 6.0,
+    'status' => 'planned',
+    'notes' => 'Recuperación post long run',
+],
+```
+
+**Saltados (1):**
+```php
+[
+    'date' => now()->subWeeks(1)->startOfWeek()->addDays(5), // Viernes pasado
+    'type' => 'intervals',
+    'distance' => 10.0,
+    'status' => 'skipped',
+    'skip_reason' => 'Lluvia intensa, no pude salir',
+],
+```
+
+**Lógica actualizada:**
+```php
+foreach ($workouts as $workoutData) {
+    // Default status
+    if (!isset($workoutData['status'])) {
+        $workoutData['status'] = 'completed';
+    }
+
+    // Solo calcular pace para completed con duration
+    if ($workoutData['status'] === 'completed' && isset($workoutData['duration'])) {
+        $workoutData['avg_pace'] = Workout::calculatePace(...);
+    }
+
+    Workout::create($workoutData);
+}
+```
+
+**Ejecutado:**
+```bash
+php artisan db:seed --class=WorkoutSeeder
+# Output: ✅ 16 workouts creados exitosamente
+#         Total distancia: 178.5 km
+#         Total duración: 11:55:00
+```
+
+### Fases Propuestas (Roadmap Futuro)
+
+Durante la sesión se planteó un sistema de mejoras en 3 fases:
+
+#### ✅ FASE 1 - Core (COMPLETADA EN ESTA SESIÓN)
+- [x] Migración con campos status, planned_distance, skip_reason
+- [x] Scopes en modelo (planned, completed, skipped, etc.)
+- [x] Helpers: isPlanned(), markAsCompleted(), markAsSkipped()
+- [x] Routes y controller methods para mark-completed y mark-skipped
+- [x] Vistas con badges de estado
+- [x] Botones condicionales (Completar/Saltar vs Editar/Eliminar)
+- [x] Dashboard widget "Cumplimiento Semanal"
+- [x] Seeder con ejemplos de planned/skipped workouts
+- [x] Filtro por estado en lista de workouts
+
+#### ⏸️ FASE 2 - UX Enhancements (PENDIENTE)
+**Quick Add de Entrenamientos Planificados:**
+- [ ] Botón "Planificar Semana" en dashboard
+- [ ] Modal/formulario simplificado para agregar múltiples planned workouts
+- [ ] Plantillas predefinidas:
+  - "Semana base" (3-4 entrenamientos típicos)
+  - "Semana de volumen" (5-6 entrenamientos con fondo largo)
+  - "Semana de series" (enfoque en velocidad)
+  - "Semana de recuperación" (entrenamientos suaves)
+- [ ] Duplicar semana anterior como planificación
+
+**Comparaciones Plan vs Realidad:**
+- [ ] Vista de detalle del workout con tabla comparativa cuando fue planned→completed:
+  - Distancia: planificada vs real (diferencia en km y %)
+  - Tiempo: estimado vs real (si había estimación)
+  - Visual: verde si cumpliste/superaste, amarillo si hiciste menos
+- [ ] Widget en dashboard: "Adherencia al plan del mes"
+  - % de workouts completados vs planificados
+  - Gráfico de barras por semana
+  - Estadísticas: "5 de 7 completados este mes (71%)"
+
+**Acciones en Masa (Bulk Actions):**
+- [ ] Checkbox para seleccionar múltiples workouts
+- [ ] Barra de acciones: "Marcar todos como saltados", "Eliminar selección"
+- [ ] Útil cuando pasó la semana y tenés varios planned sin hacer
+- [ ] Confirmación con detalle: "¿Marcar 3 entrenamientos como saltados?"
+
+**Notificaciones/Recordatorios:**
+- [ ] Badge en navbar con número de planned workouts pendientes
+- [ ] Destacar en listado los workouts de hoy que están planned
+- [ ] Color/icono especial para workouts de hoy
+- [ ] Posible integración futura con notificaciones push
+
+#### ⏸️ FASE 3 - Analytics & Insights (FUTURO)
+**Estadísticas de Cumplimiento:**
+- [ ] Gráfico de adherencia mensual (Chart.js)
+- [ ] Streak de semanas consecutivas cumpliendo >80%
+- [ ] Comparativa: este mes vs mes anterior
+- [ ] Mejores/peores semanas del año
+
+**Predicción y Recomendaciones:**
+- [ ] "Basado en tu historial, es probable que completes 4 de 5 workouts esta semana"
+- [ ] "Tus mejores días para entrenar son: Martes y Jueves (95% de cumplimiento)"
+- [ ] "Generalmente saltás entrenamientos los viernes (40% skipped)"
+
+**Exportación:**
+- [ ] Exportar reporte de cumplimiento a PDF
+- [ ] Incluir gráficos y estadísticas
+- [ ] Útil para compartir con entrenador
+
+### Decisiones tomadas
+
+1. **Enum para status**: Usar enum en base de datos para garantizar valores válidos
+2. **Default 'completed'**: Para backwards compatibility con workouts existentes
+3. **Campos nullable**: duration y avg_pace opcionales para planned workouts
+4. **Preservar planned_distance**: Guardar antes de actualizar para comparar después
+5. **skip_reason opcional**: No obligatorio, pero útil para análisis futuro
+6. **Botones condicionales**: UX más clara con acciones diferentes según estado
+7. **Dashboard widget destacado**: El cumplimiento semanal es una métrica clave
+8. **Filtro de estado**: Importante poder ver solo planned o solo skipped
+9. **Recálculo automático**: Goals se recalculan cuando cambia el estado de un workout
+
+### Archivos modificados/creados
+
+**Creados:**
+- `database/migrations/2025_12_12_174434_add_status_to_workouts_table.php`
+- `resources/views/workouts/mark-completed.blade.php`
+
+**Modificados:**
+- `app/Models/Workout.php` - 8 scopes y 6 helpers nuevos
+- `app/Http/Controllers/WorkoutController.php` - 3 métodos nuevos + filtro status
+- `app/Http/Controllers/DashboardController.php` - weekly completion stats
+- `routes/web.php` - 2 rutas nuevas para mark-completed/mark-skipped
+- `resources/views/workouts/index.blade.php` - badges, botones condicionales, filtro
+- `resources/views/workouts/create.blade.php` - selector de status, campos dinámicos
+- `resources/views/dashboard.blade.php` - widget "Cumplimiento Semanal"
+- `database/seeders/WorkoutSeeder.php` - 3 workouts nuevos (2 planned, 1 skipped)
+
+### Testing realizado
+
+**Flujos completos validados:**
+
+1. ✅ **Crear workout planificado**:
+   - Formulario muestra selector de estado
+   - Difficulty es opcional cuando status='planned'
+   - Se guarda correctamente con duration=null
+   - Aparece en lista con badge azul "Planificado"
+
+2. ✅ **Marcar como completado**:
+   - Botón "Completar" en workout planificado funciona
+   - Formulario pre-carga distancia planificada
+   - Comparación en vivo (JS) muestra diferencia
+   - Al submit: preserva planned_distance, calcula avg_pace
+   - Recalcula goals automáticamente
+   - Redirecciona a lista con mensaje de éxito
+
+3. ✅ **Marcar como saltado**:
+   - Botón "Saltar" pide confirmación
+   - Permite ingresar razón (opcional)
+   - Workout cambia a status='skipped'
+   - Badge amarillo "Saltado" aparece
+   - Muestra skip_reason en lugar de notes
+
+4. ✅ **Dashboard - Widget cumplimiento**:
+   - Muestra porcentaje correcto (3/5 = 60% con datos de prueba)
+   - Breakdown correcto: 3 completed, 2 planned, 1 skipped
+   - Barra de progreso con ancho dinámico
+   - Alerta de pendientes si hay planned
+   - Link "Ver planificados" filtra correctamente
+
+5. ✅ **Filtro por estado**:
+   - Selector en index muestra 4 opciones
+   - Filtro por "Planificado" muestra solo planned
+   - Filtro por "Saltado" muestra solo skipped
+   - Combina correctamente con otros filtros (tipo, fechas)
+   - Paginación mantiene filtro de estado
+
+6. ✅ **Seeder**:
+   - 16 workouts creados (13 completed, 2 planned, 1 skipped)
+   - Workouts planned no tienen duration ni avg_pace
+   - Skipped workout tiene skip_reason
+   - Todos los cálculos correctos
+
+### Estado al final de la sesión
+
+- **Fase 1 - Workout Planning**: ✅ **COMPLETADA AL 100%**
+- **Base de datos**: ✅ Migración ejecutada, 16 workouts de ejemplo
+- **Modelo**: ✅ 8 scopes, 6 helpers, 2 métodos de acción
+- **Controller**: ✅ 3 métodos nuevos, filtro status, ownership validation
+- **Vistas**: ✅ 3 vistas actualizadas, 1 vista nueva
+- **Dashboard**: ✅ Widget cumplimiento semanal funcionando
+- **UX**: ✅ Badges, botones condicionales, formularios dinámicos
+- **Seeder**: ✅ Datos realistas de 3 estados diferentes
+
+### Mejoras logradas
+
+**Funcionalidad:**
+- Sistema completo de planificación de entrenamientos
+- Workflow claro: Planear → Completar/Saltar
+- Comparación plan vs realidad preservada
+- Métricas de cumplimiento en tiempo real
+
+**UX:**
+- Badges visuales claros (azul/amarillo)
+- Botones contextuales según estado
+- Formulario especializado para completar
+- Comparación en vivo con JS
+- Widget motivacional en dashboard
+
+**Arquitectura:**
+- Modelo con scopes bien organizados
+- Helpers semánticos (isPlanned, markAsCompleted)
+- Recálculo automático de goals
+- Ownership validation en todos los endpoints
+
+**Preparado para futuro:**
+- Fase 2 y 3 bien documentadas
+- Sistema extensible para análisis
+- skip_reason útil para insights
+- planned_distance permite comparaciones
+
+### Próximos pasos sugeridos
+
+**Opción 1: Fase 2 - UX Enhancements del Planning System**
+1. Implementar "Planificar Semana" con plantillas
+2. Widget de comparación plan vs realidad
+3. Bulk actions para marcar múltiples como saltados
+4. Notificaciones visuales de workouts pendientes
+
+**Opción 2: Fase 3 - Analytics & Visualización**
+1. Gráficos de cumplimiento con Chart.js
+2. Estadísticas de adherencia histórica
+3. Predicciones basadas en comportamiento
+4. Exportación de reportes
+
+**Opción 3: Otras Features del Roadmap**
+1. Panel Coach (gestión de grupos)
+2. Training Plans (planes estructurados)
+3. Integración con Strava/Garmin
+4. Testing automatizado (PHPUnit)
+
+### Notas adicionales
+
+- El sistema de status con enum es muy robusto y extensible
+- La preservación de planned_distance es clave para análisis futuro
+- Los botones condicionales mejoran significativamente la UX
+- El widget de cumplimiento semanal es un motivador importante
+- El seeder con 3 tipos de estados facilita testing y demos
+- El código está preparado para agregar más estados en el futuro si es necesario
+- La integración con GoalProgressService garantiza que goals se actualicen correctamente
+
+### Documentación pendiente
+
+- [ ] Crear `docs/WORKOUT_PLANNING.md` con guía detallada del feature
+- [ ] Agregar screenshots del workflow a la documentación
+- [ ] Actualizar `PROJECT_STATUS.md` con Fase 1 completada
+- [ ] Actualizar `README.md` con feature de planificación
+
+### Tiempo invertido
+~90 minutos (migración + modelo + controller + vistas + dashboard widget + seeder + testing + documentación)
+
+---
+
 **Última actualización**: 2025-12-12

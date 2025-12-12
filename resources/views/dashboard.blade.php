@@ -149,6 +149,62 @@
                 @endif
             </x-card>
 
+            <!-- Cumplimiento Semanal -->
+            <x-card title="Cumplimiento Semanal" subtitle="Semana {{ now()->weekOfYear }}">
+                <x-slot:headerAction>
+                    <a href="{{ route('workouts.index', ['status' => 'planned']) }}" style="font-size:.8rem;color:var(--accent-secondary);">Ver planificados</a>
+                </x-slot:headerAction>
+
+                @if($weeklyCompletion['total'] > 0)
+                    <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);">
+                        <!-- Porcentaje grande -->
+                        <div style="text-align:center;margin-bottom:1rem;">
+                            <div style="font-size:2.5rem;font-weight:700;font-family:'Space Grotesk',monospace;color:var(--accent-secondary);">
+                                {{ $weeklyCompletion['percentage'] }}%
+                            </div>
+                            <div style="font-size:.75rem;color:var(--text-muted);margin-top:.25rem;">
+                                {{ $weeklyCompletion['completed'] }} de {{ $weeklyCompletion['total'] }} entrenamientos completados
+                            </div>
+                        </div>
+
+                        <!-- Barra de progreso -->
+                        <div style="width:100%;height:6px;background:rgba(15,23,42,.9);border-radius:999px;overflow:hidden;margin-bottom:1rem;">
+                            <div style="width:{{ $weeklyCompletion['percentage'] }}%;height:100%;background:var(--accent-secondary);transition:width 0.3s ease;"></div>
+                        </div>
+
+                        <!-- Breakdown -->
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;font-size:.75rem;">
+                            <div style="text-align:center;padding:.5rem;border-radius:.4rem;background:rgba(45,227,142,.05);border:1px solid rgba(45,227,142,.2);">
+                                <div style="font-weight:600;font-size:1.1rem;color:#2de38e;">{{ $weeklyCompletion['completed'] }}</div>
+                                <div style="color:var(--text-muted);margin-top:.15rem;">Completados</div>
+                            </div>
+                            <div style="text-align:center;padding:.5rem;border-radius:.4rem;background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.2);">
+                                <div style="font-weight:600;font-size:1.1rem;color:#60a5fa;">{{ $weeklyCompletion['planned'] }}</div>
+                                <div style="color:var(--text-muted);margin-top:.15rem;">Planificados</div>
+                            </div>
+                            <div style="text-align:center;padding:.5rem;border-radius:.4rem;background:rgba(234,179,8,.05);border:1px solid rgba(234,179,8,.2);">
+                                <div style="font-weight:600;font-size:1.1rem;color:#facc15;">{{ $weeklyCompletion['skipped'] }}</div>
+                                <div style="color:var(--text-muted);margin-top:.15rem;">Saltados</div>
+                            </div>
+                        </div>
+
+                        @if($weeklyCompletion['planned'] > 0)
+                            <div style="margin-top:.75rem;padding:.5rem;border-radius:.4rem;background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.2);text-align:center;">
+                                <div style="font-size:.75rem;color:#60a5fa;">
+                                    ¡Tenés {{ $weeklyCompletion['planned'] }} {{ $weeklyCompletion['planned'] === 1 ? 'entrenamiento planificado' : 'entrenamientos planificados' }} pendientes!
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                @else
+                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                        No hay entrenamientos esta semana.
+                        <br>
+                        <a href="{{ route('workouts.create') }}" style="color:var(--accent-secondary);margin-top:.5rem;display:inline-block;">Planificar entrenamientos</a>
+                    </div>
+                @endif
+            </x-card>
+
             <!-- Resumen -->
             <x-card title="Resumen" subtitle="Estadísticas generales">
                 <div style="display:grid;gap:.75rem;">

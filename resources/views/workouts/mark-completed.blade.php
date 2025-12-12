@@ -10,14 +10,14 @@
                 </a>
             </div>
             <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.6rem;margin-bottom:.3rem;">
-                Nuevo Entrenamiento
+                Marcar como Completado
             </h1>
             <p style="font-size:.9rem;color:var(--text-muted);">
-                Registrá los datos de tu sesión de running.
+                {{ $workout->date->format('d/m/Y') }} · {{ $workout->type_label }} · Planificado: {{ $workout->distance }}km
             </p>
         </div>
 
-        <form method="POST" action="{{ route('workouts.store') }}" style="
+        <form method="POST" action="{{ route('workouts.mark-completed', $workout) }}" style="
             background:rgba(15,23,42,.9);
             border-radius:1rem;
             padding:1.5rem;
@@ -35,56 +35,18 @@
                 </div>
             @endif
 
-            <!-- Fecha, Tipo y Estado -->
-            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;">
-                <div>
-                    <label for="date" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">Fecha *</label>
-                    <input
-                        id="date"
-                        name="date"
-                        type="date"
-                        required
-                        value="{{ old('date', now()->format('Y-m-d')) }}"
-                        style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;"
-                    >
-                </div>
-
-                <div>
-                    <label for="type" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">Tipo de Entrenamiento *</label>
-                    <select
-                        id="type"
-                        name="type"
-                        required
-                        style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;"
-                    >
-                        <option value="">Seleccionar...</option>
-                        @foreach($types as $key => $label)
-                            <option value="{{ $key }}" {{ old('type') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div>
-                    <label for="status" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">Estado *</label>
-                    <select
-                        id="status"
-                        name="status"
-                        required
-                        style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;"
-                    >
-                        <option value="completed" {{ old('status', 'completed') === 'completed' ? 'selected' : '' }}>Completado</option>
-                        <option value="planned" {{ old('status') === 'planned' ? 'selected' : '' }}>Planificado</option>
-                    </select>
-                    <small style="font-size:.75rem;color:var(--text-muted);display:block;margin-top:.35rem;">
-                        Planificado = para cargar después
-                    </small>
+            <!-- Info del entrenamiento planificado -->
+            <div style="padding:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:.6rem;font-size:.85rem;">
+                <div style="margin-bottom:.35rem;font-weight:500;">Entrenamiento Planificado:</div>
+                <div style="color:var(--text-muted);">
+                    <strong>{{ $workout->date->format('d/m/Y') }}</strong> - {{ $workout->type_label }} - {{ $workout->distance }}km
                 </div>
             </div>
 
-            <!-- Distancia y Duración -->
+            <!-- Distancia Real y Duración -->
             <div style="display:grid;grid-template-columns:1fr 2fr;gap:.75rem;">
                 <div>
-                    <label for="distance" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">Distancia (km) *</label>
+                    <label for="distance" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">Distancia Real (km) *</label>
                     <input
                         id="distance"
                         name="distance"
@@ -93,10 +55,11 @@
                         min="0.1"
                         max="999"
                         required
-                        value="{{ old('distance') }}"
+                        value="{{ old('distance', $workout->distance) }}"
                         placeholder="10.5"
                         style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;"
                     >
+                    <small id="distance-diff" style="font-size:.75rem;display:block;margin-top:.35rem;"></small>
                 </div>
 
                 <div>
@@ -215,37 +178,15 @@
                     id="notes"
                     name="notes"
                     rows="4"
-                    placeholder="Sensaciones, clima, recorrido..."
+                    placeholder="¿Cómo te sentiste? ¿Hubo algo distinto al plan?"
                     style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;font-family:inherit;resize:vertical;"
                 >{{ old('notes') }}</textarea>
             </div>
 
-            <!-- Carrera asociada -->
-            @if($upcomingRaces->count() > 0)
-                <div>
-                    <label for="race_id" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">¿Es para una carrera específica?</label>
-                    <select
-                        id="race_id"
-                        name="race_id"
-                        style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;"
-                    >
-                        <option value="">Ninguna (entrenamiento general)</option>
-                        @foreach($upcomingRaces as $race)
-                            <option value="{{ $race->id }}" {{ old('race_id') == $race->id ? 'selected' : '' }}>
-                                {{ $race->name }} - {{ $race->distance }}km ({{ $race->date->format('d/m/Y') }})
-                            </option>
-                        @endforeach
-                    </select>
-                    <small style="font-size:.75rem;color:var(--text-muted);display:block;margin-top:.35rem;">
-                        Vinculá este entreno a una carrera próxima para mejor seguimiento.
-                    </small>
-                </div>
-            @endif
-
             <!-- Botones -->
             <div style="display:flex;gap:.75rem;margin-top:.5rem;">
                 <button type="submit" class="btn-primary" style="flex:1;justify-content:center;padding:.7rem;">
-                    Guardar Entrenamiento
+                    Marcar como Completado
                 </button>
                 <a href="{{ route('workouts.index') }}" class="btn-ghost" style="padding:.7rem 1.2rem;">
                     Cancelar
@@ -268,6 +209,30 @@
         document.getElementById('minutes').addEventListener('input', updateDuration);
         document.getElementById('seconds').addEventListener('input', updateDuration);
 
+        // Mostrar diferencia con distancia planificada
+        const plannedDistance = {{ $workout->distance }};
+        const distanceInput = document.getElementById('distance');
+        const distanceDiff = document.getElementById('distance-diff');
+
+        function updateDistanceDiff() {
+            const actualDistance = parseFloat(distanceInput.value) || 0;
+            const diff = actualDistance - plannedDistance;
+
+            if (diff === 0 || actualDistance === 0) {
+                distanceDiff.textContent = '';
+                distanceDiff.style.color = 'var(--text-muted)';
+            } else if (diff > 0) {
+                distanceDiff.textContent = `+${diff.toFixed(2)}km más que lo planificado`;
+                distanceDiff.style.color = '#22c55e';
+            } else {
+                distanceDiff.textContent = `${diff.toFixed(2)}km menos que lo planificado`;
+                distanceDiff.style.color = '#f59e0b';
+            }
+        }
+
+        distanceInput.addEventListener('input', updateDistanceDiff);
+        updateDistanceDiff();
+
         // UI para dificultad
         document.querySelectorAll('.difficulty-option').forEach(option => {
             const input = option.parentElement.querySelector('input');
@@ -286,39 +251,6 @@
                 option.style.background = 'rgba(255,59,92,.1)';
             });
         });
-
-        // Manejar campos opcionales según el estado
-        const statusSelect = document.getElementById('status');
-        const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
-
-        function updateRequiredFields() {
-            const isPlanned = statusSelect.value === 'planned';
-
-            // Hacer campos opcionales si es planificado
-            difficultyRadios.forEach(radio => {
-                radio.required = !isPlanned;
-            });
-
-            // Mostrar/ocultar indicador de opcional
-            const difficultyLabel = difficultyRadios[0].closest('div').previousElementSibling;
-            if (isPlanned) {
-                if (!difficultyLabel.querySelector('.optional-indicator')) {
-                    difficultyLabel.innerHTML = difficultyLabel.innerHTML.replace(' *', '');
-                    difficultyLabel.innerHTML += ' <span class="optional-indicator" style="color:var(--text-muted);font-weight:normal;">(opcional)</span>';
-                }
-            } else {
-                const indicator = difficultyLabel.querySelector('.optional-indicator');
-                if (indicator) {
-                    indicator.remove();
-                    if (!difficultyLabel.textContent.includes('*')) {
-                        difficultyLabel.innerHTML = difficultyLabel.innerHTML.replace('Dificultad Percibida', 'Dificultad Percibida *');
-                    }
-                }
-            }
-        }
-
-        statusSelect.addEventListener('change', updateRequiredFields);
-        updateRequiredFields();
 
         // Inicializar duración
         updateDuration();

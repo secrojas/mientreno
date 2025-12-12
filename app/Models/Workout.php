@@ -13,13 +13,16 @@ class Workout extends Model
         'race_id',
         'date',
         'type',
+        'status',
         'distance',
+        'planned_distance',
         'duration',
         'avg_pace',
         'avg_heart_rate',
         'elevation_gain',
         'difficulty',
         'notes',
+        'skip_reason',
         'weather',
         'route',
         'is_race',
@@ -91,6 +94,37 @@ class Workout extends Model
         return $query->where('user_id', $userId);
     }
 
+    public function scopePlanned($query)
+    {
+        return $query->where('status', 'planned');
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
+    }
+
+    public function scopeSkipped($query)
+    {
+        return $query->where('status', 'skipped');
+    }
+
+    public function scopeThisWeekPlanned($query)
+    {
+        return $query->planned()->whereBetween('date', [
+            now()->startOfWeek(),
+            now()->endOfWeek()
+        ]);
+    }
+
+    public function scopeThisWeekCompleted($query)
+    {
+        return $query->completed()->whereBetween('date', [
+            now()->startOfWeek(),
+            now()->endOfWeek()
+        ]);
+    }
+
     // Métodos auxiliares
 
     /**
@@ -158,5 +192,93 @@ class Workout extends Model
     public function getTypeLabelAttribute(): string
     {
         return self::typeLabels()[$this->type] ?? $this->type;
+    }
+
+    /**
+     * Etiquetas de status
+     */
+    public static function statusLabels(): array
+    {
+        return [
+            'planned' => 'Planificado',
+            'completed' => 'Completado',
+            'skipped' => 'Saltado',
+        ];
+    }
+
+    /**
+     * Obtiene la etiqueta del status
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return self::statusLabels()[$this->status] ?? $this->status;
+    }
+
+    /**
+     * Obtiene la diferencia entre plan y realidad (en km)
+     */
+    public function getDifferenceFromPlanAttribute(): ?float
+    {
+        if (!$this->planned_distance || $this->status !== 'completed') {
+            return null;
+        }
+
+        return round($this->distance - $this->planned_distance, 2);
+    }
+
+    /**
+     * Verifica si el workout está planificado
+     */
+    public function isPlanned(): bool
+    {
+        return $this->status === 'planned';
+    }
+
+    /**
+     * Verifica si el workout está completado
+     */
+    public function isCompleted(): bool
+    {
+        return $this->status === 'completed';
+    }
+
+    /**
+     * Verifica si el workout está saltado
+     */
+    public function isSkipped(): bool
+    {
+        return $this->status === 'skipped';
+    }
+
+    /**
+     * Marca el workout como completado
+     */
+    public function markAsCompleted(array $data): bool
+    {
+        // Si estaba planificado, guardar la distancia planificada
+        if ($this->isPlanned() && !$this->planned_distance) {
+            $this->planned_distance = $this->distance;
+        }
+
+        $data['status'] = 'completed';
+        $data['skip_reason'] = null;
+
+        // Calcular pace automáticamente si tiene distance y duration
+        if (isset($data['distance']) && isset($data['duration'])) {
+            $data['avg_pace'] = self::calculatePace($data['distance'], $data['duration']);
+        }
+
+        return $this->update($data);
+    }
+
+    /**
+     * Marca el workout como saltado
+     */
+    public function markAsSkipped(?string $reason = null): bool
+    {
+        return $this->update([
+            'status' => 'skipped',
+            'skip_reason' => $reason,
+        ]);
     }
 }

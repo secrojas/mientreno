@@ -26,7 +26,7 @@
         <!-- Filtros y búsqueda -->
         <div style="background:rgba(15,23,42,.9);border-radius:1rem;border:1px solid var(--border-subtle);padding:1rem;margin-bottom:1rem;">
             <form method="GET" action="{{ route('workouts.index') }}">
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:.75rem;align-items:end;">
+                <div style="display:grid;grid-template-columns:repeat(5,1fr) auto;gap:.75rem;align-items:end;">
                     <!-- Búsqueda por notas -->
                     <div>
                         <label style="display:block;font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem;">Buscar en notas</label>
@@ -52,6 +52,20 @@
                                     {{ $label }}
                                 </option>
                             @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Filtro por estado -->
+                    <div>
+                        <label style="display:block;font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem;">Estado</label>
+                        <select
+                            name="status"
+                            style="width:100%;padding:.5rem .75rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);font-size:.85rem;"
+                        >
+                            <option value="">Todos</option>
+                            <option value="planned" {{ request('status') === 'planned' ? 'selected' : '' }}>Planificado</option>
+                            <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completado</option>
+                            <option value="skipped" {{ request('status') === 'skipped' ? 'selected' : '' }}>Saltado</option>
                         </select>
                     </div>
 
@@ -85,7 +99,7 @@
                         >
                             Filtrar
                         </button>
-                        @if(request()->anyFilled(['search', 'type', 'date_from', 'date_to']))
+                        @if(request()->anyFilled(['search', 'type', 'status', 'date_from', 'date_to']))
                             <a
                                 href="{{ route('workouts.index') }}"
                                 style="padding:.5rem 1rem;background:rgba(5,8,20,.9);color:var(--text-muted);border:1px solid var(--border-subtle);border-radius:.6rem;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;"
@@ -101,7 +115,7 @@
         @if($workouts->count() > 0)
             <div style="background:rgba(15,23,42,.9);border-radius:1rem;border:1px solid var(--border-subtle);overflow:hidden;">
                 <!-- Header -->
-                <div style="display:grid;grid-template-columns:110px 1fr 100px 100px 100px 80px 120px;gap:1rem;padding:.75rem 1rem;border-bottom:1px solid var(--border-subtle);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);">
+                <div style="display:grid;grid-template-columns:110px 1fr 100px 100px 100px 80px 200px;gap:1rem;padding:.75rem 1rem;border-bottom:1px solid var(--border-subtle);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);">
                     <div>Fecha</div>
                     <div>Tipo</div>
                     <div>Distancia</div>
@@ -113,15 +127,30 @@
 
                 <!-- Rows -->
                 @foreach($workouts as $workout)
-                    <div style="display:grid;grid-template-columns:110px 1fr 100px 100px 100px 80px 120px;gap:1rem;padding:1rem;border-bottom:1px solid rgba(15,23,42,.9);font-size:.9rem;align-items:center;">
+                    <div style="display:grid;grid-template-columns:110px 1fr 100px 100px 100px 80px 200px;gap:1rem;padding:1rem;border-bottom:1px solid rgba(15,23,42,.9);font-size:.9rem;align-items:center;">
                         <div style="font-family:'Space Grotesk',monospace;color:var(--text-muted);">
                             {{ $workout->date->format('d/m/Y') }}
                         </div>
                         <div>
-                            <div style="font-weight:500;">{{ $workout->type_label }}</div>
+                            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem;">
+                                <span style="font-weight:500;">{{ $workout->type_label }}</span>
+                                @if($workout->isPlanned())
+                                    <span style="display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .45rem;border-radius:.4rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);font-size:.7rem;color:#60a5fa;">
+                                        Planificado
+                                    </span>
+                                @elseif($workout->isSkipped())
+                                    <span style="display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .45rem;border-radius:.4rem;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);font-size:.7rem;color:#facc15;">
+                                        Saltado
+                                    </span>
+                                @endif
+                            </div>
                             @if($workout->notes)
                                 <div style="font-size:.8rem;color:var(--text-muted);margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;">
                                     {{ Str::limit($workout->notes, 50) }}
+                                </div>
+                            @elseif($workout->skip_reason)
+                                <div style="font-size:.8rem;color:var(--text-muted);margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;">
+                                    Razón: {{ Str::limit($workout->skip_reason, 50) }}
                                 </div>
                             @endif
                         </div>
@@ -136,27 +165,53 @@
                             {{ $workout->formatted_pace }}
                         </div>
                         <div>
-                            <div style="display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .5rem;border-radius:.4rem;background:rgba(45,227,142,.1);border:1px solid rgba(45,227,142,.3);font-size:.75rem;">
-                                {{ $workout->difficulty }}/5
-                            </div>
+                            @if($workout->isCompleted())
+                                <div style="display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .5rem;border-radius:.4rem;background:rgba(45,227,142,.1);border:1px solid rgba(45,227,142,.3);font-size:.75rem;">
+                                    {{ $workout->difficulty }}/5
+                                </div>
+                            @else
+                                <span style="color:var(--text-muted);font-size:.75rem;">–</span>
+                            @endif
                         </div>
-                        <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-                            <a href="{{ route('workouts.edit', $workout) }}" style="padding:.35rem .6rem;border-radius:.5rem;background:rgba(15,23,42,.9);border:1px solid #1F2937;color:var(--text-muted);display:inline-flex;align-items:center;gap:.3rem;font-size:.8rem;">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                </svg>
-                                Editar
-                            </a>
-                            <form method="POST" action="{{ route('workouts.destroy', $workout) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este entrenamiento?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" style="padding:.35rem .6rem;border-radius:.5rem;background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.3);color:#ff6b6b;cursor:pointer;font-size:.8rem;">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
-                                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <div style="display:flex;gap:.4rem;justify-content:flex-end;">
+                            @if($workout->isPlanned())
+                                <!-- Botón Completar -->
+                                <a href="{{ route('workouts.mark-completed', $workout) }}" style="padding:.35rem .6rem;border-radius:.5rem;background:rgba(45,227,142,.1);border:1px solid rgba(45,227,142,.3);color:#2de38e;display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
+                                        <path d="M20 6L9 17l-5-5"/>
                                     </svg>
-                                </button>
-                            </form>
+                                    Completar
+                                </a>
+                                <!-- Botón Saltar -->
+                                <form method="POST" action="{{ route('workouts.mark-skipped', $workout) }}" style="display:inline;" onsubmit="return confirm('¿Marcar este entrenamiento como saltado?');">
+                                    @csrf
+                                    <button type="submit" style="padding:.35rem .6rem;border-radius:.5rem;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);color:#facc15;cursor:pointer;font-size:.75rem;display:inline-flex;align-items:center;gap:.3rem;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
+                                            <path d="M18 6L6 18M6 6l12 12"/>
+                                        </svg>
+                                        Saltar
+                                    </button>
+                                </form>
+                            @else
+                                <!-- Botón Editar -->
+                                <a href="{{ route('workouts.edit', $workout) }}" style="padding:.35rem .6rem;border-radius:.5rem;background:rgba(15,23,42,.9);border:1px solid #1F2937;color:var(--text-muted);display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                    Editar
+                                </a>
+                                <!-- Botón Eliminar -->
+                                <form method="POST" action="{{ route('workouts.destroy', $workout) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este entrenamiento?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" style="padding:.35rem .6rem;border-radius:.5rem;background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.3);color:#ff6b6b;cursor:pointer;font-size:.75rem;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
+                                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 @endforeach
@@ -187,11 +242,11 @@
     </div>
 
     <style>
-        @media (max-width: 900px) {
-            [style*="grid-template-columns:110px 1fr 100px 100px 100px 80px 120px"] {
+        @media (max-width: 1100px) {
+            [style*="grid-template-columns:110px 1fr 100px 100px 100px 80px 200px"] {
                 grid-template-columns: 1fr !important;
             }
-            [style*="grid-template-columns:110px 1fr 100px 100px 100px 80px 120px"] > div:nth-child(7) {
+            [style*="grid-template-columns:110px 1fr 100px 100px 100px 80px 200px"] > div:nth-child(7) {
                 border-top: 1px solid rgba(15,23,42,.9);
                 padding-top: 0.75rem;
                 margin-top: 0.5rem;

@@ -21,7 +21,16 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Protected routes
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Workouts resource
     Route::resource('workouts', \App\Http\Controllers\WorkoutController::class);
+
+    // Workout status actions
+    Route::get('/workouts/{workout}/mark-completed', [\App\Http\Controllers\WorkoutController::class, 'showMarkCompleted'])->name('workouts.mark-completed');
+    Route::post('/workouts/{workout}/mark-completed', [\App\Http\Controllers\WorkoutController::class, 'markCompleted']);
+    Route::post('/workouts/{workout}/mark-skipped', [\App\Http\Controllers\WorkoutController::class, 'markSkipped'])->name('workouts.mark-skipped');
+
+    // Other resources
     Route::resource('races', \App\Http\Controllers\RaceController::class);
     Route::resource('goals', \App\Http\Controllers\GoalController::class);
 });
