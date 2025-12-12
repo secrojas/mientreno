@@ -3,22 +3,50 @@
 namespace App\Http\Controllers;
 
 use App\Models\Workout;
+use App\Services\GoalProgressService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class WorkoutController extends Controller
 {
+    protected $goalProgressService;
+
+    public function __construct(GoalProgressService $goalProgressService)
+    {
+        $this->goalProgressService = $goalProgressService;
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $workouts = Auth::user()
-            ->workouts()
-            ->orderBy('date', 'desc')
-            ->paginate(20);
+        $query = Auth::user()->workouts();
 
-        return view('workouts.index', compact('workouts'));
+        // Filtrar por tipo
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Filtrar por rango de fechas
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        // Buscar por notas
+        if ($request->filled('search')) {
+            $query->where('notes', 'like', '%' . $request->search . '%');
+        }
+
+        $workouts = $query->orderBy('date', 'desc')->paginate(20);
+
+        // Obtener tipos para el filtro
+        $types = Workout::typeLabels();
+
+        return view('workouts.index', compact('workouts', 'types'));
     }
 
     /**
@@ -27,7 +55,8 @@ class WorkoutController extends Controller
     public function create()
     {
         $types = Workout::typeLabels();
-        return view('workouts.create', compact('types'));
+        $upcomingRaces = Auth::user()->races()->upcoming()->get();
+        return view('workouts.create', compact('types', 'upcomingRaces'));
     }
 
     /**
@@ -44,6 +73,7 @@ class WorkoutController extends Controller
             'elevation_gain' => 'nullable|integer|min:0',
             'difficulty' => 'required|integer|min:1|max:5',
             'notes' => 'nullable|string|max:5000',
+            'race_id' => 'nullable|exists:races,id',
         ]);
 
         // Calcular pace automáticamente
@@ -51,6 +81,9 @@ class WorkoutController extends Controller
         $validated['user_id'] = Auth::id();
 
         Workout::create($validated);
+
+        // Recalcular progreso de goals del usuario
+        $this->goalProgressService->updateUserGoalsProgress(Auth::user());
 
         return redirect()->route('workouts.index')->with('success', 'Entrenamiento creado exitosamente!');
     }
@@ -79,7 +112,8 @@ class WorkoutController extends Controller
         }
 
         $types = Workout::typeLabels();
-        return view('workouts.edit', compact('workout', 'types'));
+        $upcomingRaces = Auth::user()->races()->upcoming()->get();
+        return view('workouts.edit', compact('workout', 'types', 'upcomingRaces'));
     }
 
     /**
@@ -101,12 +135,16 @@ class WorkoutController extends Controller
             'elevation_gain' => 'nullable|integer|min:0',
             'difficulty' => 'required|integer|min:1|max:5',
             'notes' => 'nullable|string|max:5000',
+            'race_id' => 'nullable|exists:races,id',
         ]);
 
         // Recalcular pace
         $validated['avg_pace'] = Workout::calculatePace($validated['distance'], $validated['duration']);
 
         $workout->update($validated);
+
+        // Recalcular progreso de goals del usuario
+        $this->goalProgressService->updateUserGoalsProgress(Auth::user());
 
         return redirect()->route('workouts.index')->with('success', 'Entrenamiento actualizado exitosamente!');
     }
@@ -122,6 +160,9 @@ class WorkoutController extends Controller
         }
 
         $workout->delete();
+
+        // Recalcular progreso de goals del usuario
+        $this->goalProgressService->updateUserGoalsProgress(Auth::user());
 
         return redirect()->route('workouts.index')->with('success', 'Entrenamiento eliminado exitosamente!');
     }

@@ -138,28 +138,31 @@ El proyecto cuenta con documentación completa en la carpeta `docs/`:
 
 ## 🚧 Estado del Proyecto
 
-**Versión actual**: 0.1.0 (Pre-MVP)
-**Fase actual**: Foundation setup
-**Última actualización**: 2025-11-18
+**Versión actual**: 0.2.0 (MVP Core Features)
+**Fase actual**: ✅ Fase 2 completada - Races & Goals
+**Última actualización**: 2025-12-12
 
-### Implementado
-- Sistema multi-tenant con businesses
-- Autenticación personalizada por business
-- Estructura base de Laravel
-- Diseño UI completo (HTMLs estáticos)
-- Documentación completa
+### ✅ Implementado (Fase 1 + Fase 2)
+- ✅ Sistema multi-tenant con businesses
+- ✅ Autenticación personalizada con invitaciones
+- ✅ **Workouts CRUD completo** con filtros y búsqueda
+- ✅ **Races CRUD completo** (carreras próximas y pasadas)
+- ✅ **Goals CRUD completo** (4 tipos: race, distance, pace, frequency)
+- ✅ Componentes Blade reutilizables (card, metric-card, button)
+- ✅ MetricsService para cálculos y estadísticas
+- ✅ GoalProgressService con cálculo automático de progreso
+- ✅ Dashboard funcional con datos reales
+- ✅ Vinculación workouts → races
+- ✅ UX mejorada: formularios dinámicos sin JSON manual
+- ✅ Cálculo automático de progreso basado en entrenamientos
 
-### En desarrollo
-- Migraciones de entidades core (workouts, races, goals)
-- Conversión de HTMLs a Blade templates
-- CRUD de entrenamientos
-- Dashboard con datos reales
-
-### Próximamente
-- Gestión de carreras y objetivos
-- Panel de coach
+### 🚀 Próximamente (Fase 3-8)
+- Panel de coach para gestión de alumnos
 - Grupos de entrenamiento
-- Analytics y gráficos
+- Training plans (planes de entrenamiento)
+- Analytics y gráficos avanzados
+- Exportación de datos
+- Integraciones (Strava, GPS watches)
 
 Ver [ROADMAP.md](docs/ROADMAP.md) para el plan completo.
 

@@ -22,6 +22,8 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('workouts', \App\Http\Controllers\WorkoutController::class);
+    Route::resource('races', \App\Http\Controllers\RaceController::class);
+    Route::resource('goals', \App\Http\Controllers\GoalController::class);
 });
 
 require __DIR__.'/auth.php';

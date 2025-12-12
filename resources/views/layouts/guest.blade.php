@@ -6,6 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'MiEntreno' }} · MiEntreno</title>
 
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -104,9 +110,7 @@
 <div class="app-shell">
     <header class="nav">
         <a href="/" class="logo">
-            <span class="logo-dev">&lt;/&gt;</span>
-            <span class="logo-mark">Mi</span>
-            <span class="logo-text">ENTRENO</span>
+            <img src="{{ asset('images/logo.png') }}" alt="MiEntreno" style="height:32px;width:auto;">
         </a>
 
         <nav class="nav-links">

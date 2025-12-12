@@ -204,6 +204,28 @@
                 >{{ old('notes', $workout->notes) }}</textarea>
             </div>
 
+            <!-- Carrera asociada -->
+            @if($upcomingRaces->count() > 0)
+                <div>
+                    <label for="race_id" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">¿Es para una carrera específica?</label>
+                    <select
+                        id="race_id"
+                        name="race_id"
+                        style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;"
+                    >
+                        <option value="">Ninguna (entrenamiento general)</option>
+                        @foreach($upcomingRaces as $race)
+                            <option value="{{ $race->id }}" {{ old('race_id', $workout->race_id) == $race->id ? 'selected' : '' }}>
+                                {{ $race->name }} - {{ $race->distance }}km ({{ $race->date->format('d/m/Y') }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <small style="font-size:.75rem;color:var(--text-muted);display:block;margin-top:.35rem;">
+                        Vinculá este entreno a una carrera próxima para mejor seguimiento.
+                    </small>
+                </div>
+            @endif
+
             <!-- Botones -->
             <div style="display:flex;gap:.75rem;margin-top:.5rem;">
                 <button type="submit" class="btn-primary" style="flex:1;justify-content:center;padding:.7rem;">

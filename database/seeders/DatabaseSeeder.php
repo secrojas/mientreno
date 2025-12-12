@@ -25,5 +25,11 @@ class DatabaseSeeder extends Seeder
 
         // Seed workouts for this user
         $this->call(WorkoutSeeder::class);
+
+        // Seed races for this user
+        $this->call(RaceSeeder::class);
+
+        // Seed goals for this user
+        $this->call(GoalSeeder::class);
     }
 }

@@ -16,63 +16,46 @@
 
     <!-- METRIC CARDS -->
     <section style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;margin-bottom:1.5rem;">
-        <div style="padding:1rem;border-radius:.9rem;background:rgba(15,23,42,.95);border:1px solid var(--border-subtle);">
-            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Km esta semana</div>
-            <div style="font-size:1.4rem;font-weight:600;font-family:'Space Grotesk',monospace;">
-                {{ number_format($weekStats['total_distance'], 1) }}
-            </div>
-            <div style="font-size:.78rem;color:var(--accent-secondary);margin-top:.2rem;">
-                {{ $weekStats['total_workouts'] }} {{ $weekStats['total_workouts'] === 1 ? 'sesión' : 'sesiones' }}
-            </div>
-        </div>
-        <div style="padding:1rem;border-radius:.9rem;background:rgba(15,23,42,.95);border:1px solid var(--border-subtle);">
-            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Tiempo total</div>
-            <div style="font-size:1.4rem;font-weight:600;font-family:'Space Grotesk',monospace;">
-                @php
-                    $hours = floor($weekStats['total_duration'] / 3600);
-                    $minutes = floor(($weekStats['total_duration'] % 3600) / 60);
-                @endphp
-                {{ $hours > 0 ? $hours . 'h ' : '' }}{{ $minutes }}m
-            </div>
-            <div style="font-size:.78rem;color:var(--accent-secondary);margin-top:.2rem;">
-                Semana {{ now()->weekOfYear }}
-            </div>
-        </div>
-        <div style="padding:1rem;border-radius:.9rem;background:rgba(15,23,42,.95);border:1px solid var(--border-subtle);">
-            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Pace medio</div>
-            <div style="font-size:1.4rem;font-weight:600;font-family:'Space Grotesk',monospace;">
-                @if($weekStats['avg_pace'])
-                    @php
-                        $avgMinutes = floor($weekStats['avg_pace'] / 60);
-                        $avgSeconds = $weekStats['avg_pace'] % 60;
-                    @endphp
-                    {{ $avgMinutes }}:{{ str_pad($avgSeconds, 2, '0', STR_PAD_LEFT) }}
-                @else
-                    –
-                @endif
-            </div>
-            <div style="font-size:.78rem;color:var(--accent-secondary);margin-top:.2rem;">
-                {{ $weekStats['avg_pace'] ? 'min/km' : 'Sin entrenamientos' }}
-            </div>
-        </div>
-        <div style="padding:1rem;border-radius:.9rem;background:rgba(15,23,42,.95);border:1px solid var(--border-subtle);">
-            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Próxima carrera</div>
-            <div style="font-size:1.4rem;font-weight:600;">—</div>
-            <div style="font-size:.78rem;color:var(--accent-secondary);margin-top:.2rem;">Agregá una carrera</div>
-        </div>
+        @php
+            $hours = floor($weekStats['total_duration'] / 3600);
+            $minutes = floor(($weekStats['total_duration'] % 3600) / 60);
+            $avgMinutes = $weekStats['avg_pace'] ? floor($weekStats['avg_pace'] / 60) : 0;
+            $avgSeconds = $weekStats['avg_pace'] ? $weekStats['avg_pace'] % 60 : 0;
+        @endphp
+
+        <x-metric-card
+            label="Km esta semana"
+            :value="number_format($weekStats['total_distance'], 1)"
+            :subtitle="$weekStats['total_workouts'] . ' ' . ($weekStats['total_workouts'] === 1 ? 'sesión' : 'sesiones')"
+        />
+
+        <x-metric-card
+            label="Tiempo total"
+            :value="($hours > 0 ? $hours . 'h ' : '') . $minutes . 'm'"
+            :subtitle="'Semana ' . now()->weekOfYear"
+        />
+
+        <x-metric-card
+            label="Pace medio"
+            :value="$weekStats['avg_pace'] ? $avgMinutes . ':' . str_pad($avgSeconds, 2, '0', STR_PAD_LEFT) : '–'"
+            :subtitle="$weekStats['avg_pace'] ? 'min/km' : 'Sin entrenamientos'"
+        />
+
+        <x-metric-card
+            label="Próxima carrera"
+            :value="$nextRace ? $nextRace->name : '—'"
+            :subtitle="$nextRace ? 'en ' . $nextRace->days_until . ' días (' . $nextRace->date->format('d/m') . ')' : 'Agregá una carrera'"
+            accent="primary"
+        />
     </section>
 
     <!-- CONTENT -->
     <section style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr);gap:1.5rem;">
         <!-- Entrenamientos -->
-        <div style="padding:1rem;border-radius:.9rem;background:rgba(15,23,42,.95);border:1px solid var(--border-subtle);">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.75rem;">
-                <div>
-                    <div style="font-size:1rem;">Entrenamientos recientes</div>
-                    <div style="font-size:.8rem;color:var(--text-muted);">Tus últimas 5 sesiones.</div>
-                </div>
+        <x-card title="Entrenamientos recientes" subtitle="Tus últimas 5 sesiones.">
+            <x-slot:headerAction>
                 <a href="{{ route('workouts.index') }}" style="font-size:.8rem;color:var(--accent-secondary);">Ver todos</a>
-            </div>
+            </x-slot:headerAction>
 
             @if($recentWorkouts->count() > 0)
                 <div style="display:grid;gap:.5rem;">
@@ -120,33 +103,67 @@
                     </a>
                 </div>
             @endif
-        </div>
+        </x-card>
 
-        <!-- Panel Coach / Info -->
-        <div style="padding:1rem;border-radius:.9rem;background:rgba(15,23,42,.95);border:1px solid var(--border-subtle);">
-            <div style="margin-bottom:.75rem;">
-                <div style="font-size:1rem;">Resumen</div>
-                <div style="font-size:.8rem;color:var(--text-muted);">Estadísticas generales</div>
-            </div>
+        <!-- Panel derecho -->
+        <div style="display:flex;flex-direction:column;gap:1.5rem;">
+            <!-- Objetivos Activos -->
+            <x-card title="Objetivos Activos" :subtitle="$activeGoals->count() . ' objetivo(s)'">
+                <x-slot:headerAction>
+                    <a href="{{ route('goals.index') }}" style="font-size:.8rem;color:var(--accent-secondary);">Ver todos</a>
+                </x-slot:headerAction>
 
-            <div style="display:grid;gap:.75rem;">
-                <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);">
-                    <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Total entrenamientos</div>
-                    <div style="font-size:1.2rem;font-weight:600;">{{ auth()->user()->workouts()->count() }}</div>
-                </div>
-                <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);">
-                    <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Total kilómetros</div>
-                    <div style="font-size:1.2rem;font-weight:600;font-family:'Space Grotesk',monospace;">
-                        {{ number_format(auth()->user()->workouts()->sum('distance'), 1) }} km
+                @if($activeGoals->count() > 0)
+                    <div style="display:grid;gap:.75rem;">
+                        @foreach($activeGoals as $goal)
+                            <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(45,227,142,.3);">
+                                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.4rem;">
+                                    <span style="padding:.12rem .4rem;border-radius:.3rem;background:rgba(45,227,142,.1);border:1px solid rgba(45,227,142,.3);font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;">
+                                        {{ $goal->type_label }}
+                                    </span>
+                                    @if($goal->target_date && $goal->days_until !== null)
+                                        <span style="font-size:.7rem;color:var(--text-muted);">
+                                            {{ $goal->days_until >= 0 ? $goal->days_until . ' días' : 'Vencido' }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div style="font-size:.85rem;font-weight:500;margin-bottom:.3rem;">{{ $goal->title }}</div>
+                                <div style="font-size:.75rem;color:var(--text-muted);">{{ $goal->getTargetDescription() }}</div>
+                                @if($goal->progress_percentage > 0)
+                                    <div style="margin-top:.5rem;">
+                                        <div style="width:100%;height:3px;background:rgba(15,23,42,.9);border-radius:999px;overflow:hidden;">
+                                            <div style="width:{{ $goal->progress_percentage }}%;height:100%;background:var(--accent-secondary);"></div>
+                                        </div>
+                                        <div style="font-size:.7rem;color:var(--text-muted);margin-top:.25rem;">{{ $goal->progress_percentage }}%</div>
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                        No hay objetivos activos.
+                        <br>
+                        <a href="{{ route('goals.create') }}" style="color:var(--accent-secondary);margin-top:.5rem;display:inline-block;">Crear objetivo</a>
+                    </div>
+                @endif
+            </x-card>
+
+            <!-- Resumen -->
+            <x-card title="Resumen" subtitle="Estadísticas generales">
+                <div style="display:grid;gap:.75rem;">
+                    <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);">
+                        <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Total entrenamientos</div>
+                        <div style="font-size:1.2rem;font-weight:600;">{{ auth()->user()->workouts()->count() }}</div>
+                    </div>
+                    <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);">
+                        <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Total kilómetros</div>
+                        <div style="font-size:1.2rem;font-weight:600;font-family:'Space Grotesk',monospace;">
+                            {{ number_format(auth()->user()->workouts()->sum('distance'), 1) }} km
+                        </div>
                     </div>
                 </div>
-                <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);">
-                    <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Miembro desde</div>
-                    <div style="font-size:1.2rem;font-weight:600;">
-                        {{ auth()->user()->created_at->format('M Y') }}
-                    </div>
-                </div>
-            </div>
+            </x-card>
         </div>
     </section>
 

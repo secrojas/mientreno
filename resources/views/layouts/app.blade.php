@@ -6,6 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Dashboard' }} · MiEntreno</title>
 
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -226,11 +232,9 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <span class="logo-dev">&lt;/&gt;</span>
-            <span class="logo-mark">Mi</span>
-            <div class="sidebar-header-title">
-                <span class="logo-text">ENTRENO</span>
-            </div>
+            <a href="{{ route('dashboard') }}" style="display:flex;align-items:center;width:100%;">
+                <img src="{{ asset('images/logo.png') }}" alt="MiEntreno" style="height:28px;width:auto;">
+            </a>
         </div>
 
         <nav class="sidebar-nav">
@@ -256,7 +260,7 @@
                 <span class="sidebar-expanded-text">Entrenamientos</span>
             </a>
 
-            <a href="#" class="sidebar-nav-link">
+            <a href="{{ route('races.index') }}" class="sidebar-nav-link {{ request()->routeIs('races.*') ? 'active' : '' }}">
                 <!-- Races icon (flag) -->
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 3v18"></path>
@@ -265,7 +269,7 @@
                 <span class="sidebar-expanded-text">Carreras</span>
             </a>
 
-            <a href="#" class="sidebar-nav-link">
+            <a href="{{ route('goals.index') }}" class="sidebar-nav-link {{ request()->routeIs('goals.*') ? 'active' : '' }}">
                 <!-- Goals icon (target) -->
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="8"></circle>

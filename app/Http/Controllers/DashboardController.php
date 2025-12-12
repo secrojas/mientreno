@@ -2,32 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Workout;
+use App\Services\MetricsService;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+    protected $metricsService;
+
+    public function __construct(MetricsService $metricsService)
+    {
+        $this->metricsService = $metricsService;
+    }
+
     public function index()
     {
         $user = Auth::user();
 
-        // Workouts de esta semana
-        $thisWeekWorkouts = $user->workouts()->thisWeek()->get();
-
-        // Métricas de la semana
-        $weekStats = [
-            'total_distance' => $thisWeekWorkouts->sum('distance'),
-            'total_duration' => $thisWeekWorkouts->sum('duration'),
-            'total_workouts' => $thisWeekWorkouts->count(),
-            'avg_pace' => $thisWeekWorkouts->avg('avg_pace'),
-        ];
+        // Métricas de la semana usando el service
+        $weekStats = $this->metricsService->getWeeklyMetrics($user);
 
         // Últimos 5 entrenamientos
-        $recentWorkouts = $user->workouts()
-            ->orderBy('date', 'desc')
-            ->limit(5)
-            ->get();
+        $recentWorkouts = $this->metricsService->getRecentWorkouts($user, 5);
 
-        return view('dashboard', compact('weekStats', 'recentWorkouts'));
+        // Próxima carrera
+        $nextRace = $user->races()->upcoming()->first();
+
+        // Objetivos activos
+        $activeGoals = $user->goals()->active()->limit(3)->get();
+
+        return view('dashboard', compact('weekStats', 'recentWorkouts', 'nextRace', 'activeGoals'));
     }
 }

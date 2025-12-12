@@ -23,6 +23,81 @@
             </div>
         @endif
 
+        <!-- Filtros y búsqueda -->
+        <div style="background:rgba(15,23,42,.9);border-radius:1rem;border:1px solid var(--border-subtle);padding:1rem;margin-bottom:1rem;">
+            <form method="GET" action="{{ route('workouts.index') }}">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:.75rem;align-items:end;">
+                    <!-- Búsqueda por notas -->
+                    <div>
+                        <label style="display:block;font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem;">Buscar en notas</label>
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ request('search') }}"
+                            placeholder="Buscar..."
+                            style="width:100%;padding:.5rem .75rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);font-size:.85rem;"
+                        >
+                    </div>
+
+                    <!-- Filtro por tipo -->
+                    <div>
+                        <label style="display:block;font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem;">Tipo</label>
+                        <select
+                            name="type"
+                            style="width:100%;padding:.5rem .75rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);font-size:.85rem;"
+                        >
+                            <option value="">Todos los tipos</option>
+                            @foreach($types as $key => $label)
+                                <option value="{{ $key }}" {{ request('type') === $key ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Fecha desde -->
+                    <div>
+                        <label style="display:block;font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem;">Desde</label>
+                        <input
+                            type="date"
+                            name="date_from"
+                            value="{{ request('date_from') }}"
+                            style="width:100%;padding:.5rem .75rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);font-size:.85rem;"
+                        >
+                    </div>
+
+                    <!-- Fecha hasta -->
+                    <div>
+                        <label style="display:block;font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem;">Hasta</label>
+                        <input
+                            type="date"
+                            name="date_to"
+                            value="{{ request('date_to') }}"
+                            style="width:100%;padding:.5rem .75rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);font-size:.85rem;"
+                        >
+                    </div>
+
+                    <!-- Botones -->
+                    <div style="display:flex;gap:.5rem;">
+                        <button
+                            type="submit"
+                            style="padding:.5rem 1rem;background:var(--accent-secondary);color:#000;border:none;border-radius:.6rem;font-size:.85rem;font-weight:500;cursor:pointer;"
+                        >
+                            Filtrar
+                        </button>
+                        @if(request()->anyFilled(['search', 'type', 'date_from', 'date_to']))
+                            <a
+                                href="{{ route('workouts.index') }}"
+                                style="padding:.5rem 1rem;background:rgba(5,8,20,.9);color:var(--text-muted);border:1px solid var(--border-subtle);border-radius:.6rem;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;"
+                            >
+                                Limpiar
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </form>
+        </div>
+
         @if($workouts->count() > 0)
             <div style="background:rgba(15,23,42,.9);border-radius:1rem;border:1px solid var(--border-subtle);overflow:hidden;">
                 <!-- Header -->
@@ -89,7 +164,7 @@
 
             <!-- Paginación -->
             <div style="margin-top:1.5rem;">
-                {{ $workouts->links() }}
+                {{ $workouts->appends(request()->query())->links() }}
             </div>
         @else
             <div style="background:rgba(15,23,42,.9);border-radius:1rem;padding:3rem 2rem;border:1px solid var(--border-subtle);text-align:center;">
