@@ -22,3 +22,10 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Pagination views (excluding custom)
+/resources/views/vendor/pagination/bootstrap-*.blade.php
+/resources/views/vendor/pagination/default.blade.php
+/resources/views/vendor/pagination/semantic-ui.blade.php
+/resources/views/vendor/pagination/simple-*.blade.php
+/resources/views/vendor/pagination/tailwind.blade.php

@@ -219,7 +219,7 @@
 
             <!-- Paginación -->
             <div style="margin-top:1.5rem;">
-                {{ $workouts->appends(request()->query())->links() }}
+                {{ $workouts->appends(request()->query())->links('vendor.pagination.custom') }}
             </div>
         @else
             <div style="background:rgba(15,23,42,.9);border-radius:1rem;padding:3rem 2rem;border:1px solid var(--border-subtle);text-align:center;">
