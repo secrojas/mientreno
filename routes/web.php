@@ -33,6 +33,17 @@ Route::middleware('auth')->group(function () {
     // Other resources
     Route::resource('races', \App\Http\Controllers\RaceController::class);
     Route::resource('goals', \App\Http\Controllers\GoalController::class);
+
+    // Reports
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ReportController::class, 'index'])->name('index');
+        Route::get('/weekly', [\App\Http\Controllers\ReportController::class, 'weekly'])->name('weekly');
+        Route::get('/weekly/{year}/{week}', [\App\Http\Controllers\ReportController::class, 'weekly'])->name('weekly.period');
+        Route::get('/weekly/{year}/{week}/pdf', [\App\Http\Controllers\ReportController::class, 'exportWeeklyPDF'])->name('weekly.pdf');
+        Route::get('/monthly', [\App\Http\Controllers\ReportController::class, 'monthly'])->name('monthly');
+        Route::get('/monthly/{year}/{month}', [\App\Http\Controllers\ReportController::class, 'monthly'])->name('monthly.period');
+        Route::get('/monthly/{year}/{month}/pdf', [\App\Http\Controllers\ReportController::class, 'exportMonthlyPDF'])->name('monthly.pdf');
+    });
 });
 
 require __DIR__.'/auth.php';

@@ -260,96 +260,86 @@ Carpeta `landing/` con 4 HTMLs completos y profesionales:
 - ✅ Mejor seguimiento de preparación para carreras
 - ✅ Experiencia de usuario fluida y profesional
 
-#### 14. Sistema de Reportes (Workout Reports) 📋
+#### 14. Sistema de Reportes (Workout Reports) 📊
 
-**ESTADO: PLANIFICADO - EN DISEÑO** 📝
+**ESTADO: FASE 1 Y 2 COMPLETADAS** ✅
 
 **Propósito:**
 Sistema para generar reportes semanales y mensuales de entrenamientos con exportación a PDF, pensado principalmente para compartir progreso con entrenadores.
 
 **Documento de diseño:** `docs/WORKOUT_REPORTS.md` (completado)
 
-**Funcionalidades Planificadas:**
+**Funcionalidades Implementadas:**
 
-**A) Vistas de Reportes:**
+**A) Vistas de Reportes:** ✅
 - `/reports/weekly` - Resumen semanal con navegación anterior/siguiente
 - `/reports/monthly` - Resumen mensual con navegación anterior/siguiente
-- Selector para cambiar entre vista semanal/mensual
-- Navegación temporal (semanas/meses anteriores)
+- Navegación temporal funcional (semanas/meses anteriores y siguientes)
+- Link en sidebar del dashboard
 
-**B) Contenido de Reportes:**
+**B) Contenido de Reportes:** ✅
 - **Métricas Generales:**
   - Total km, tiempo, sesiones, pace promedio, FC promedio, desnivel
-- **Cumplimiento del Plan:**
-  - % adherencia (completados/planificados)
-  - Lista de entrenamientos saltados con razones
 - **Distribución por Tipo:**
-  - Gráficos y tablas mostrando tipos de entrenamientos realizados
+  - Barras de progreso mostrando tipos de entrenamientos
   - Porcentajes y distancias por categoría
 - **Comparativas:**
-  - Semana actual vs semana anterior
-  - Mes actual vs mes anterior
-  - Tendencias (mejorando/estable/bajando)
-- **Progreso de Objetivos:**
-  - Estado de goals activos en el período
+  - Semana/mes actual vs período anterior
+  - Tendencias visuales (mejorando/estable/bajando)
+  - Diferencias absolutas y porcentuales
 - **Insights Automáticos:**
   - Mejor entrenamiento del período
   - Rachas de días consecutivos
-  - Recomendaciones basadas en datos
+  - Pace más rápido
+  - Tipo de entrenamiento más frecuente
+  - Sesión más larga
 - **Detalle de Entrenamientos:**
   - Tabla completa con todos los workouts del período
+  - Incluye notas si existen
 
-**C) Exportación PDF:**
-- Generación de PDF con librería DomPDF
-- Diseño optimizado para impresión
-- Incluye logo, métricas, gráficos y tablas
-- Nombre de archivo: `reporte-semanal-{year}-{week}.pdf`
+**C) Exportación PDF:** ✅
+- Generación de PDF con librería DomPDF v3.1.1
+- Diseño profesional optimizado para impresión
+- Incluye logo, métricas, comparativas y tablas
+- Templates separados para semanal y mensual
+- Nombres de archivo descriptivos:
+  - `reporte-semanal-{year}-semana-{week}.pdf`
+  - `reporte-mensual-{mes}-{year}.pdf`
+- Botón de descarga en ambas vistas
+- Paper size A4 portrait
 
-**D) Optimizaciones:**
-- Cache de reportes (1 hora TTL)
-- Invalidación automática al modificar workouts
-- Eager loading para evitar N+1 queries
-- Loading states durante generación de PDF
+**Implementación Técnica:**
 
-**Fases de Implementación:**
+**Backend:**
+- **ReportService** (`app/Services/ReportService.php`):
+  - `getWeeklyReport()` - Reporte semanal completo
+  - `getMonthlyReport()` - Reporte mensual completo
+  - `calculateSummary()` - Métricas del período
+  - `getWorkoutDistribution()` - Distribución por tipo con %
+  - `getComparison()` - Comparativas período a período
+  - `getInsights()` - 5 tipos de insights automáticos
+  - `calculatePeriodStreak()` - Racha de días consecutivos
 
-**Fase 1 - Core Report Views (⏸️ Pendiente):**
-- ReportController con métodos weekly() y monthly()
-- ReportService con lógica de cálculos
-- Vistas Blade para reportes semanales y mensuales
-- Componentes reutilizables (report-card, metric-comparison, workout-table)
-- Estimación: ~3 horas
+- **ReportController** (`app/Http/Controllers/ReportController.php`):
+  - `index()` - Redirect a weekly
+  - `weekly()` - Vista semanal
+  - `monthly()` - Vista mensual
+  - `exportWeeklyPDF()` - Exportación PDF semanal
+  - `exportMonthlyPDF()` - Exportación PDF mensual
 
-**Fase 2 - Exportación PDF (⏸️ Pendiente):**
-- Instalación y configuración de DomPDF
-- Templates PDF optimizados
-- Métodos de exportación en controller
-- Botones de descarga con loading states
-- Estimación: ~2 horas
+**Frontend:**
+- **Componentes Blade** (reutilizables):
+  - `<x-report-card>` - Card para secciones del reporte
+  - `<x-metric-comparison>` - Comparativas con flechas de tendencia
+  - `<x-workout-table>` - Tabla completa de entrenamientos
 
-**Fase 3 - Gráficos y Visualizaciones (⏸️ Pendiente):**
-- Integración de Chart.js
-- Gráficos de distribución, volumen, evolución
-- Tablas visuales para PDF (CSS)
-- Estimación: ~2 horas
+- **Vistas**:
+  - `reports/weekly.blade.php` - Vista semanal web
+  - `reports/monthly.blade.php` - Vista mensual web
+  - `reports/pdf/weekly.blade.php` - Template PDF semanal
+  - `reports/pdf/monthly.blade.php` - Template PDF mensual
 
-**Fase 4 - Comparativas e Insights (⏸️ Pendiente):**
-- Algoritmos de comparación período a período
-- Generación automática de insights
-- Detección de tendencias
-- Mensajes motivacionales basados en datos
-- Estimación: ~2.5 horas
-
-**Fase 5 - UX Enhancements (⏸️ Pendiente):**
-- Dropdown para selección rápida de períodos
-- Calendario visual
-- Historial de reportes generados
-- Vista responsive optimizada
-- Estimación: ~2 horas
-
-**Tiempo Total Estimado:** ~12 horas
-
-**Rutas Planificadas:**
+**Rutas Implementadas:**
 ```php
 /reports                           → Vista principal
 /reports/weekly                    → Semana actual
@@ -360,19 +350,63 @@ Sistema para generar reportes semanales y mensuales de entrenamientos con export
 /reports/monthly/{year}/{month}/pdf → PDF mensual
 ```
 
-**Beneficios:**
+**Fases Completadas:**
+
+**✅ Fase 1 - Core Report Views (Completada 2025-12-15):**
+- ReportController con métodos weekly() y monthly() ✅
+- ReportService con lógica de cálculos ✅
+- Vistas Blade para reportes semanales y mensuales ✅
+- Componentes reutilizables (report-card, metric-comparison, workout-table) ✅
+- Navegación entre períodos ✅
+- Insights automáticos ✅
+- Tiempo real: ~3 horas ✅
+
+**✅ Fase 2 - Exportación PDF (Completada 2025-12-15):**
+- Instalación y configuración de DomPDF ✅
+- Templates PDF optimizados para impresión ✅
+- Métodos de exportación en controller ✅
+- Botones de descarga en vistas ✅
+- Rutas PDF configuradas ✅
+- Tiempo real: ~2 horas ✅
+
+**Fases Pendientes:**
+
+**Fase 3 - Gráficos y Visualizaciones (⏸️ Pendiente):**
+- Integración de Chart.js
+- Gráficos de distribución, volumen, evolución
+- Visualizaciones interactivas
+- Estimación: ~2 horas
+
+**Fase 4 - Comparativas e Insights Avanzados (⏸️ Pendiente):**
+- Algoritmos de comparación avanzados
+- Insights más sofisticados
+- Detección de patrones
+- Recomendaciones personalizadas
+- Estimación: ~2.5 horas
+
+**Fase 5 - UX Enhancements (⏸️ Pendiente):**
+- Dropdown para selección rápida de períodos
+- Calendario visual
+- Historial de reportes generados
+- Cache de reportes (1 hora TTL)
+- Estimación: ~2 horas
+
+**Tiempo Estimado Restante:** ~6.5 horas de 12 horas totales
+
+**Beneficios Alcanzados:**
 - ✅ Compartir progreso con entrenador de forma profesional
 - ✅ Análisis visual de cumplimiento y tendencias
 - ✅ Comparativas que motivan a mejorar
 - ✅ Insights automáticos sin intervención manual
 - ✅ PDF descargable y compartible
+- ✅ Navegación intuitiva entre períodos
+- ✅ Diseño responsive y profesional
 
-**Estado Actual:**
-- Planificación completa ✅
-- Diseño de vistas definido ✅
-- Estructura de datos diseñada ✅
-- Fases de implementación priorizadas ✅
-- Pendiente: Desarrollo (esperando aprobación)
+**Estado Actual (2025-12-15):**
+- ✅ Planificación completa
+- ✅ Fase 1 - Core Views implementada
+- ✅ Fase 2 - Exportación PDF implementada
+- ⏸️ Fase 3, 4, 5 pendientes (opcionales)
 
 ---
 

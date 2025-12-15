@@ -280,6 +280,18 @@
                 <span class="sidebar-expanded-text">Objetivos</span>
             </a>
 
+            <a href="{{ route('reports.index') }}" class="sidebar-nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                <!-- Reports icon (file/document with chart) -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <path d="M14 2v6h6"></path>
+                    <path d="M8 13h2"></path>
+                    <path d="M8 17h8"></path>
+                    <path d="M16 13l-4 4"></path>
+                </svg>
+                <span class="sidebar-expanded-text">Reportes</span>
+            </a>
+
             @if(auth()->user()->role === 'coach' || auth()->user()->role === 'admin')
             <div class="sidebar-section-label">Coaching</div>
 

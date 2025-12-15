@@ -180,99 +180,126 @@ Sistema para generar reportes semanales y mensuales de entrenamientos con posibi
 
 ## Plan de Implementación
 
-### FASE 1 - Core Report Views ⏸️
+### ✅ FASE 1 - Core Report Views (COMPLETADA 2025-12-15)
 
 **Backend:**
-- [ ] Crear `ReportController` con métodos:
+- [x] Crear `ReportController` con métodos:
+  - `index()` - Redirect a weekly
   - `weekly($year = null, $week = null)`
   - `monthly($year = null, $month = null)`
   - `exportWeeklyPDF($year, $week)`
   - `exportMonthlyPDF($year, $month)`
 
-- [ ] Crear `ReportService` con métodos:
-  - `getWeeklyReport(User $user, $year, $week)`
-  - `getMonthlyReport(User $user, $year, $month)`
-  - `getComparison($current, $previous)` // Comparativas
-  - `getInsights($report)` // Insights automáticos
-  - `getWorkoutDistribution($workouts)` // Por tipo
+- [x] Crear `ReportService` con métodos:
+  - `getWeeklyReport(User $user, $year, $week)` - Reporte semanal completo
+  - `getMonthlyReport(User $user, $year, $month)` - Reporte mensual completo
+  - `calculateSummary($workouts)` - Métricas del período
+  - `getWorkoutDistribution($workouts)` - Distribución por tipo con %
+  - `getComparison($current, $previous)` - Comparativas período a período
+  - `calculateDiff($current, $previous, $type)` - Cálculo de diferencias
+  - `calculatePaceDiff($current, $previous)` - Diferencias de pace (lógica invertida)
+  - `getInsights($workouts, $user)` - 5 tipos de insights automáticos
+  - `calculatePeriodStreak($workouts)` - Racha de días consecutivos
 
-- [ ] Extender `MetricsService` (si es necesario) con:
-  - `getMetricsByWeek($user, $year, $week)`
-  - `getMetricsByMonth($user, $year, $month)`
+- [x] MetricsService ya existente aprovechado para formatters
 
 **Frontend:**
-- [ ] Crear `resources/views/reports/index.blade.php`:
-  - Selector semanal/mensual
-  - Navegación anterior/siguiente
-  - Botones de exportación
+- [x] Crear `resources/views/reports/weekly.blade.php`:
+  - Vista de resumen semanal completa
+  - Navegación anterior/siguiente funcional
+  - Métricas principales en grid
+  - Comparativas visuales
+  - Distribución por tipo
+  - Insights automáticos
+  - Tabla detallada de entrenamientos
 
-- [ ] Crear `resources/views/reports/weekly.blade.php`:
-  - Vista de resumen semanal
-  - Todas las secciones diseñadas arriba
-
-- [ ] Crear `resources/views/reports/monthly.blade.php`:
-  - Vista de resumen mensual
+- [x] Crear `resources/views/reports/monthly.blade.php`:
+  - Vista de resumen mensual completa
   - Similar estructura que weekly
+  - Métricas adicionales (FC, desnivel) si disponibles
 
-- [ ] Crear componentes reutilizables:
+- [x] Crear componentes reutilizables:
   - `<x-report-card>`: Card para secciones del reporte
-  - `<x-metric-comparison>`: Mostrar comparativas con flechas
-  - `<x-workout-table>`: Tabla de workouts formateada
+  - `<x-metric-comparison>`: Mostrar comparativas con flechas y tendencias
+  - `<x-workout-table>`: Tabla de workouts formateada con soporte para notas
 
-**Routes:**
+- [x] Agregar link "Reportes" en sidebar del dashboard
+
+**Routes implementadas:**
 ```php
-Route::middleware('auth')->group(function () {
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/reports/weekly', [ReportController::class, 'weekly'])->name('reports.weekly');
-    Route::get('/reports/weekly/{year}/{week}', [ReportController::class, 'weekly'])->name('reports.weekly.period');
-    Route::get('/reports/monthly', [ReportController::class, 'monthly'])->name('reports.monthly');
-    Route::get('/reports/monthly/{year}/{month}', [ReportController::class, 'monthly'])->name('reports.monthly.period');
+Route::middleware('auth')->prefix('reports')->name('reports.')->group(function () {
+    Route::get('/', [ReportController::class, 'index'])->name('index');
+    Route::get('/weekly', [ReportController::class, 'weekly'])->name('weekly');
+    Route::get('/weekly/{year}/{week}', [ReportController::class, 'weekly'])->name('weekly.period');
+    Route::get('/monthly', [ReportController::class, 'monthly'])->name('monthly');
+    Route::get('/monthly/{year}/{month}', [ReportController::class, 'monthly'])->name('monthly.period');
 });
 ```
 
-**Estimación:** ~3 horas
+**Tiempo real:** ~3 horas ✅
 
 ---
 
-### FASE 2 - Exportación PDF ⏸️
+### ✅ FASE 2 - Exportación PDF (COMPLETADA 2025-12-15)
 
 **Setup:**
-- [ ] Instalar librería PDF (DomPDF recomendado):
+- [x] Instalar librería PDF DomPDF:
   ```bash
   composer require barryvdh/laravel-dompdf
   ```
-
-- [ ] Configurar provider y alias
+- [x] Versión instalada: v3.1.1
+- [x] Configuración automática con Laravel
 
 **Backend:**
-- [ ] Crear templates PDF en `resources/views/reports/pdf/`:
-  - `weekly.blade.php`
-  - `monthly.blade.php`
+- [x] Crear templates PDF en `resources/views/reports/pdf/`:
+  - `weekly.blade.php` - Template semanal con estilos inline
+  - `monthly.blade.php` - Template mensual con estilos inline
 
-- [ ] Implementar métodos de exportación en `ReportController`:
+- [x] Implementar métodos de exportación en `ReportController`:
   ```php
   public function exportWeeklyPDF($year, $week)
   {
-      $report = $this->reportService->getWeeklyReport(Auth::user(), $year, $week);
-      $pdf = PDF::loadView('reports.pdf.weekly', compact('report'));
-      return $pdf->download("reporte-semanal-{$year}-{$week}.pdf");
+      $user = Auth::user();
+      $report = $this->reportService->getWeeklyReport($user, $year, $week);
+      $pdf = Pdf::loadView('reports.pdf.weekly', compact('report'));
+      $pdf->setPaper('a4', 'portrait');
+      return $pdf->download("reporte-semanal-{$year}-semana-{$week}.pdf");
+  }
+
+  public function exportMonthlyPDF($year, $month)
+  {
+      $user = Auth::user();
+      $report = $this->reportService->getMonthlyReport($user, $year, $month);
+      $pdf = Pdf::loadView('reports.pdf.monthly', compact('report'));
+      $pdf->setPaper('a4', 'portrait');
+      $monthName = Carbon::createFromDate($year, $month, 1)->locale('es')->monthName;
+      return $pdf->download("reporte-mensual-{$monthName}-{$year}.pdf");
   }
   ```
 
-- [ ] Estilos inline para PDF (importante: PDF no soporta CSS externo)
+- [x] Estilos inline optimizados para DomPDF
+- [x] Layout profesional con header, logo, métricas, tablas y footer
+- [x] Page break antes de tabla de entrenamientos detallados
 
 **Frontend:**
-- [ ] Agregar botón "Exportar PDF" en vistas de reportes
-- [ ] Loading state mientras se genera PDF
-- [ ] Confirmación de descarga exitosa
+- [x] Agregar botón "📥 Exportar PDF" en vista semanal con gradiente verde
+- [x] Agregar botón "📥 Exportar PDF" en vista mensual con gradiente verde
+- [x] Se abre en nueva pestaña (target="_blank")
+- [x] Descarga automática del archivo
 
-**Routes:**
+**Routes implementadas:**
 ```php
-Route::get('/reports/weekly/{year}/{week}/pdf', [ReportController::class, 'exportWeeklyPDF'])->name('reports.weekly.pdf');
-Route::get('/reports/monthly/{year}/{month}/pdf', [ReportController::class, 'exportMonthlyPDF'])->name('reports.monthly.pdf');
+Route::get('/reports/weekly/{year}/{week}/pdf', [ReportController::class, 'exportWeeklyPDF'])
+    ->name('reports.weekly.pdf');
+Route::get('/reports/monthly/{year}/{month}/pdf', [ReportController::class, 'exportMonthlyPDF'])
+    ->name('reports.monthly.pdf');
 ```
 
-**Estimación:** ~2 horas
+**Nombres de archivos generados:**
+- `reporte-semanal-{year}-semana-{week}.pdf`
+- `reporte-mensual-{mes}-{year}.pdf`
+
+**Tiempo real:** ~2 horas ✅
 
 ---
 
@@ -727,6 +754,18 @@ Route::middleware('auth')->prefix('reports')->name('reports.')->group(function (
 
 ---
 
+## Estado Actual
+
+**✅ Fase 1 - Core Report Views: COMPLETADA** (2025-12-15)
+**✅ Fase 2 - Exportación PDF: COMPLETADA** (2025-12-15)
+**⏸️ Fase 3 - Gráficos: Pendiente** (~2 horas estimadas)
+**⏸️ Fase 4 - Comparativas Avanzadas: Pendiente** (~2.5 horas estimadas)
+**⏸️ Fase 5 - UX Enhancements: Pendiente** (~2 horas estimadas)
+
+**Progreso:** 5 de 12 horas completadas (41.6%)
+
+---
+
 **Documento creado**: 2025-12-12
-**Última actualización**: 2025-12-12
-**Estado**: Planificación completa, pendiente de desarrollo
+**Última actualización**: 2025-12-15
+**Estado**: Fase 1 y 2 completadas, funcionalidad core operativa
