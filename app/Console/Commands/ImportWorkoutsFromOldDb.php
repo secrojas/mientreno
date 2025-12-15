@@ -155,11 +155,15 @@ class ImportWorkoutsFromOldDb extends Command
 
     private function transformWorkout(array $old, int $userId): array
     {
+        $distance = (float) str_replace(',', '.', $old['distance_km']);
+        $duration = $this->convertTimeToSeconds($old['duration']);
+
         return [
             'user_id' => $userId,
             'date' => $old['date'],
-            'distance' => (float) $old['distance_km'],
-            'duration' => $this->convertTimeToSeconds($old['duration']),
+            'distance' => $distance,
+            'duration' => $duration,
+            'avg_pace' => Workout::calculatePace($distance, $duration),
             'type' => $this->mapTrainingType($old['training_type_id']),
             'difficulty' => $this->mapDifficulty($old['difficulty']),
             'avg_heart_rate' => $old['heart_rate_avg'] ?? null,
