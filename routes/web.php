@@ -40,10 +40,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/weekly', [\App\Http\Controllers\ReportController::class, 'weekly'])->name('weekly');
         Route::get('/weekly/{year}/{week}', [\App\Http\Controllers\ReportController::class, 'weekly'])->name('weekly.period');
         Route::get('/weekly/{year}/{week}/pdf', [\App\Http\Controllers\ReportController::class, 'exportWeeklyPDF'])->name('weekly.pdf');
+        Route::post('/weekly/{year}/{week}/share', [\App\Http\Controllers\ReportController::class, 'shareWeekly'])->name('weekly.share');
         Route::get('/monthly', [\App\Http\Controllers\ReportController::class, 'monthly'])->name('monthly');
         Route::get('/monthly/{year}/{month}', [\App\Http\Controllers\ReportController::class, 'monthly'])->name('monthly.period');
         Route::get('/monthly/{year}/{month}/pdf', [\App\Http\Controllers\ReportController::class, 'exportMonthlyPDF'])->name('monthly.pdf');
+        Route::post('/monthly/{year}/{month}/share', [\App\Http\Controllers\ReportController::class, 'shareMonthly'])->name('monthly.share');
     });
 });
+
+// Public shared report (no auth required)
+Route::get('/share/{token}', [\App\Http\Controllers\ReportController::class, 'showShared'])->name('reports.shared');
 
 require __DIR__.'/auth.php';

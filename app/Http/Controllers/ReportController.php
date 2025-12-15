@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ReportShare;
 use App\Services\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -81,5 +82,83 @@ class ReportController extends Controller
         $filename = "reporte-mensual-{$monthName}-{$year}.pdf";
 
         return $pdf->download($filename);
+    }
+
+    /**
+     * Generar link compartible para reporte semanal
+     */
+    public function shareWeekly(int $year, int $week)
+    {
+        $user = Auth::user();
+
+        $share = ReportShare::createShare(
+            userId: $user->id,
+            reportType: 'weekly',
+            year: $year,
+            period: $week,
+            hoursValid: 24
+        );
+
+        return response()->json([
+            'success' => true,
+            'url' => $share->getShareUrl(),
+            'expires_at' => $share->expires_at->format('d/m/Y H:i'),
+        ]);
+    }
+
+    /**
+     * Generar link compartible para reporte mensual
+     */
+    public function shareMonthly(int $year, int $month)
+    {
+        $user = Auth::user();
+
+        $share = ReportShare::createShare(
+            userId: $user->id,
+            reportType: 'monthly',
+            year: $year,
+            period: $month,
+            hoursValid: 24
+        );
+
+        return response()->json([
+            'success' => true,
+            'url' => $share->getShareUrl(),
+            'expires_at' => $share->expires_at->format('d/m/Y H:i'),
+        ]);
+    }
+
+    /**
+     * Mostrar reporte público compartido
+     */
+    public function showShared(string $token)
+    {
+        $share = ReportShare::findValidByToken($token);
+
+        if (!$share) {
+            abort(404, 'Este link ha expirado o no existe.');
+        }
+
+        // Incrementar contador de vistas
+        $share->incrementViews();
+
+        $user = $share->user;
+
+        // Generar el reporte según el tipo
+        if ($share->report_type === 'weekly') {
+            $report = $this->reportService->getWeeklyReport(
+                $user,
+                $share->year,
+                $share->period
+            );
+            return view('reports.public.weekly', compact('report', 'share'));
+        } else {
+            $report = $this->reportService->getMonthlyReport(
+                $user,
+                $share->year,
+                $share->period
+            );
+            return view('reports.public.monthly', compact('report', 'share'));
+        }
     }
 }

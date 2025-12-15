@@ -46,6 +46,12 @@
                    onmouseout="this.style.background='rgba(30,41,59,.7)'">
                     📅 Ver Mes
                 </a>
+                <button onclick="shareWeeklyReport({{ $period['year'] }}, {{ $period['week'] }})"
+                   style="padding:.5rem 1rem;border-radius:.5rem;background:linear-gradient(135deg, #FF3B5C, #d92d47);border:1px solid #FF3B5C;color:#fff;font-size:.9rem;font-weight:600;transition:all .2s;cursor:pointer;"
+                   onmouseover="this.style.background='linear-gradient(135deg, #d92d47, #FF3B5C)'"
+                   onmouseout="this.style.background='linear-gradient(135deg, #FF3B5C, #d92d47)'">
+                    🔗 Compartir
+                </button>
                 <a href="{{ route('reports.weekly.pdf', [$period['year'], $period['week']]) }}"
                    target="_blank"
                    style="padding:.5rem 1rem;border-radius:.5rem;background:linear-gradient(135deg, #2DE38E, #1ea568);border:1px solid #2DE38E;color:#05060A;font-size:.9rem;font-weight:600;transition:all .2s;display:inline-block;"
@@ -188,4 +194,108 @@
         </div>
 
     </div>
+
+    {{-- Script para compartir reporte --}}
+    <script>
+        function shareWeeklyReport(year, week) {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '⏳ Generando...';
+
+            fetch(`/reports/weekly/${year}/${week}/share`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Crear modal para mostrar el link
+                    showShareModal(data.url, data.expires_at);
+                } else {
+                    alert('Error al generar el link compartible');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al generar el link compartible');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            });
+        }
+
+        function showShareModal(url, expiresAt) {
+            // Crear overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;';
+
+            // Crear modal
+            const modal = document.createElement('div');
+            modal.style.cssText = 'background:#0B0C12;border:1px solid #FF3B5C;border-radius:1rem;padding:2rem;max-width:500px;width:90%;box-shadow:0 20px 60px rgba(255,59,92,0.3);';
+
+            modal.innerHTML = `
+                <div style="text-align:center;">
+                    <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;margin-bottom:1rem;color:#FF3B5C;">🔗 Link Compartible Generado</h3>
+                    <p style="color:#9CA3AF;margin-bottom:1.5rem;font-size:0.9rem;">
+                        Este link expira el <strong>${expiresAt}</strong>
+                    </p>
+                    <div style="background:rgba(30,41,59,.5);padding:1rem;border-radius:0.5rem;margin-bottom:1.5rem;word-break:break-all;">
+                        <input type="text" id="shareUrl" value="${url}" readonly
+                               style="width:100%;background:transparent;border:none;color:#2DE38E;font-size:0.85rem;text-align:center;outline:none;">
+                    </div>
+                    <div style="display:flex;gap:0.75rem;justify-content:center;">
+                        <button onclick="copyShareUrl()"
+                                style="padding:0.75rem 1.5rem;border-radius:0.5rem;background:linear-gradient(135deg, #2DE38E, #1ea568);border:none;color:#05060A;font-weight:600;cursor:pointer;">
+                            📋 Copiar Link
+                        </button>
+                        <button onclick="closeShareModal()"
+                                style="padding:0.75rem 1.5rem;border-radius:0.5rem;background:rgba(30,41,59,.7);border:1px solid var(--border-subtle);color:#F9FAFB;cursor:pointer;">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            // Cerrar con click en overlay
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    closeShareModal();
+                }
+            });
+
+            window.shareModalOverlay = overlay;
+        }
+
+        function copyShareUrl() {
+            const input = document.getElementById('shareUrl');
+            input.select();
+            document.execCommand('copy');
+
+            // Feedback visual
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '✓ Copiado!';
+            button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.style.background = 'linear-gradient(135deg, #2DE38E, #1ea568)';
+            }, 2000);
+        }
+
+        function closeShareModal() {
+            if (window.shareModalOverlay) {
+                document.body.removeChild(window.shareModalOverlay);
+                window.shareModalOverlay = null;
+            }
+        }
+    </script>
 </x-app-layout>
