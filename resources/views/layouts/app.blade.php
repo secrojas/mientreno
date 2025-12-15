@@ -89,7 +89,7 @@
             display: flex;
             align-items: center;
             gap: .5rem;
-            padding: .25rem .25rem 1rem;
+            padding: .25rem .25rem .75rem;
             border-bottom: 1px solid rgba(15, 23, 42, 0.9);
             margin-bottom: 1rem;
         }
@@ -215,7 +215,7 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            max-width: 1120px;
+            max-width: 1500px;
             width: 100%;
             margin: 0 auto;
         }
@@ -233,7 +233,7 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <a href="{{ route('dashboard') }}" style="display:flex;align-items:center;width:100%;">
-                <img src="{{ asset('images/logo.png') }}" alt="MiEntreno" style="height:28px;width:auto;">
+                <img src="{{ asset('images/logo.png') }}" alt="MiEntreno" style="height:42px;width:auto;">
             </a>
         </div>
 

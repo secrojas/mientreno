@@ -464,6 +464,86 @@ Sistema para generar reportes semanales y mensuales de entrenamientos con export
 - ✅ Fase 3 - Links Compartibles implementada
 - ⏸️ Fase 4, 5, 6 pendientes (opcionales)
 
+#### 15. Data Migration & Import Tools 🔄
+
+**Comando de Importación de Workouts** ✅
+
+**Propósito:**
+Migración de datos históricos desde proyectos anteriores con diferente esquema de base de datos.
+
+**Implementación:**
+- **Comando Artisan:** `workouts:import-from-old-db`
+- **Archivo:** `app/Console/Commands/ImportWorkoutsFromOldDb.php`
+
+**Características:**
+- Conexión directa a base de datos externa (running-api)
+- Mapeo automático de campos entre esquemas diferentes:
+  - `training_type_id` → `type` (enum: training_run, easy_run, race)
+  - `duration` (TIME) → `duration` (seconds)
+  - `distance_km` → `distance`
+  - `difficulty` (enum) → `difficulty` (1-5)
+  - `title + description` → `notes`
+- Cálculo automático de `avg_pace` en tiempo de importación
+- Detección de duplicados por `user_id + date`
+- Modo dry-run para previsualización sin insertar datos
+- Barra de progreso y resumen detallado
+
+**Opciones del comando:**
+```bash
+--user-id=2          # ID del usuario en BD nueva (default: 2)
+--old-user-id=730    # ID del usuario en BD antigua (default: 730)
+--dry-run            # Previsualizar sin insertar
+--force              # Sobrescribir duplicados
+```
+
+**Uso:**
+```bash
+# Dry-run (previsualización)
+php artisan workouts:import-from-old-db --dry-run
+
+# Importación real
+php artisan workouts:import-from-old-db --user-id=2 --old-user-id=730
+
+# Sobrescribir duplicados
+php artisan workouts:import-from-old-db --force
+```
+
+**Resultado:**
+- 66 workouts importados exitosamente
+- Pace calculado correctamente para todos los registros
+- Conversión completa de esquema antiguo a nuevo
+
+#### 16. UI/UX Improvements & Fixes 🎨
+
+**Paginación Personalizada** ✅
+
+**Problema:** Paginación por defecto de Laravel mostraba símbolos HTML grandes y sin estilo consistente
+**Solución:**
+- Vista de paginación personalizada en `resources/views/vendor/pagination/custom.blade.php`
+- Diseño adaptado al dark theme de la aplicación
+- Botones "‹ Anterior" y "Siguiente ›" estilizados
+- Texto de resultados: "Mostrando X a Y de Z resultados"
+- Estados disabled y active con colores del tema
+- Usado en listado de workouts con `->links('vendor.pagination.custom')`
+
+**Mejoras de Layout y Espaciado** ✅ (2025-12-15)
+
+**Cambios en `layouts/app.blade.php`:**
+1. **Logo aumentado:** De 28px a 42px de altura (+50%)
+2. **Sidebar header optimizado:** Padding reducido para mejor aprovechamiento vertical
+3. **Contenedor principal ampliado:** De max-width 1120px a 1500px (+34%)
+
+**Cambios en `workouts/index.blade.php`:**
+1. **Columna de acciones ampliada:** De 200px a 260px (+30%)
+2. **Botones de acción corregidos:** Editar y Eliminar ahora visibles sin cortes
+3. **Grid responsive actualizado** para mantener compatibilidad móvil
+
+**Beneficios:**
+- ✅ Logo más visible y profesional
+- ✅ Mayor espacio para contenido en pantallas amplias
+- ✅ Todos los botones de acción completamente visibles
+- ✅ Mejor aprovechamiento del espacio disponible
+
 ---
 
 ## Lo que falta implementar

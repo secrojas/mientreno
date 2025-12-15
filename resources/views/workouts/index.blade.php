@@ -115,7 +115,7 @@
         @if($workouts->count() > 0)
             <div style="background:rgba(15,23,42,.9);border-radius:1rem;border:1px solid var(--border-subtle);overflow:hidden;">
                 <!-- Header -->
-                <div style="display:grid;grid-template-columns:110px 1fr 100px 100px 100px 80px 200px;gap:1rem;padding:.75rem 1rem;border-bottom:1px solid var(--border-subtle);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);">
+                <div style="display:grid;grid-template-columns:110px 1fr 100px 100px 100px 80px 260px;gap:1rem;padding:.75rem 1rem;border-bottom:1px solid var(--border-subtle);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);">
                     <div>Fecha</div>
                     <div>Tipo</div>
                     <div>Distancia</div>
@@ -127,7 +127,7 @@
 
                 <!-- Rows -->
                 @foreach($workouts as $workout)
-                    <div style="display:grid;grid-template-columns:110px 1fr 100px 100px 100px 80px 200px;gap:1rem;padding:1rem;border-bottom:1px solid rgba(15,23,42,.9);font-size:.9rem;align-items:center;">
+                    <div style="display:grid;grid-template-columns:110px 1fr 100px 100px 100px 80px 260px;gap:1rem;padding:1rem;border-bottom:1px solid rgba(15,23,42,.9);font-size:.9rem;align-items:center;">
                         <div style="font-family:'Space Grotesk',monospace;color:var(--text-muted);">
                             {{ $workout->date->format('d/m/Y') }}
                         </div>
@@ -243,10 +243,10 @@
 
     <style>
         @media (max-width: 1100px) {
-            [style*="grid-template-columns:110px 1fr 100px 100px 100px 80px 200px"] {
+            [style*="grid-template-columns:110px 1fr 100px 100px 100px 80px 260px"] {
                 grid-template-columns: 1fr !important;
             }
-            [style*="grid-template-columns:110px 1fr 100px 100px 100px 80px 200px"] > div:nth-child(7) {
+            [style*="grid-template-columns:110px 1fr 100px 100px 100px 80px 260px"] > div:nth-child(7) {
                 border-top: 1px solid rgba(15,23,42,.9);
                 padding-top: 0.75rem;
                 margin-top: 0.5rem;
