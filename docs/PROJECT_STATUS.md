@@ -6,10 +6,11 @@
 
 ---
 
-## Estado Actual (2025-12-12 - 14:00)
+## Estado Actual (2025-12-15)
 
 ### ✨ FASE 2 COMPLETADA - Races & Goals ✅
 ### ✨ UX IMPROVEMENTS COMPLETADAS ✅
+### ✨ WORKOUT REPORTS - FASE 3 COMPLETADA ✅ (Links Compartibles)
 
 ### Lo que ya está implementado
 
@@ -262,10 +263,10 @@ Carpeta `landing/` con 4 HTMLs completos y profesionales:
 
 #### 14. Sistema de Reportes (Workout Reports) 📊
 
-**ESTADO: FASE 1 Y 2 COMPLETADAS** ✅
+**ESTADO: FASE 1, 2 Y 3 COMPLETADAS** ✅
 
 **Propósito:**
-Sistema para generar reportes semanales y mensuales de entrenamientos con exportación a PDF, pensado principalmente para compartir progreso con entrenadores.
+Sistema para generar reportes semanales y mensuales de entrenamientos con exportación a PDF y links compartibles, pensado principalmente para compartir progreso con entrenadores.
 
 **Documento de diseño:** `docs/WORKOUT_REPORTS.md` (completado)
 
@@ -307,6 +308,45 @@ Sistema para generar reportes semanales y mensuales de entrenamientos con export
   - `reporte-mensual-{mes}-{year}.pdf`
 - Botón de descarga en ambas vistas
 - Paper size A4 portrait
+
+**D) Links Compartibles (Shareable Links):** ✅
+- **Sistema de tokens únicos:**
+  - Tabla `report_shares` con token de 32 caracteres
+  - Expiración automática en 24 horas
+  - Tracking de vistas (view_count y last_viewed_at)
+  - Prevención de duplicados (retorna share existente si válido)
+- **Modelo ReportShare:**
+  - `createShare()` - genera o retorna share válido
+  - `findValidByToken()` - busca shares no expirados
+  - `incrementViews()` - tracking de visualizaciones
+  - `getShareUrl()` - genera URL completa
+  - `cleanupExpired()` - limpieza de shares vencidos
+  - Scopes: valid(), expired()
+- **ReportController métodos de sharing:**
+  - `shareWeekly()` - genera link compartible semanal
+  - `shareMonthly()` - genera link compartible mensual
+  - `showShared()` - muestra reporte público desde token
+- **Vistas públicas:**
+  - Layout público sin sidebar (public-layout.blade.php)
+  - `reports/public/weekly.blade.php` - vista pública semanal
+  - `reports/public/monthly.blade.php` - vista pública mensual
+  - Aviso destacado con usuario, fecha y contador de vistas
+  - Mismo diseño y estética que vistas privadas
+- **UI de compartir:**
+  - Botón "🔗 Compartir" con color fuscia en ambas vistas
+  - Modal JavaScript con URL y fecha de expiración
+  - Funcionalidad copiar al portapapeles
+  - Feedback visual en botones
+- **Rutas implementadas:**
+  - POST `/reports/weekly/{year}/{week}/share` (protegida)
+  - POST `/reports/monthly/{year}/{month}/share` (protegida)
+  - GET `/share/{token}` (pública, sin autenticación)
+- **Características:**
+  - Links expiran en 24 horas automáticamente
+  - No se generan duplicados si existe share válido
+  - Tracking completo de vistas
+  - Acceso público sin necesidad de login
+  - URLs shareables para entrenadores
 
 **Implementación Técnica:**
 
@@ -369,29 +409,41 @@ Sistema para generar reportes semanales y mensuales de entrenamientos con export
 - Rutas PDF configuradas ✅
 - Tiempo real: ~2 horas ✅
 
+**✅ Fase 3 - Links Compartibles (Completada 2025-12-15):**
+- Migración y modelo ReportShare ✅
+- Sistema de tokens únicos con expiración ✅
+- Métodos de sharing en ReportController ✅
+- Vistas públicas sin autenticación ✅
+- Layout público responsive ✅
+- Modal de compartir con copy-to-clipboard ✅
+- Tracking de vistas y estadísticas ✅
+- Prevención de duplicados ✅
+- Testing completo ✅
+- Tiempo real: ~3 horas ✅
+
 **Fases Pendientes:**
 
-**Fase 3 - Gráficos y Visualizaciones (⏸️ Pendiente):**
+**Fase 4 - Gráficos y Visualizaciones (⏸️ Pendiente):**
 - Integración de Chart.js
 - Gráficos de distribución, volumen, evolución
 - Visualizaciones interactivas
 - Estimación: ~2 horas
 
-**Fase 4 - Comparativas e Insights Avanzados (⏸️ Pendiente):**
+**Fase 5 - Comparativas e Insights Avanzados (⏸️ Pendiente):**
 - Algoritmos de comparación avanzados
 - Insights más sofisticados
 - Detección de patrones
 - Recomendaciones personalizadas
 - Estimación: ~2.5 horas
 
-**Fase 5 - UX Enhancements (⏸️ Pendiente):**
+**Fase 6 - UX Enhancements (⏸️ Pendiente):**
 - Dropdown para selección rápida de períodos
 - Calendario visual
 - Historial de reportes generados
 - Cache de reportes (1 hora TTL)
 - Estimación: ~2 horas
 
-**Tiempo Estimado Restante:** ~6.5 horas de 12 horas totales
+**Tiempo Estimado Restante:** ~6.5 horas de 15 horas totales
 
 **Beneficios Alcanzados:**
 - ✅ Compartir progreso con entrenador de forma profesional
@@ -401,12 +453,16 @@ Sistema para generar reportes semanales y mensuales de entrenamientos con export
 - ✅ PDF descargable y compartible
 - ✅ Navegación intuitiva entre períodos
 - ✅ Diseño responsive y profesional
+- ✅ Links compartibles con expiración automática
+- ✅ Acceso público sin necesidad de login para entrenadores
+- ✅ Tracking de vistas de reportes compartidos
 
 **Estado Actual (2025-12-15):**
 - ✅ Planificación completa
 - ✅ Fase 1 - Core Views implementada
 - ✅ Fase 2 - Exportación PDF implementada
-- ⏸️ Fase 3, 4, 5 pendientes (opcionales)
+- ✅ Fase 3 - Links Compartibles implementada
+- ⏸️ Fase 4, 5, 6 pendientes (opcionales)
 
 ---
 

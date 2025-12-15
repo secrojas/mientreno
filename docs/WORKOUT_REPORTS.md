@@ -15,10 +15,11 @@ Sistema para generar reportes semanales y mensuales de entrenamientos con posibi
 4. **Exportación**: Generar PDF descargable para compartir
 
 ### Secundarios
-- Comparativas semana a semana / mes a mes
-- Insights automáticos (mejoras, tendencias)
-- Historial de reportes generados
-- Compartir vía link (opcional, futuro)
+- ✅ Comparativas semana a semana / mes a mes (Fase 1)
+- ✅ Insights automáticos (mejoras, tendencias) (Fase 1)
+- ✅ Compartir vía link con expiración (Fase 3)
+- Historial de reportes generados (Fase 6)
+- Gráficos y visualizaciones (Fase 4)
 
 ---
 
@@ -303,7 +304,113 @@ Route::get('/reports/monthly/{year}/{month}/pdf', [ReportController::class, 'exp
 
 ---
 
-### FASE 3 - Gráficos y Visualizaciones ⏸️
+### ✅ FASE 3 - Links Compartibles (COMPLETADA 2025-12-15)
+
+**Propósito:** Permitir compartir reportes de forma pública mediante links temporales con expiración automática, ideal para enviar a entrenadores.
+
+**Base de Datos:**
+- [x] Migración `create_report_shares_table`:
+  - Campos: `user_id`, `report_type` (weekly/monthly), `year`, `period`, `token` (32 chars único)
+  - `expires_at` (timestamp), `view_count`, `last_viewed_at`
+  - Índices optimizados: `(token, expires_at)` y `(user_id, report_type, year, period)`
+
+**Backend:**
+- [x] Crear modelo `ReportShare` con métodos:
+  ```php
+  // Genera nuevo share o retorna existente si válido
+  public static function createShare(int $userId, string $reportType, int $year, int $period, int $hoursValid = 24): self
+
+  // Busca share válido (no expirado)
+  public static function findValidByToken(string $token): ?self
+
+  // Incrementa contador de vistas
+  public function incrementViews(): void
+
+  // Genera URL completa del share
+  public function getShareUrl(): string
+
+  // Limpieza de shares expirados (para comando/job)
+  public static function cleanupExpired(): int
+  ```
+
+- [x] Scopes en ReportShare:
+  - `valid()` - shares no expirados
+  - `expired()` - shares vencidos
+
+- [x] Métodos en `ReportController`:
+  ```php
+  // Genera link compartible semanal (retorna JSON)
+  public function shareWeekly(int $year, int $week)
+
+  // Genera link compartible mensual (retorna JSON)
+  public function shareMonthly(int $year, int $month)
+
+  // Muestra reporte público desde token (sin auth)
+  public function showShared(string $token)
+  ```
+
+**Frontend:**
+- [x] Crear componente `<x-public-layout>`:
+  - Layout sin sidebar ni dashboard elements
+  - Mantiene estética de la app (dark theme, colores, tipografía)
+  - Header con logo y título del reporte
+  - Footer con branding "mientreno.app"
+
+- [x] Crear vistas públicas:
+  - `resources/views/reports/public/weekly.blade.php` - Reporte semanal público
+  - `resources/views/reports/public/monthly.blade.php` - Reporte mensual público
+  - Mismo contenido que vistas privadas (métricas, comparativas, insights, detalle)
+  - Aviso destacado con: usuario que compartió, fecha, expiración, contador de vistas
+
+- [x] Botón "🔗 Compartir" en vistas privadas:
+  - Diseño con gradiente fuscia (color primario de la app)
+  - Ubicado junto a botones "Ver Mes" y "Exportar PDF"
+  - Hace POST a endpoint de sharing vía fetch
+
+- [x] Modal JavaScript para mostrar link:
+  - Diseño coherente con app (dark theme, border fuscia)
+  - Muestra URL completa y fecha de expiración
+  - Botón "📋 Copiar Link" con feedback visual
+  - Funcionalidad copy-to-clipboard
+  - Cierre con botón o click en overlay
+
+**Routes implementadas:**
+```php
+// Protegidas (require auth)
+Route::post('/reports/weekly/{year}/{week}/share', [ReportController::class, 'shareWeekly'])
+    ->name('reports.weekly.share');
+Route::post('/reports/monthly/{year}/{month}/share', [ReportController::class, 'shareMonthly'])
+    ->name('reports.monthly.share');
+
+// Pública (sin auth)
+Route::get('/share/{token}', [ReportController::class, 'showShared'])
+    ->name('reports.shared');
+```
+
+**Características Implementadas:**
+- ✅ Tokens únicos de 32 caracteres
+- ✅ Expiración automática en 24 horas
+- ✅ Prevención de duplicados (retorna share existente si válido)
+- ✅ Tracking de vistas con timestamp
+- ✅ Validación de expiración en cada acceso
+- ✅ URLs amigables: `/share/{token}`
+- ✅ Modal con copy-to-clipboard
+- ✅ Diseño responsive y profesional
+- ✅ Sin necesidad de login para acceder al reporte compartido
+
+**Testing Realizado:**
+- ✅ Creación de shares exitosa
+- ✅ Prevención de duplicados funcional
+- ✅ Incremento de view_count operativo
+- ✅ Lookup por token exitoso
+- ✅ Compilación de vistas sin errores
+- ✅ Rutas registradas correctamente
+
+**Tiempo real:** ~3 horas ✅
+
+---
+
+### FASE 4 - Gráficos y Visualizaciones ⏸️
 
 **Librería:** Chart.js (ya conocido en web) o Laravel Charts
 
@@ -335,7 +442,7 @@ Route::get('/reports/monthly/{year}/{month}/pdf', [ReportController::class, 'exp
 
 ---
 
-### FASE 4 - Comparativas e Insights ⏸️
+### FASE 5 - Comparativas e Insights Avanzados ⏸️
 
 **Comparativas Automáticas:**
 - [ ] Semana actual vs semana anterior
@@ -391,7 +498,7 @@ public function getComparison($current, $previous)
 
 ---
 
-### FASE 5 - UX Enhancements ⏸️
+### FASE 6 - UX Enhancements ⏸️
 
 **Navegación Mejorada:**
 - [ ] Dropdown para seleccionar semana/mes rápido
@@ -758,14 +865,15 @@ Route::middleware('auth')->prefix('reports')->name('reports.')->group(function (
 
 **✅ Fase 1 - Core Report Views: COMPLETADA** (2025-12-15)
 **✅ Fase 2 - Exportación PDF: COMPLETADA** (2025-12-15)
-**⏸️ Fase 3 - Gráficos: Pendiente** (~2 horas estimadas)
-**⏸️ Fase 4 - Comparativas Avanzadas: Pendiente** (~2.5 horas estimadas)
-**⏸️ Fase 5 - UX Enhancements: Pendiente** (~2 horas estimadas)
+**✅ Fase 3 - Links Compartibles: COMPLETADA** (2025-12-15)
+**⏸️ Fase 4 - Gráficos y Visualizaciones: Pendiente** (~2 horas estimadas)
+**⏸️ Fase 5 - Comparativas Avanzadas: Pendiente** (~2.5 horas estimadas)
+**⏸️ Fase 6 - UX Enhancements: Pendiente** (~2 horas estimadas)
 
-**Progreso:** 5 de 12 horas completadas (41.6%)
+**Progreso:** 8 de 14.5 horas completadas (55.2%)
 
 ---
 
 **Documento creado**: 2025-12-12
 **Última actualización**: 2025-12-15
-**Estado**: Fase 1 y 2 completadas, funcionalidad core operativa
+**Estado**: Fases 1, 2 y 3 completadas - Sistema completamente funcional con reportes web, PDF y links compartibles con expiración
