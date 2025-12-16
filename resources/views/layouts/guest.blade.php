@@ -110,7 +110,7 @@
 <div class="app-shell">
     <header class="nav">
         <a href="/" class="logo">
-            <img src="{{ asset('images/logo.png') }}" alt="MiEntreno" style="height:32px;width:auto;">
+            <img src="{{ asset('images/logo-horizontal.svg') }}" alt="MiEntreno" style="height:36px;width:auto;">
         </a>
 
         <nav class="nav-links">

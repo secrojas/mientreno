@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 160 200"
+     role="img"
+     aria-label="MiEntreno logo">
+  <defs>
+    <linearGradient id="logoGradientStacked" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF3B5C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF4FA3;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- ME Icon -->
+  <g transform="translate(12,10)">
+    <path d="M20 0 L20 80 L40 80 L40 36 L68 64 L96 36 L96 80 L116 80 L116 0 L96 0 L68 32 L40 0 Z"
+          fill="url(#logoGradientStacked)"/>
+    <rect x="136" y="16" width="48" height="12" fill="url(#logoGradientStacked)"/>
+    <rect x="136" y="52" width="48" height="12" fill="url(#logoGradientStacked)"/>
+  </g>
+
+  <!-- Text -->
+  <text x="80"
+        y="170"
+        text-anchor="middle"
+        font-family="Space Grotesk, system-ui, sans-serif"
+        font-size="28"
+        font-weight="600"
+        fill="#ffffff">
+    MiEntreno
+  </text>
+</svg>

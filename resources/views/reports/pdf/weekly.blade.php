@@ -297,7 +297,7 @@
     {{-- Header --}}
     <div class="header">
         <div class="header-left">
-            <img src="{{ public_path('images/logo.png') }}" alt="MiEntreno" class="logo-img">
+            <img src="{{ public_path('images/logo-horizontal.svg') }}" alt="MiEntreno" class="logo-img">
             <div class="report-title">Reporte Semanal</div>
             <div class="report-period">
                 {{ $period['label'] }} • {{ $period['start_date']->format('d/m') }} - {{ $period['end_date']->format('d/m/Y') }}

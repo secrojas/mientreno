@@ -233,7 +233,7 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <a href="{{ route('dashboard') }}" style="display:flex;align-items:center;width:100%;">
-                <img src="{{ asset('images/logo.png') }}" alt="MiEntreno" style="height:42px;width:auto;">
+                <img src="{{ asset('images/logo-horizontal.svg') }}" alt="MiEntreno" style="height:42px;width:auto;">
             </a>
         </div>
 

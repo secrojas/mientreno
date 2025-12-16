@@ -117,7 +117,7 @@
     <div class="public-container">
         <!-- Header -->
         <div class="public-header">
-            <img src="{{ asset('images/logo.png') }}" alt="MiEntreno" class="public-logo">
+            <img src="{{ asset('images/logo-horizontal.svg') }}" alt="MiEntreno" class="public-logo">
             <h1 class="public-title">{{ $title ?? 'Reporte Compartido' }}</h1>
             <p class="public-subtitle">{{ $subtitle ?? 'Reporte de entrenamiento compartido' }}</p>
         </div>

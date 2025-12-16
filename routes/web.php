@@ -10,6 +10,11 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+// Landing page v2 (improved design)
+Route::get('/v2', function () {
+    return view('welcomev2');
+})->name('welcome.v2');
+
 // Authentication routes (no business required)
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
