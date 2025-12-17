@@ -8,9 +8,7 @@
 @endphp
 
 <x-app-layout title="Reporte Mensual">
-    <div style="max-width:1200px;margin:0 auto;padding:2rem 1.5rem;">
-
-        {{-- Header con navegación --}}
+    {{-- Header con navegación --}}
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
             <div style="display:flex;align-items:center;gap:1rem;">
                 <a href="{{ route('reports.monthly.period', [$period['prev_year'], $period['prev_month']]) }}"
@@ -214,8 +212,6 @@
                 ← Volver al Dashboard
             </a>
         </div>
-
-    </div>
 
     {{-- Script para compartir reporte --}}
     <script>

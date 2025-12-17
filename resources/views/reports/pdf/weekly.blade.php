@@ -12,77 +12,81 @@
         }
 
         body {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 9.5pt;
-            line-height: 1.3;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 8.5pt;
+            line-height: 1.25;
             color: #1f2937;
-            padding: 15px;
+            padding: 10px 12px;
         }
 
+        /* Header */
         .header {
             display: table;
             width: 100%;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #FF3B5C;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2.5px solid #FF3B5C;
         }
 
         .header-left {
             display: table-cell;
-            width: 70%;
+            width: 65%;
             vertical-align: middle;
         }
 
         .header-right {
             display: table-cell;
-            width: 30%;
+            width: 35%;
             text-align: right;
             vertical-align: middle;
         }
 
-        .logo-img {
-            height: 35px;
-            margin-bottom: 5px;
+        .logo-text {
+            font-family: 'Helvetica', sans-serif;
+            font-size: 11pt;
+            font-weight: bold;
+            letter-spacing: 0.15em;
+            color: #FF3B5C;
+            text-transform: uppercase;
+            margin-bottom: 2px;
         }
 
         .report-title {
-            font-size: 16pt;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 15pt;
             font-weight: bold;
-            color: #FF3B5C;
-            margin-bottom: 3px;
+            color: #111827;
+            margin-bottom: 2px;
         }
 
         .report-period {
-            font-size: 10pt;
+            font-size: 9pt;
             color: #6b7280;
+            font-weight: normal;
         }
 
         .athlete-info {
-            font-size: 9pt;
+            font-size: 8.5pt;
             color: #6b7280;
             text-align: right;
+            line-height: 1.4;
+        }
+
+        .athlete-name {
+            font-weight: bold;
+            color: #111827;
+            font-size: 9pt;
         }
 
         .url {
             font-size: 8pt;
-            color: #FF3B5C;
-            font-weight: 600;
-            margin-top: 2px;
-        }
-
-        .section {
-            margin-bottom: 12px;
-        }
-
-        .section-title {
-            font-size: 11pt;
+            color: #2DE38E;
             font-weight: bold;
-            margin-bottom: 6px;
-            padding-bottom: 3px;
-            border-bottom: 1px solid #e5e7eb;
-            color: #111827;
+            margin-top: 2px;
+            letter-spacing: 0.03em;
         }
 
+        /* Metrics Grid */
         .metrics-grid {
             display: table;
             width: 100%;
@@ -95,62 +99,72 @@
 
         .metric-cell {
             display: table-cell;
-            width: 50%;
-            padding: 8px;
+            width: 25%;
+            padding: 7px;
             text-align: center;
             border: 1px solid #e5e7eb;
-            background: #f9fafb;
+            background: linear-gradient(to bottom, #fafafa 0%, #f9fafb 100%);
         }
 
         .metric-label {
-            font-size: 8pt;
+            font-size: 7pt;
             color: #6b7280;
             text-transform: uppercase;
             margin-bottom: 3px;
+            font-weight: bold;
+            letter-spacing: 0.08em;
         }
 
         .metric-value {
-            font-size: 14pt;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 13pt;
             font-weight: bold;
             color: #FF3B5C;
+            line-height: 1;
+            margin-bottom: 2px;
         }
 
         .metric-subtitle {
-            font-size: 7pt;
+            font-size: 6.5pt;
             color: #9ca3af;
         }
 
+        /* Two Columns Layout */
         .two-columns {
             display: table;
             width: 100%;
+            margin-bottom: 8px;
         }
 
         .column-left {
             display: table-cell;
-            width: 58%;
+            width: 55%;
             vertical-align: top;
-            padding-right: 8px;
+            padding-right: 6px;
         }
 
         .column-right {
             display: table-cell;
-            width: 42%;
+            width: 45%;
             vertical-align: top;
-            padding-left: 8px;
+            padding-left: 6px;
         }
 
-        .comparison-compact {
-            background: #f9fafb;
-            padding: 8px;
+        /* Comparison Box */
+        .comparison-box {
+            background: #f0fdf4;
+            padding: 7px;
             border-left: 3px solid #2DE38E;
-            font-size: 8.5pt;
+            font-size: 8pt;
             margin-bottom: 8px;
         }
 
-        .comparison-compact-title {
+        .comparison-title {
+            font-family: 'Helvetica', sans-serif;
             font-weight: bold;
             margin-bottom: 5px;
             color: #111827;
+            font-size: 9pt;
         }
 
         .comparison-item {
@@ -161,13 +175,14 @@
 
         .comparison-label {
             display: table-cell;
-            width: 40%;
+            width: 38%;
             color: #6b7280;
+            font-weight: 500;
         }
 
         .comparison-value {
             display: table-cell;
-            font-weight: 600;
+            font-weight: bold;
         }
 
         .trend-up {
@@ -178,63 +193,96 @@
             color: #ef4444;
         }
 
-        .insights-compact {
-            background: #fff7ed;
-            border-left: 3px solid #FF3B5C;
-            padding: 8px;
-            font-size: 8pt;
+        .trend-stable {
+            color: #6b7280;
         }
 
-        .insights-compact-title {
+        /* Distribution Box */
+        .distribution-box {
+            background: #fafafa;
+            border-left: 3px solid #60A5FA;
+            padding: 7px;
+            font-size: 7.5pt;
+            margin-bottom: 8px;
+        }
+
+        .distribution-title {
+            font-family: 'Helvetica', sans-serif;
             font-weight: bold;
             margin-bottom: 5px;
-            color: #FF3B5C;
-        }
-
-        .insight-item {
-            margin-bottom: 3px;
-            padding-left: 12px;
-            position: relative;
-        }
-
-        .insight-item::before {
-            content: "▸";
-            position: absolute;
-            left: 0;
-            color: #FF3B5C;
-            font-weight: bold;
-        }
-
-        .distribution-compact {
-            font-size: 8.5pt;
-            margin-bottom: 6px;
+            color: #111827;
+            font-size: 9pt;
         }
 
         .distribution-item-inline {
             display: inline-block;
-            margin-right: 12px;
-            margin-bottom: 4px;
+            margin-right: 10px;
+            margin-bottom: 3px;
         }
 
         .distribution-type {
-            font-weight: 600;
+            font-weight: bold;
             color: #111827;
         }
 
         .distribution-stats {
             color: #6b7280;
+            font-size: 7pt;
+        }
+
+        /* Insights Box */
+        .insights-box {
+            background: #fff7ed;
+            border-left: 3px solid #FF3B5C;
+            padding: 7px;
             font-size: 7.5pt;
         }
 
+        .insights-title {
+            font-family: 'Helvetica', sans-serif;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #FF3B5C;
+            font-size: 9pt;
+        }
+
+        .insight-item {
+            margin-bottom: 3px;
+            padding-left: 10px;
+            position: relative;
+            line-height: 1.3;
+        }
+
+        .insight-item::before {
+            content: "\2022";
+            position: absolute;
+            left: 0;
+            color: #FF3B5C;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-family: 'Helvetica', sans-serif;
+            font-size: 10pt;
+            font-weight: bold;
+            margin-bottom: 6px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #111827;
+        }
+
+        /* Workout Table */
         .workout-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8pt;
+            font-size: 7.5pt;
         }
 
         .workout-table th,
         .workout-table td {
-            padding: 4px;
+            padding: 3px 4px;
             border: 1px solid #e5e7eb;
             text-align: left;
         }
@@ -242,45 +290,50 @@
         .workout-table th {
             background: #f3f4f6;
             font-weight: bold;
-            font-size: 8pt;
+            font-size: 7pt;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #374151;
         }
 
         .workout-type-badge {
             display: inline-block;
-            padding: 1px 5px;
+            padding: 1px 4px;
             background: #fce7f3;
             color: #FF3B5C;
             border-radius: 3px;
-            font-size: 7pt;
-            font-weight: 600;
+            font-size: 6.5pt;
+            font-weight: bold;
         }
 
         .difficulty-dots {
             color: #f59e0b;
-            font-size: 10pt;
+            font-size: 9pt;
+            letter-spacing: 1px;
         }
 
         .workout-notes {
             font-style: italic;
             color: #6b7280;
-            font-size: 7pt;
+            font-size: 6.5pt;
             padding: 3px 4px;
-            background: #f9fafb;
+            background: #fafafa;
         }
 
+        /* Footer */
         .footer {
-            margin-top: 10px;
-            padding-top: 8px;
+            margin-top: 8px;
+            padding-top: 6px;
             border-top: 1px solid #e5e7eb;
             text-align: center;
-            font-size: 7pt;
+            font-size: 6.5pt;
             color: #9ca3af;
         }
 
         .footer-url {
             color: #FF3B5C;
-            font-weight: 600;
-            font-size: 8pt;
+            font-weight: bold;
+            font-size: 7pt;
         }
     </style>
 </head>
@@ -297,7 +350,7 @@
     {{-- Header --}}
     <div class="header">
         <div class="header-left">
-            <img src="{{ public_path('images/logo-horizontal.svg') }}" alt="MiEntreno" class="logo-img">
+            <div class="logo-text">MIENTRENO</div>
             <div class="report-title">Reporte Semanal</div>
             <div class="report-period">
                 {{ $period['label'] }} • {{ $period['start_date']->format('d/m') }} - {{ $period['end_date']->format('d/m/Y') }}
@@ -305,7 +358,7 @@
         </div>
         <div class="header-right">
             <div class="athlete-info">
-                <strong>{{ auth()->user()->name }}</strong><br>
+                <div class="athlete-name">{{ auth()->user()->name }}</div>
                 {{ now()->format('d/m/Y H:i') }}
             </div>
             <div class="url">mientreno.app</div>
@@ -313,42 +366,38 @@
     </div>
 
     {{-- Métricas Principales - Grid 2x2 --}}
-    <div class="section">
-        <div class="metrics-grid">
-            <div class="metric-row">
-                <div class="metric-cell">
-                    <div class="metric-label">Kilómetros</div>
-                    <div class="metric-value">{{ number_format($summary['total_distance'], 1) }}</div>
-                    <div class="metric-subtitle">km totales</div>
-                </div>
-                <div class="metric-cell">
-                    <div class="metric-label">Tiempo</div>
-                    <div class="metric-value">{{ $summary['formatted_duration'] }}</div>
-                    <div class="metric-subtitle">en movimiento</div>
-                </div>
+    <div class="metrics-grid">
+        <div class="metric-row">
+            <div class="metric-cell">
+                <div class="metric-label">Kilómetros</div>
+                <div class="metric-value">{{ number_format($summary['total_distance'], 1) }}</div>
+                <div class="metric-subtitle">km totales</div>
             </div>
-            <div class="metric-row">
-                <div class="metric-cell">
-                    <div class="metric-label">Pace Promedio</div>
-                    <div class="metric-value">{{ $summary['formatted_pace'] }}</div>
-                    <div class="metric-subtitle">min/km</div>
-                </div>
-                <div class="metric-cell">
-                    <div class="metric-label">Sesiones</div>
-                    <div class="metric-value">{{ $summary['total_sessions'] }}</div>
-                    <div class="metric-subtitle">entrenamientos</div>
-                </div>
+            <div class="metric-cell">
+                <div class="metric-label">Tiempo</div>
+                <div class="metric-value">{{ $summary['formatted_duration'] }}</div>
+                <div class="metric-subtitle">en movimiento</div>
+            </div>
+            <div class="metric-cell">
+                <div class="metric-label">Pace Promedio</div>
+                <div class="metric-value">{{ $summary['formatted_pace'] }}</div>
+                <div class="metric-subtitle">min/km</div>
+            </div>
+            <div class="metric-cell">
+                <div class="metric-label">Sesiones</div>
+                <div class="metric-value">{{ $summary['total_sessions'] }}</div>
+                <div class="metric-subtitle">entrenamientos</div>
             </div>
         </div>
     </div>
 
-    {{-- Dos columnas: Comparativa + Insights --}}
+    {{-- Dos columnas: Comparativa/Distribución + Insights --}}
     <div class="two-columns">
         <div class="column-left">
-            {{-- Comparativa Compacta --}}
+            {{-- Comparativa --}}
             @if($comparison['distance']['previous'] > 0)
-                <div class="comparison-compact">
-                    <div class="comparison-compact-title">📊 vs Semana Anterior</div>
+                <div class="comparison-box">
+                    <div class="comparison-title">vs Semana Anterior</div>
                     <div class="comparison-item">
                         <span class="comparison-label">Distancia:</span>
                         <span class="comparison-value trend-{{ $comparison['distance']['trend'] }}">
@@ -368,46 +417,44 @@
                             <span class="comparison-label">Pace:</span>
                             <span class="comparison-value trend-{{ $comparison['pace']['trend'] }}">
                                 {{ $comparison['pace']['improved'] ? 'Mejora' : 'Declive' }}
-                                ({{ abs($comparison['pace']['diff']) }} seg)
+                                ({{ abs($comparison['pace']['diff']) }}s)
                             </span>
                         </div>
                     @endif
                 </div>
             @endif
 
-            {{-- Distribución por Tipo --}}
+            {{-- Distribución --}}
             @if(!empty($distribution))
-                <div class="section">
-                    <div class="section-title">Distribución por Tipo</div>
-                    <div class="distribution-compact">
-                        @foreach($distribution as $type => $data)
-                            @php
-                                $typeLabels = [
-                                    'easy_run' => 'Fondo Suave',
-                                    'intervals' => 'Intervalos',
-                                    'tempo' => 'Tempo',
-                                    'long_run' => 'Tirada Larga',
-                                    'recovery' => 'Recuperación',
-                                    'race' => 'Carrera',
-                                    'training_run' => 'Entrenamiento',
-                                ];
-                                $label = $typeLabels[$type] ?? $type;
-                            @endphp
-                            <div class="distribution-item-inline">
-                                <span class="distribution-type">{{ $label }}</span>:
-                                <span class="distribution-stats">{{ $data['count'] }}x ({{ number_format($data['distance'], 1) }}km)</span>
-                            </div>
-                        @endforeach
-                    </div>
+                <div class="distribution-box">
+                    <div class="distribution-title">Distribución por Tipo</div>
+                    @foreach($distribution as $type => $data)
+                        @php
+                            $typeLabels = [
+                                'easy_run' => 'Fondo Suave',
+                                'intervals' => 'Intervalos',
+                                'tempo' => 'Tempo',
+                                'long_run' => 'Tirada Larga',
+                                'recovery' => 'Recuperación',
+                                'race' => 'Carrera',
+                                'training_run' => 'Entrenamiento',
+                            ];
+                            $label = $typeLabels[$type] ?? $type;
+                        @endphp
+                        <div class="distribution-item-inline">
+                            <span class="distribution-type">{{ $label }}</span>:
+                            <span class="distribution-stats">{{ $data['count'] }}x • {{ number_format($data['distance'], 1) }}km</span>
+                        </div>
+                    @endforeach
                 </div>
             @endif
         </div>
 
         <div class="column-right">
-            {{-- Insights Compactos --}}
+            {{-- Insights --}}
             @if(!empty($insights))
-                <div class="insights-compact">
-                    <div class="insights-compact-title">✨ Highlights</div>
+                <div class="insights-box">
+                    <div class="insights-title">Highlights</div>
                     @foreach($insights as $insight)
                         <div class="insight-item">{{ $insight['message'] }}</div>
                     @endforeach
@@ -417,54 +464,60 @@
     </div>
 
     {{-- Detalle de Entrenamientos --}}
-    <div class="section">
-        <div class="section-title">Detalle de Entrenamientos ({{ $workouts->count() }})</div>
-        @if($workouts->isEmpty())
-            <p style="text-align:center;color:#6b7280;padding:15px;font-size:9pt;">
-                No hay entrenamientos registrados en este período
-            </p>
-        @else
-            <table class="workout-table">
-                <thead>
+    <div class="section-title">Detalle de Entrenamientos ({{ $workouts->count() }})</div>
+    @if($workouts->isEmpty())
+        <p style="text-align:center;color:#6b7280;padding:12px;font-size:8pt;">
+            No hay entrenamientos registrados en este período
+        </p>
+    @else
+        <table class="workout-table">
+            <thead>
+                <tr>
+                    <th style="width:12%;">Fecha</th>
+                    <th style="width:23%;">Tipo</th>
+                    <th style="width:13%;">Distancia</th>
+                    <th style="width:13%;">Duración</th>
+                    <th style="width:13%;">Pace</th>
+                    <th style="width:13%;">FC</th>
+                    <th style="width:13%;">Dificultad</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($workouts as $workout)
                     <tr>
-                        <th style="width:15%;">Fecha</th>
-                        <th style="width:25%;">Tipo</th>
-                        <th style="width:15%;">Distancia</th>
-                        <th style="width:15%;">Duración</th>
-                        <th style="width:15%;">Pace</th>
-                        <th style="width:15%;">Dificultad</th>
+                        <td>{{ $workout->date->format('d/m') }}</td>
+                        <td><span class="workout-type-badge">{{ $workout->typeLabel }}</span></td>
+                        <td><strong>{{ number_format($workout->distance, 1) }} km</strong></td>
+                        <td>{{ $workout->formattedDuration }}</td>
+                        <td>{{ $workout->formattedPace }}</td>
+                        <td>
+                            @if($workout->avg_heart_rate)
+                                {{ $workout->avg_heart_rate }} bpm
+                            @else
+                                <span style="color:#9ca3af;">-</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($workout->difficulty)
+                                <span class="difficulty-dots">
+                                    @for($i = 1; $i <= $workout->difficulty; $i++)&#9679;@endfor
+                                </span>
+                            @else
+                                <span style="color:#9ca3af;">-</span>
+                            @endif
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach($workouts as $workout)
+                    @if($workout->notes)
                         <tr>
-                            <td>{{ $workout->date->format('d/m') }}</td>
-                            <td><span class="workout-type-badge">{{ $workout->typeLabel }}</span></td>
-                            <td><strong>{{ number_format($workout->distance, 1) }} km</strong></td>
-                            <td>{{ $workout->formattedDuration }}</td>
-                            <td>{{ $workout->formattedPace }}</td>
-                            <td>
-                                @if($workout->difficulty)
-                                    <span class="difficulty-dots">
-                                        @for($i = 1; $i <= $workout->difficulty; $i++)●@endfor
-                                    </span>
-                                @else
-                                    <span style="color:#9ca3af;">-</span>
-                                @endif
+                            <td colspan="7" class="workout-notes">
+                                Notas: {{ $workout->notes }}
                             </td>
                         </tr>
-                        @if($workout->notes)
-                            <tr>
-                                <td colspan="6" class="workout-notes">
-                                    💭 {{ $workout->notes }}
-                                </td>
-                            </tr>
-                        @endif
-                    @endforeach
-                </tbody>
-            </table>
-        @endif
-    </div>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    @endif
 
     {{-- Footer --}}
     <div class="footer">

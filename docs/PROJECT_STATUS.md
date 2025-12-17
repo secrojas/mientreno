@@ -6,7 +6,7 @@
 
 ---
 
-## Estado Actual (2025-12-15)
+## Estado Actual (2025-12-17)
 
 ### ✨ FASE 2 COMPLETADA - Races & Goals ✅
 ### ✨ UX IMPROVEMENTS COMPLETADAS ✅
@@ -421,6 +421,23 @@ Sistema para generar reportes semanales y mensuales de entrenamientos con export
 - Testing completo ✅
 - Tiempo real: ~3 horas ✅
 
+**✅ Mejoras Visuales y UX (Completada 2025-12-17):**
+- **Vistas Web:**
+  - Ampliación de contenedor de 1200px a 1600px para mejor aprovechamiento de espacio
+  - Eliminación de divs wrapper redundantes en vistas de reportes
+  - Mayor espaciado horizontal en pantallas modernas ✅
+- **PDFs Optimizados:**
+  - Reemplazo de Google Fonts por Helvetica/Arial (compatibilidad DomPDF)
+  - Fuentes nativas con jerarquía tipográfica mediante bold y letter-spacing
+  - Reemplazo de emojis por símbolos Unicode compatibles (●, •, texto)
+  - Paleta de colores del proyecto aplicada (#FF3B5C, #2DE38E, #60A5FA)
+  - Layout semanal optimizado para caber en 1 página
+  - Layout mensual con separación clara en 2 páginas ✅
+- **Pendientes:**
+  - Investigar solución para carga de fuentes custom en DomPDF (futuro)
+  - Considerar alternativa a DomPDF si se requieren fuentes web avanzadas
+- Tiempo real: ~2 horas ✅
+
 **Fases Pendientes:**
 
 **Fase 4 - Gráficos y Visualizaciones (⏸️ Pendiente):**
@@ -457,11 +474,12 @@ Sistema para generar reportes semanales y mensuales de entrenamientos con export
 - ✅ Acceso público sin necesidad de login para entrenadores
 - ✅ Tracking de vistas de reportes compartidos
 
-**Estado Actual (2025-12-15):**
+**Estado Actual (2025-12-17):**
 - ✅ Planificación completa
 - ✅ Fase 1 - Core Views implementada
 - ✅ Fase 2 - Exportación PDF implementada
 - ✅ Fase 3 - Links Compartibles implementada
+- ✅ Mejoras Visuales y UX implementadas
 - ⏸️ Fase 4, 5, 6 pendientes (opcionales)
 
 #### 15. Data Migration & Import Tools 🔄
