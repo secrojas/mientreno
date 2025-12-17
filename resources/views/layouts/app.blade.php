@@ -317,43 +317,31 @@
             </a>
             @endif
 
-            <div class="sidebar-section-label">Sistema</div>
+            <div class="sidebar-section-label">Cuenta</div>
 
-            <a href="#" class="sidebar-nav-link">
-                <!-- Settings icon -->
+            <a href="{{ route('profile.edit') }}" class="sidebar-nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                <!-- Profile icon -->
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a1.8 1.8 0 0 1-2.54 2.54l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .31 1.7 1.7 0 0 0-.8 1.44V21a1.8 1.8 0 0 1-3.6 0v-.15a1.7 1.7 0 0 0-.8-1.44 1.7 1.7 0 0 0-1-.31 1.7 1.7 0 0 0-1.87.34l-.06.06a1.8 1.8 0 0 1-2.54-2.54l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.31-1 1.7 1.7 0 0 0-1.44-.8H3a1.8 1.8 0 0 1 0-3.6h.15a1.7 1.7 0 0 0 1.44-.8 1.7 1.7 0 0 0 .31-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a1.8 1.8 0 0 1 2.54-2.54l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.31 1.7 1.7 0 0 0 .8-1.44V3a1.8 1.8 0 0 1 3.6 0v.15a1.7 1.7 0 0 0 .8 1.44 1.7 1.7 0 0 0 1 .31 1.7 1.7 0 0 0 1.87-.34l.06-.06a1.8 1.8 0 0 1 2.54 2.54l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 .31 1 1.7 1.7 0 0 0 1.44.8H21a1.8 1.8 0 0 1 0 3.6h-.15a1.7 1.7 0 0 0-1.44.8 1.7 1.7 0 0 0-.01 1.8z"></path>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span class="sidebar-expanded-text">Configuración</span>
+                <span class="sidebar-expanded-text">Mi Perfil</span>
             </a>
 
+            <form method="POST" action="{{ route('logout') }}" style="display:inline;margin-top:.75rem;">
+                @csrf
+                <button type="submit" class="sidebar-nav-link" style="width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:0;">
+                    <!-- Logout icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"></path>
+                        <path d="M16 17l5-5-5-5"></path>
+                        <path d="M21 12H9"></path>
+                    </svg>
+                    <span class="sidebar-expanded-text">Salir</span>
+                </button>
+            </form>
+
         </nav>
-
-        <div class="sidebar-footer">
-            <div class="sidebar-footer-user">
-                <div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
-                <div>
-                    <div style="font-size:.8rem;">{{ auth()->user()->name }}</div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">{{ ucfirst(auth()->user()->role) }}</div>
-                </div>
-            </div>
-
-            <div class="sidebar-footer-actions">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" style="background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:.35rem;color:inherit;padding:0;">
-                        <!-- Logout icon -->
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"></path>
-                            <path d="M16 17l5-5-5-5"></path>
-                            <path d="M21 12H9"></path>
-                        </svg>
-                        <span>Salir</span>
-                    </button>
-                </form>
-            </div>
-        </div>
     </aside>
 
     <!-- MAIN -->

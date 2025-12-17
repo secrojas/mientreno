@@ -24,6 +24,12 @@ class User extends Authenticatable
         'business_id',
         'role',
         'profile',
+        'avatar',
+        'birth_date',
+        'gender',
+        'weight',
+        'height',
+        'bio',
     ];
 
     /**
@@ -47,7 +53,44 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'profile' => 'array',
+            'birth_date' => 'date',
+            'weight' => 'decimal:2',
         ];
+    }
+
+    /**
+     * Get user's age
+     */
+    public function getAgeAttribute(): ?int
+    {
+        return $this->birth_date ? $this->birth_date->age : null;
+    }
+
+    /**
+     * Get avatar URL
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar);
+        }
+
+        // Fallback a iniciales
+        return '';
+    }
+
+    /**
+     * Get gender label
+     */
+    public function getGenderLabelAttribute(): string
+    {
+        return match($this->gender) {
+            'male' => 'Masculino',
+            'female' => 'Femenino',
+            'other' => 'Otro',
+            'prefer_not_to_say' => 'Prefiero no decir',
+            default => '-',
+        };
     }
 
     public function business()

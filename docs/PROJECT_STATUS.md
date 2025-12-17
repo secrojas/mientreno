@@ -562,6 +562,116 @@ php artisan workouts:import-from-old-db --force
 - ✅ Todos los botones de acción completamente visibles
 - ✅ Mejor aprovechamiento del espacio disponible
 
+#### 17. Sistema de Perfil de Usuario 👤
+
+**SISTEMA DE PERFIL COMPLETADO** ✅ (2025-12-17)
+
+**Propósito:**
+Sistema completo de gestión de perfil de usuario con campos específicos para corredores, subida de avatar, y reorganización del sidebar.
+
+**Base de Datos:**
+- **Migración:** `2025_12_17_155157_add_profile_fields_to_users_table.php`
+- **Campos agregados a `users`:**
+  - `avatar` (string, nullable) - Ruta del avatar
+  - `birth_date` (date, nullable) - Fecha de nacimiento
+  - `gender` (enum, nullable) - male/female/other/prefer_not_to_say
+  - `weight` (decimal 5,2, nullable) - Peso en kg
+  - `height` (integer, nullable) - Altura en cm
+  - `bio` (text, nullable) - Biografía/descripción
+
+**Modelo User:**
+- **Campos fillable actualizados:** avatar, birth_date, gender, weight, height, bio
+- **Casts:**
+  - `birth_date` → 'date'
+  - `weight` → 'decimal:2'
+- **Accessors implementados:**
+  - `getAgeAttribute()` - Calcula edad automáticamente desde birth_date
+  - `getAvatarUrlAttribute()` - Genera URL completa del avatar en storage
+  - `getGenderLabelAttribute()` - Traduce género a español (Masculino/Femenino/Otro/Prefiero no decir)
+
+**Validación:**
+- **ProfileUpdateRequest** con reglas completas:
+  - `avatar` → nullable, image, mimes:jpeg,png,jpg,gif, max:2048 (2MB)
+  - `birth_date` → nullable, date, before:today
+  - `gender` → nullable, Rule::in(['male', 'female', 'other', 'prefer_not_to_say'])
+  - `weight` → nullable, numeric, min:20, max:300
+  - `height` → nullable, integer, min:100, max:250
+  - `bio` → nullable, string, max:150
+
+**ProfileController:**
+- **Método update() con manejo de avatar:**
+  - Eliminación automática de avatar anterior al subir uno nuevo
+  - Almacenamiento en `storage/app/public/avatars`
+  - Preservación de email_verified_at en cambios de email
+- **Storage configurado:** Symlink a `public/storage` creado
+
+**Vista de Perfil:**
+- **Archivo:** `resources/views/profile/edit.blade.php`
+- **Diseño:** Athletic Editorial con tipografía del proyecto (Space Grotesk + Inter)
+- **Layout de dos columnas:**
+  1. **Sección Avatar (320px):**
+     - Avatar con borde animado de gradiente
+     - Botón "Cambiar Foto" con preview instantáneo
+     - Info sidebar: Rol, Edad, IMC calculado
+  2. **Sección Formulario:**
+     - Información Básica: Nombre, Email
+     - Datos Personales: Fecha de nacimiento, Género
+     - Datos Físicos: Peso (kg), Altura (cm)
+     - Sobre Ti: Bio con contador de caracteres (max 150)
+- **JavaScript incluido:**
+  - Preview de avatar antes de guardar
+  - Contador de caracteres en bio
+  - Validaciones en tiempo real
+- **Estilos optimizados:**
+  - Select de género con estilos custom para opciones
+  - Inputs consistentes con el diseño general
+  - Responsive design para móviles
+
+**Reorganización del Sidebar:**
+- **Nueva sección "Cuenta":**
+  - "Mi Perfil" - Link a perfil con indicador active
+  - "Salir" - Botón de logout reubicado desde el footer
+- **Mejoras visuales:**
+  - Separación de .75rem entre Mi Perfil y Salir
+  - Eliminado footer del sidebar (antes contenía avatar + nombre + logout)
+  - Sidebar más limpio y accesible
+- **Beneficio:** Logout siempre visible independientemente del scroll/contenido
+
+**Rutas:**
+```php
+GET  /profile        → ProfileController@edit     (profile.edit)
+PATCH /profile       → ProfileController@update   (profile.update)
+DELETE /profile      → ProfileController@destroy  (profile.destroy)
+```
+
+**Campos Comunes de Running Apps:**
+- ✅ Avatar/Foto de perfil
+- ✅ Fecha de nacimiento (para calcular edad)
+- ✅ Género
+- ✅ Peso (para cálculos de calorías y rendimiento)
+- ✅ Altura (para IMC y estadísticas)
+- ✅ Bio/Descripción personal
+- 🔄 Nivel de running (principiante/intermedio/avanzado) - Pendiente
+- 🔄 Objetivos principales - Ya implementado en Goals
+- 🔄 Zonas de FC - Pendiente
+
+**Mejoras Implementadas:**
+1. Tipografía corregida para coincidir con Dashboard (Space Grotesk + Inter)
+2. Estilos de selector de género optimizados para dropdown
+3. Footer del sidebar eliminado (antes mostraba datos de usuario)
+4. Separación visual mejorada entre elementos del menú Cuenta
+
+**Beneficios:**
+- ✅ Perfil personalizado con datos relevantes para corredores
+- ✅ Subida de avatar con preview instantáneo
+- ✅ Cálculo automático de edad e IMC
+- ✅ Navegación más limpia con logout accesible
+- ✅ Diseño consistente con el resto de la aplicación
+- ✅ Validaciones robustas en frontend y backend
+- ✅ Gestión automática de archivos en storage
+
+**Tiempo de implementación:** ~2.5 horas ✅
+
 ---
 
 ## Lo que falta implementar
