@@ -674,6 +674,84 @@ DELETE /profile      → ProfileController@destroy  (profile.destroy)
 
 ---
 
+## 📋 Análisis de Gaps y Plan de Desarrollo
+
+**Fecha de análisis:** 2025-12-17
+
+### Gaps Críticos Identificados
+
+#### 1. Multi-tenancy No Implementado
+**Status:** ❌ Crítico
+**Problema:**
+- Arquitectura documenta rutas `/{business}/*` pero están implementadas sin prefijo
+- No hay middleware de contexto de business
+- No hay diferenciación entre usuarios con/sin business en rutas
+
+**Impacto:**
+- Imposible escalar con múltiples businesses
+- URL sharing no funciona por business
+- Confusión en navegación para usuarios de grupos
+
+#### 2. Dashboard Único para Todos los Roles
+**Status:** ❌ Crítico
+**Problema:**
+- Un solo DashboardController para runners, coaches y admins
+- Coaches ven métricas de runner, no de sus grupos/alumnos
+- No existe panel de coach
+
+**Impacto:**
+- Experiencia pobre para coaches
+- No pueden gestionar sus grupos desde la aplicación
+- Funcionalidad core de "modo coach" no implementada
+
+#### 3. Gestión de Business Inexistente
+**Status:** ❌ Alta
+**Problema:**
+- Tabla existe pero no hay CRUD
+- Coaches no pueden crear su business desde UI
+- No hay configuración de horarios/días de entrenamiento
+
+**Impacto:**
+- Coaches dependen de comandos artisan para crear business
+- No pueden configurar su grupo de forma autónoma
+
+#### 4. Training Groups Sin Funcionalidad
+**Status:** ❌ Alta
+**Problema:**
+- Tabla vacía sin controllers/vistas
+- No se pueden crear grupos dentro de business
+- No hay gestión de miembros
+
+**Impacto:**
+- Funcionalidad de grupos grupales no existe
+- No se puede organizar alumnos por nivel/horario
+
+#### 5. Sistema de Suscripciones No Existe
+**Status:** ❌ Media-Alta (Nuevo Requerimiento)
+**Problema:**
+- No está documentado ni implementado
+- No hay límites por business
+- No hay monetización
+
+**Impacto:**
+- Modelo de negocio no implementado
+- Crecimiento sin control de capacidad
+
+### Plan de Desarrollo Completo
+
+📄 **Ver documento detallado:** [`docs/PLAN_DESARROLLO_2025.md`](PLAN_DESARROLLO_2025.md)
+
+**Resumen de Sprints:**
+1. **Sprint 1** (2-3 días): Dashboard y Panel de Coach
+2. **Sprint 2** (2-3 días): Gestión de Business
+3. **Sprint 3** (3-4 días): Training Groups
+4. **Sprint 4** (3-4 días): Rutas Multi-tenant
+5. **Sprint 5** (4-5 días): Sistema de Suscripciones
+
+**Total estimado:** 14-19 días (~3 semanas)
+
+---
+
 ## Lo que falta implementar
 
 ### 1. Fase 1 - Foundation & Core Features
