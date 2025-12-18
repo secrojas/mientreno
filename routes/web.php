@@ -55,7 +55,17 @@ Route::middleware('auth')->group(function () {
     // Coach routes
     Route::prefix('coach')->name('coach.')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Coach\DashboardController::class, 'index'])->name('dashboard');
-        // Más rutas de coach se agregarán en SPRINT 2 y 3
+
+        // Business management
+        Route::get('/business', [\App\Http\Controllers\Coach\BusinessController::class, 'index'])->name('business.index');
+        Route::get('/business/create', [\App\Http\Controllers\Coach\BusinessController::class, 'create'])->name('business.create');
+        Route::post('/business', [\App\Http\Controllers\Coach\BusinessController::class, 'store'])->name('business.store');
+        Route::get('/business/{business}', [\App\Http\Controllers\Coach\BusinessController::class, 'show'])->name('business.show');
+        Route::get('/business/{business}/edit', [\App\Http\Controllers\Coach\BusinessController::class, 'edit'])->name('business.edit');
+        Route::put('/business/{business}', [\App\Http\Controllers\Coach\BusinessController::class, 'update'])->name('business.update');
+        Route::delete('/business/{business}', [\App\Http\Controllers\Coach\BusinessController::class, 'destroy'])->name('business.destroy');
+
+        // Más rutas de coach se agregarán en SPRINT 3 (Training Groups)
     });
 });
 

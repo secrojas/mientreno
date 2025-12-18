@@ -308,6 +308,15 @@
             @if(auth()->user()->role === 'coach' || auth()->user()->role === 'admin')
             <div class="sidebar-section-label">Coaching</div>
 
+            <a href="{{ route('coach.business.index') }}" class="sidebar-nav-link {{ request()->routeIs('coach.business.*') ? 'active' : '' }}">
+                <!-- Business icon (briefcase) -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 3h-8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"></path>
+                </svg>
+                <span class="sidebar-expanded-text">Mi Negocio</span>
+            </a>
+
             <a href="#" class="sidebar-nav-link">
                 <!-- Groups icon (users/group) -->
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -320,11 +329,10 @@
             </a>
 
             <a href="#" class="sidebar-nav-link">
-                <!-- Coach icon (whistle-ish) -->
+                <!-- Students icon (graduation cap) -->
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="10" width="9" height="5" rx="1.5"></rect>
-                    <path d="M12 12h3.5a3.5 3.5 0 1 1-2.47 6"></path>
-                    <circle cx="17.5" cy="10" r="1.2"></circle>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
                 </svg>
                 <span class="sidebar-expanded-text">Alumnos</span>
             </a>

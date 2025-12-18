@@ -31,7 +31,7 @@
                 <p style="font-size:.95rem;color:var(--text-muted);margin-bottom:1.5rem;max-width:500px;margin-left:auto;margin-right:auto;">
                     Para empezar a gestionar tus alumnos y grupos de entrenamiento, primero necesitás crear tu negocio.
                 </p>
-                <a href="#" style="display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.2rem;border-radius:999px;font-size:.9rem;background:var(--accent-secondary);color:#050814;font-weight:500;">
+                <a href="{{ route('coach.business.create') }}" style="display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.2rem;border-radius:999px;font-size:.9rem;background:var(--accent-secondary);color:#050814;font-weight:500;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
                         <path d="M12 5v14M5 12h14"/>
                     </svg>
