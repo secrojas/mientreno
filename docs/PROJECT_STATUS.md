@@ -6,11 +6,13 @@
 
 ---
 
-## Estado Actual (2025-12-17)
+## Estado Actual (2025-12-18)
 
 ### ✨ FASE 2 COMPLETADA - Races & Goals ✅
 ### ✨ UX IMPROVEMENTS COMPLETADAS ✅
 ### ✨ WORKOUT REPORTS - FASE 3 COMPLETADA ✅ (Links Compartibles)
+### ✨ SPRINT 1 COMPLETADO - Dashboard Coach ✅
+### ✨ SPRINT 2 COMPLETADO - Gestión de Business ✅
 
 ### Lo que ya está implementado
 
@@ -672,6 +674,186 @@ DELETE /profile      → ProfileController@destroy  (profile.destroy)
 
 **Tiempo de implementación:** ~2.5 horas ✅
 
+#### 18. Sistema de Coach - Dashboard Diferenciado (SPRINT 1) 🏃‍♂️
+
+**SPRINT 1 COMPLETADO** ✅ (2025-12-18)
+
+**Propósito:**
+Diferenciar la experiencia de coaches vs runners con dashboards específicos y redirección inteligente por rol.
+
+**CoachDashboardController:**
+- **Archivo:** `app/Http/Controllers/Coach/DashboardController.php`
+- **Métricas específicas para coaches:**
+  - Total de alumnos del business
+  - Alumnos activos esta semana
+  - Total de entrenamientos y kilómetros del grupo
+  - Top 3 alumnos por distancia semanal
+  - Alumnos inactivos (2+ semanas sin entrenar)
+  - Actividad reciente de todos los alumnos (últimos 10 entrenamientos)
+- **Manejo inteligente:**
+  - Vista especial para coaches sin business creado
+  - Redirección a crear business si no existe
+
+**Vista Coach Dashboard:**
+- **Archivo:** `resources/views/coach/dashboard.blade.php`
+- **4 metric cards:**
+  - Total Alumnos
+  - Activos esta semana
+  - Entrenamientos grupales
+  - Kilómetros totales
+- **Paneles:**
+  - Actividad reciente con nombre de alumno, tipo, distancia y pace
+  - Top 3 alumnos de la semana por distancia
+  - Alumnos inactivos con alertas
+  - Placeholder para Training Groups (SPRINT 3)
+- **Diseño:**
+  - Consistente con dashboard runner
+  - Responsive design
+  - Dark theme del proyecto
+
+**Redirección por Rol:**
+- **LoginController modificado:**
+  - Coaches/Admins → `/coach/dashboard`
+  - Runners → `/dashboard`
+- **Archivos actualizados:**
+  - `app/Http/Controllers/Auth/v1/LoginController.php`
+  - `app/Http/Controllers/Auth/AuthenticatedSessionController.php`
+
+**Sidebar Actualizado:**
+- **Link dinámico en Panel:**
+  - Coaches ven "Dashboard Coach" → `/coach/dashboard`
+  - Runners ven "Dashboard" → `/dashboard`
+- **Sección "Coaching":**
+  - Visible solo para coaches/admins
+  - Links preparados para SPRINT 2 y 3
+
+**Rutas Implementadas:**
+```php
+GET /coach/dashboard → coach.dashboard
+```
+
+**Beneficios:**
+- ✅ Experiencia diferenciada por rol
+- ✅ Coaches pueden ver métricas de sus alumnos
+- ✅ Identificación rápida de alumnos inactivos
+- ✅ Navegación intuitiva según tipo de usuario
+- ✅ Base sólida para funcionalidades de coaching
+
+**Commit:** `feat(coach): implementar dashboard diferenciado por rol (SPRINT 1)` - d66b6c2
+
+#### 19. Sistema de Coach - Gestión de Business (SPRINT 2) 💼
+
+**SPRINT 2 COMPLETADO** ✅ (2025-12-18)
+
+**Propósito:**
+Sistema completo de gestión de negocios de coaching (CRUD) con auto-asignación, validación y políticas de autorización.
+
+**Base de Datos:**
+- **Migración:** `2025_12_18_175856_add_fields_to_businesses_table.php`
+- **Campos agregados a `businesses`:**
+  - `owner_id` (FK a users) - Dueño del negocio (coach)
+  - `description` (text) - Descripción del negocio
+  - `level` (string) - Nivel objetivo: beginner/intermediate/advanced
+  - `schedule` (json) - Horarios de entrenamientos (preparado)
+  - `is_active` (boolean) - Estado activo/inactivo
+
+**Modelo Business Mejorado:**
+- **Relaciones nuevas:**
+  - `owner()` - Relación con coach dueño
+  - `runners()` - Solo alumnos del business (where role='runner')
+- **Auto-generación de slug:**
+  - Boot event que genera slug único al crear
+  - Maneja colisiones con sufijo numérico
+- **Accessors:**
+  - `getLevelLabelAttribute()` - Traduce nivel a español
+
+**BusinessController (CRUD completo):**
+- **Archivo:** `app/Http/Controllers/Coach/BusinessController.php`
+- **7 métodos implementados:**
+  - `index()` - Redirige a show o create según tenga business
+  - `create()` - Formulario crear business
+  - `store()` - Guardar con auto-asignación al coach
+  - `show()` - Detalle con estadísticas y alumnos
+  - `edit()` - Formulario edición
+  - `update()` - Actualizar información
+  - `destroy()` - Desactivar (soft delete vía is_active)
+- **Validaciones integradas:**
+  - name: required, max 255
+  - description: nullable, max 1000
+  - level: required, in:beginner,intermediate,advanced
+  - schedule: array con validación de estructura
+  - is_active: boolean
+- **Seguridad:**
+  - Ownership validation en todos los métodos
+  - Solo el owner puede ver/editar/eliminar su business
+
+**BusinessPolicy:**
+- **Archivo:** `app/Policies/BusinessPolicy.php`
+- **Reglas implementadas:**
+  - `viewAny()` - Solo coaches/admins
+  - `view()` - Solo owner o admin
+  - `create()` - Solo coaches SIN business
+  - `update()` - Solo owner
+  - `delete()` - Solo owner
+  - `forceDelete()` - Solo admins
+
+**Vistas Blade:**
+
+1. **create.blade.php:**
+   - Formulario completo (nombre, descripción, nivel)
+   - Selectores estilizados
+   - Placeholder para horarios (futuro)
+   - Botones guardar/cancelar
+
+2. **show.blade.php:**
+   - Información detallada del negocio
+   - 3 metric cards: Alumnos, Grupos, Fecha creación
+   - Lista de alumnos con contador de entrenamientos
+   - Botón editar con icono
+   - Placeholder para horarios
+
+3. **edit.blade.php:**
+   - Formulario pre-poblado
+   - Slug no editable (read-only)
+   - Toggle is_active con checkbox
+   - Botones guardar/cancelar
+
+**Rutas Implementadas:**
+```php
+GET    /coach/business                 → index
+POST   /coach/business                 → store
+GET    /coach/business/create          → create
+GET    /coach/business/{business}      → show
+GET    /coach/business/{business}/edit → edit
+PUT    /coach/business/{business}      → update
+DELETE /coach/business/{business}      → destroy
+```
+
+**Navegación Actualizada:**
+- **Sidebar:** Nuevo link "Mi Negocio" en sección Coaching
+- **Dashboard coach:** Link funcional "Crear mi negocio"
+- **Highlight activo:** Indica ruta actual en sidebar
+
+**Flujo de Creación de Business:**
+1. Coach sin business ve mensaje en dashboard
+2. Click en "Crear mi negocio" → formulario
+3. Completa datos (nombre, descripción, nivel)
+4. Submit → Business creado
+5. Auto-asignación: `business.owner_id` = coach y `coach.business_id` = business
+6. Redirección a vista de detalle del business
+
+**Beneficios:**
+- ✅ Coaches pueden crear su negocio desde UI
+- ✅ Gestión completa con CRUD funcional
+- ✅ Auto-asignación bidireccional automática
+- ✅ Validaciones robustas en backend
+- ✅ Políticas de autorización estrictas
+- ✅ Slug único automático
+- ✅ Preparado para horarios (SPRINT 3)
+- ✅ Lista de alumnos con métricas
+
+**Commit:** `feat(coach): implementar gestión completa de Business (SPRINT 2)` - ef14f94
+
 ---
 
 ## 📋 Análisis de Gaps y Plan de Desarrollo
@@ -681,7 +863,7 @@ DELETE /profile      → ProfileController@destroy  (profile.destroy)
 ### Gaps Críticos Identificados
 
 #### 1. Multi-tenancy No Implementado
-**Status:** ❌ Crítico
+**Status:** ⏳ En Progreso (SPRINT 4)
 **Problema:**
 - Arquitectura documenta rutas `/{business}/*` pero están implementadas sin prefijo
 - No hay middleware de contexto de business
@@ -692,31 +874,30 @@ DELETE /profile      → ProfileController@destroy  (profile.destroy)
 - URL sharing no funciona por business
 - Confusión en navegación para usuarios de grupos
 
-#### 2. Dashboard Único para Todos los Roles
-**Status:** ❌ Crítico
-**Problema:**
-- Un solo DashboardController para runners, coaches y admins
-- Coaches ven métricas de runner, no de sus grupos/alumnos
-- No existe panel de coach
+**Próximo:** SPRINT 4 implementará esta funcionalidad
 
-**Impacto:**
-- Experiencia pobre para coaches
-- No pueden gestionar sus grupos desde la aplicación
-- Funcionalidad core de "modo coach" no implementada
+#### 2. Dashboard Único para Todos los Roles
+**Status:** ✅ RESUELTO (SPRINT 1 - 2025-12-18)
+**Solución Implementada:**
+- CoachDashboardController con métricas específicas para coaches
+- Redirección inteligente por rol en login
+- Vista coach/dashboard.blade.php dedicada
+- Sidebar con link diferenciado según rol
+- Métricas de alumnos, actividad y top performers
 
 #### 3. Gestión de Business Inexistente
-**Status:** ❌ Alta
-**Problema:**
-- Tabla existe pero no hay CRUD
-- Coaches no pueden crear su business desde UI
-- No hay configuración de horarios/días de entrenamiento
-
-**Impacto:**
-- Coaches dependen de comandos artisan para crear business
-- No pueden configurar su grupo de forma autónoma
+**Status:** ✅ RESUELTO (SPRINT 2 - 2025-12-18)
+**Solución Implementada:**
+- BusinessController con CRUD completo (7 métodos)
+- BusinessPolicy con autorización estricta
+- 3 vistas Blade (create, show, edit)
+- Auto-generación de slug único
+- Auto-asignación bidireccional (owner_id ↔ business_id)
+- Validaciones robustas
+- 7 rutas implementadas
 
 #### 4. Training Groups Sin Funcionalidad
-**Status:** ❌ Alta
+**Status:** ⏳ Pendiente (SPRINT 3)
 **Problema:**
 - Tabla vacía sin controllers/vistas
 - No se pueden crear grupos dentro de business
@@ -726,8 +907,10 @@ DELETE /profile      → ProfileController@destroy  (profile.destroy)
 - Funcionalidad de grupos grupales no existe
 - No se puede organizar alumnos por nivel/horario
 
+**Próximo:** SPRINT 3 implementará esta funcionalidad
+
 #### 5. Sistema de Suscripciones No Existe
-**Status:** ❌ Media-Alta (Nuevo Requerimiento)
+**Status:** ⏳ Pendiente (SPRINT 5)
 **Problema:**
 - No está documentado ni implementado
 - No hay límites por business
@@ -736,6 +919,8 @@ DELETE /profile      → ProfileController@destroy  (profile.destroy)
 **Impacto:**
 - Modelo de negocio no implementado
 - Crecimiento sin control de capacidad
+
+**Próximo:** SPRINT 5 implementará esta funcionalidad
 
 ### Plan de Desarrollo Completo
 

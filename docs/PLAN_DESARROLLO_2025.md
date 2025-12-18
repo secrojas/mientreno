@@ -622,31 +622,42 @@ database/migrations/
 
 ## 🎯 Entregables por Sprint
 
-### Sprint 1 ✅
-- Dashboard diferenciado para coaches
-- Redirección por rol funcional
-- Sidebar actualizado con sección Coaching
+### Sprint 1 ✅ **COMPLETADO 2025-12-18**
+- ✅ Dashboard diferenciado para coaches (CoachDashboardController)
+- ✅ Redirección por rol funcional (LoginController modificado)
+- ✅ Sidebar actualizado con sección Coaching
+- ✅ Vista coach/dashboard.blade.php con métricas específicas
+- ✅ Rutas /coach/dashboard implementadas
+- **Commit:** d66b6c2 - `feat(coach): implementar dashboard diferenciado por rol (SPRINT 1)`
 
-### Sprint 2 ✅
-- CRUD de Business funcional
-- Coaches pueden crear su business desde UI
-- Configuración de horarios implementada
+### Sprint 2 ✅ **COMPLETADO 2025-12-18**
+- ✅ CRUD de Business funcional (BusinessController con 7 métodos)
+- ✅ Coaches pueden crear su business desde UI (3 vistas Blade)
+- ✅ BusinessPolicy con autorización completa
+- ✅ Auto-generación de slug único
+- ✅ Auto-asignación bidireccional (owner_id ↔ business_id)
+- ✅ Migración con campos: owner_id, description, level, schedule, is_active
+- ⚠️ Configuración de horarios: Campos preparados, UI pendiente (futuro)
+- **Commit:** ef14f94 - `feat(coach): implementar gestión completa de Business (SPRINT 2)`
 
-### Sprint 3 ✅
-- Sistema completo de Training Groups
-- Gestión de miembros por grupo
-- Invitaciones a grupos funcionales
+### Sprint 3 ⏳ **PENDIENTE**
+- ❌ Sistema completo de Training Groups
+- ❌ Gestión de miembros por grupo
+- ❌ Invitaciones a grupos funcionales
+- ❌ Tabla pivot training_group_user
+- ❌ TrainingGroupController con CRUD
 
-### Sprint 4 ✅
-- Rutas con prefijo `/{business}/*` funcionando
-- Rutas sin prefijo para individuales
-- Middlewares de contexto implementados
+### Sprint 4 ⏳ **PENDIENTE**
+- ❌ Rutas con prefijo `/{business}/*` funcionando
+- ❌ Rutas sin prefijo para individuales
+- ❌ Middlewares de contexto implementados
+- ❌ Helper businessRoute()
 
-### Sprint 5 ✅
-- Planes de suscripción creados
-- Límites por plan implementados
-- Validaciones de suscripción activas
-- Plan Free auto-asignado
+### Sprint 5 ⏳ **PENDIENTE**
+- ❌ Planes de suscripción creados
+- ❌ Límites por plan implementados
+- ❌ Validaciones de suscripción activas
+- ❌ Plan Free auto-asignado
 
 ---
 
