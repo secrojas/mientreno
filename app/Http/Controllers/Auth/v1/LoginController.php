@@ -28,6 +28,11 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        // Redirección diferenciada por rol
+        if ($user->role === 'coach' || $user->role === 'admin') {
+            return redirect()->intended(route('coach.dashboard'));
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 

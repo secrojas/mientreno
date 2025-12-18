@@ -51,6 +51,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/monthly/{year}/{month}/pdf', [\App\Http\Controllers\ReportController::class, 'exportMonthlyPDF'])->name('monthly.pdf');
         Route::post('/monthly/{year}/{month}/share', [\App\Http\Controllers\ReportController::class, 'shareMonthly'])->name('monthly.share');
     });
+
+    // Coach routes
+    Route::prefix('coach')->name('coach.')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Coach\DashboardController::class, 'index'])->name('dashboard');
+        // Más rutas de coach se agregarán en SPRINT 2 y 3
+    });
 });
 
 // Public shared report (no auth required)

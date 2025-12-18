@@ -240,16 +240,29 @@
         <nav class="sidebar-nav">
             <div class="sidebar-section-label">Panel</div>
 
-            <a href="{{ route('dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <!-- Dashboard icon -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-                    <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-                    <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-                    <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-                </svg>
-                <span class="sidebar-expanded-text">Dashboard</span>
-            </a>
+            @if(auth()->user()->role === 'coach' || auth()->user()->role === 'admin')
+                <a href="{{ route('coach.dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('coach.dashboard') ? 'active' : '' }}">
+                    <!-- Dashboard icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                        <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                        <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                        <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                    </svg>
+                    <span class="sidebar-expanded-text">Dashboard Coach</span>
+                </a>
+            @else
+                <a href="{{ route('dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <!-- Dashboard icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                        <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                        <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                        <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                    </svg>
+                    <span class="sidebar-expanded-text">Dashboard</span>
+                </a>
+            @endif
 
             <a href="{{ route('workouts.index') }}" class="sidebar-nav-link {{ request()->routeIs('workouts.*') ? 'active' : '' }}">
                 <!-- Workouts icon (line chart) -->

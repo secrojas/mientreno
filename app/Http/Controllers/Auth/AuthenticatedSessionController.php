@@ -28,6 +28,15 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Redirección diferenciada por rol
+        $user = Auth::user();
+
+        // Coaches y admins van al dashboard de coach
+        if ($user->role === 'coach' || $user->role === 'admin') {
+            return redirect()->intended(route('coach.dashboard', absolute: false));
+        }
+
+        // Runners van al dashboard normal
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
