@@ -653,11 +653,35 @@ database/migrations/
 - ✅ Estadísticas de grupo: miembros, entrenamientos, kilómetros
 - **Commit:** [pendiente] - `feat(coach): implementar Training Groups con CRUD completo (SPRINT 3)`
 
-### Sprint 4 ⏳ **PENDIENTE**
-- ❌ Rutas con prefijo `/{business}/*` funcionando
-- ❌ Rutas sin prefijo para individuales
-- ❌ Middlewares de contexto implementados
-- ❌ Helper businessRoute()
+### Sprint 4 ✅ **COMPLETADO 2025-12-19**
+**FASE 1: Middlewares y Helpers**
+- ✅ SetBusinessContext middleware (contexto automático en request/vistas)
+- ✅ IndividualUser middleware (valida usuarios sin business)
+- ✅ BusinessUser middleware (valida usuarios con business + ownership)
+- ✅ CoachMiddleware (valida rol coach/admin)
+- ✅ Helper businessRoute() para URLs dinámicas
+- ✅ Helper currentBusiness() para obtener business actual
+- ✅ Helper isCoach() para verificar rol
+- ✅ Middlewares registrados en bootstrap/app.php
+- ✅ Helpers autocargados en composer.json
+- **Commit:** ae4d458 - `feat(multi-tenant): implementar middlewares y helpers (SPRINT 4 FASE 1)`
+
+**FASE 2: Rutas Duales y Redirección**
+- ✅ Rutas duales implementadas en web.php (3 secciones)
+- ✅ Rutas SIN prefijo para usuarios individuales: /dashboard, /workouts/*, /races/*, etc.
+- ✅ Rutas CON prefijo para usuarios con business: /{business}/dashboard, /{business}/workouts/*, etc.
+- ✅ ~40 rutas duplicadas (dashboard, workouts, races, goals, reports, coach)
+- ✅ Middleware business.context aplicado en rutas multi-tenant
+- ✅ LoginController v1 con método redirectPath(User $user)
+- ✅ AuthenticatedSessionController con método redirectPath(User $user)
+- ✅ Redirección inteligente:
+  * Coaches sin business → /coach/business/create
+  * Coaches con business → /{business-slug}/coach/dashboard
+  * Runners sin business → /dashboard
+  * Runners con business → /{business-slug}/dashboard
+- ✅ Testing: php artisan route:list verificado
+- ✅ Retrocompatibilidad total mantenida
+- **Commit:** 884909b - `feat(multi-tenant): implementar rutas duales y redirección inteligente (SPRINT 4 FASE 2)`
 
 ### Sprint 5 ⏳ **PENDIENTE**
 - ❌ Planes de suscripción creados

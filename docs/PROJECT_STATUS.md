@@ -14,6 +14,7 @@
 ### ✨ SPRINT 1 COMPLETADO - Dashboard Coach ✅
 ### ✨ SPRINT 2 COMPLETADO - Gestión de Business ✅
 ### ✨ SPRINT 3 COMPLETADO - Training Groups ✅
+### ✨ SPRINT 4 COMPLETADO - Sistema Multi-tenant ✅
 
 ### Lo que ya está implementado
 
@@ -1032,7 +1033,202 @@ DELETE /coach/groups/{group}/members/{user}       → removeMember
 - ✅ Reemplazo por inline styles con CSS variables
 - ✅ Consistencia con vistas de workouts, races y goals
 
-**Commit:** [pendiente] - `feat(coach): implementar Training Groups con CRUD completo (SPRINT 3)`
+**Commit:** `a2aa864` - `feat(coach): implementar Training Groups con CRUD completo (SPRINT 3)`
+
+#### 21. Sistema Multi-tenant - Rutas Duales (SPRINT 4) 🌐
+
+**SPRINT 4 COMPLETADO** ✅ (2025-12-19)
+
+**Propósito:**
+Arquitectura multi-tenant completa con rutas diferenciadas por contexto, permitiendo usuarios individuales Y usuarios con business en la misma aplicación.
+
+**FASE 1: Middlewares y Helpers** ✅
+
+**4 Middlewares implementados:**
+
+1. **SetBusinessContext** (`app/Http/Middleware/SetBusinessContext.php`)
+   - Establece contexto de business en request y vistas
+   - Si hay slug en ruta: busca business y lo comparte con vistas
+   - Si usuario tiene business pero accede sin prefijo: comparte su business
+   - Comparte `$currentBusiness` con todas las vistas vía `View::share()`
+   - Guarda business en request attributes para acceso en controllers
+
+2. **IndividualUser** (`app/Http/Middleware/IndividualUser.php`)
+   - Valida acceso solo para usuarios SIN business
+   - Redirige a ruta con prefijo si usuario tiene business
+   - Previene acceso de usuarios con business a rutas individuales
+
+3. **BusinessUser** (`app/Http/Middleware/BusinessUser.php`)
+   - Valida acceso solo para usuarios CON business
+   - Verifica ownership: business en URL debe coincidir con business del usuario
+   - Redirige a rutas individuales si usuario no tiene business
+   - Abort 403 si intenta acceder a business de otro usuario
+
+4. **CoachMiddleware** (`app/Http/Middleware/CoachMiddleware.php`)
+   - Valida rol coach o admin
+   - Abort 403 si no tiene permisos
+   - Usado en todas las rutas `/coach/*`
+
+**Registro de middlewares** (`bootstrap/app.php`):
+```php
+'business.context' => SetBusinessContext::class,
+'individual' => IndividualUser::class,
+'business.user' => BusinessUser::class,
+'coach' => CoachMiddleware::class,
+```
+
+**3 Helpers globales** (`app/helpers.php`):
+
+1. **`businessRoute($name, $params = [], $absolute = true)`**
+   - Genera URLs con contexto automático de business
+   - Si usuario tiene business: agrega slug como primer parámetro
+   - Si usuario individual: genera ruta sin prefijo
+   - Ejemplo: `businessRoute('dashboard')` → `/dashboard` o `/{business-slug}/dashboard`
+
+2. **`currentBusiness()`**
+   - Retorna business del usuario autenticado
+   - Null si usuario no tiene business
+   - Útil para validaciones en vistas
+
+3. **`isCoach()`**
+   - Verifica si usuario es coach o admin
+   - Boolean helper para condicionales en vistas
+   - Ejemplo: `@if(isCoach()) ... @endif`
+
+**Autoload configurado** (`composer.json`):
+```json
+"autoload": {
+    "files": ["app/helpers.php"],
+    ...
+}
+```
+
+**FASE 2: Rutas Duales y Redirección Inteligente** ✅
+
+**Sistema de rutas duales** (`routes/web.php`):
+
+Estructura organizada en 3 secciones:
+
+1. **Rutas públicas** (sin autenticación):
+   - Landing pages: `/`, `/v2`
+   - Autenticación: `/login`, `/register`, `/logout`
+
+2. **Rutas para usuarios individuales** (sin prefijo `{business}`):
+   - Dashboard: `/dashboard`
+   - Workouts: `/workouts/*`
+   - Races: `/races/*`
+   - Goals: `/goals/*`
+   - Reports: `/reports/*`
+   - Coach: `/coach/business/create`, `/coach/business` (store)
+   - Middleware: `auth`
+
+3. **Rutas multi-tenant** (con prefijo `{business}`):
+   - Dashboard: `/{business}/dashboard`
+   - Workouts: `/{business}/workouts/*`
+   - Races: `/{business}/races/*`
+   - Goals: `/{business}/goals/*`
+   - Reports: `/{business}/reports/*`
+   - Coach: `/{business}/coach/*` (dashboard, business, groups)
+   - Middleware: `auth`, `business.context`, `coach` (rutas coach)
+
+**Rutas duplicadas implementadas:**
+- Total: ~40 rutas duplicadas (con y sin prefijo)
+- Laravel resuelve automáticamente por número de parámetros requeridos
+- `route('dashboard')` → `/dashboard` (0 params requeridos)
+- `route('dashboard', ['business' => $slug])` → `/{business}/dashboard` (1 param requerido)
+
+**Redirección inteligente post-login:**
+
+**LoginController v1** (`app/Http/Controllers/Auth/v1/LoginController.php`):
+- Método `redirectPath(User $user): string` implementado
+- Lógica de redirección por rol y contexto:
+
+**AuthenticatedSessionController** (`app/Http/Controllers/Auth/AuthenticatedSessionController.php`):
+- Mismo método `redirectPath()` implementado
+- Consistencia entre ambos controllers de autenticación
+
+**Lógica de redirección:**
+```php
+// Coaches y Admins
+if (coach/admin) {
+    if (!tiene business) → /coach/business/create
+    if (tiene business)  → /{business-slug}/coach/dashboard
+}
+
+// Runners
+if (runner) {
+    if (!tiene business) → /dashboard
+    if (tiene business)  → /{business-slug}/dashboard
+}
+```
+
+**Beneficios Logrados:**
+
+**Arquitectura:**
+- ✅ Multi-tenancy completo sin afectar usuarios individuales
+- ✅ URLs diferenciadas por contexto (con/sin business)
+- ✅ Aislamiento perfecto entre usuarios
+- ✅ Contexto automático compartido en vistas
+- ✅ Validaciones centralizadas en middlewares
+
+**UX:**
+- ✅ Redirección inteligente según rol y business
+- ✅ URLs compartibles con contexto incluido
+- ✅ Coaches sin business forzados a crear uno
+- ✅ Runners con business redirigidos a contexto correcto
+- ✅ Retrocompatibilidad total (rutas sin prefijo funcionan)
+
+**Desarrollo:**
+- ✅ Helpers globales simplifican generación de URLs
+- ✅ Middlewares reutilizables y testables
+- ✅ Separation of concerns clara
+- ✅ Rutas organizadas por secciones
+- ✅ Fácil extensión para nuevas rutas
+
+**Seguridad:**
+- ✅ Validación de ownership en BusinessUser middleware
+- ✅ Validación de rol en CoachMiddleware
+- ✅ Prevención de acceso cross-business
+- ✅ Contexto validado en cada request
+
+**Notas Técnicas:**
+
+**Resolución automática de rutas:**
+- Laravel match por cantidad de parámetros requeridos
+- Sin colisiones entre rutas duplicadas
+- Rutas con más parámetros tienen prioridad
+
+**Compartir contexto:**
+- `View::share('currentBusiness', $business)` disponible en TODAS las vistas
+- Acceso en Blade: `@if($currentBusiness) ... @endif`
+- Acceso en controllers: `$request->attributes->get('business')`
+
+**Breaking Changes:**
+- **NINGUNO:** Retrocompatibilidad total
+- Rutas existentes sin prefijo siguen funcionando
+- Usuarios con business redirigidos automáticamente
+
+**Archivos Modificados:**
+- `app/Http/Middleware/SetBusinessContext.php` (nuevo)
+- `app/Http/Middleware/IndividualUser.php` (nuevo)
+- `app/Http/Middleware/BusinessUser.php` (nuevo)
+- `app/Http/Middleware/CoachMiddleware.php` (nuevo)
+- `app/helpers.php` (nuevo)
+- `bootstrap/app.php` (middlewares registrados)
+- `composer.json` (autoload helpers)
+- `routes/web.php` (reorganizado con rutas duales)
+- `app/Http/Controllers/Auth/v1/LoginController.php` (redirectPath)
+- `app/Http/Controllers/Auth/AuthenticatedSessionController.php` (redirectPath)
+
+**Testing Realizado:**
+- ✅ `php artisan route:list` verifica rutas duplicadas
+- ✅ Nombres de ruta resueltos correctamente
+- ✅ Middleware `business.context` aplicado en rutas multi-tenant
+- ✅ Helpers autocargados con `composer dump-autoload`
+
+**Commits:**
+- FASE 1: `ae4d458` - `feat(multi-tenant): implementar middlewares y helpers (SPRINT 4 FASE 1)`
+- FASE 2: `884909b` - `feat(multi-tenant): implementar rutas duales y redirección inteligente (SPRINT 4 FASE 2)`
 
 ---
 
@@ -1043,18 +1239,16 @@ DELETE /coach/groups/{group}/members/{user}       → removeMember
 ### Gaps Críticos Identificados
 
 #### 1. Multi-tenancy No Implementado
-**Status:** ⏳ En Progreso (SPRINT 4)
-**Problema:**
-- Arquitectura documenta rutas `/{business}/*` pero están implementadas sin prefijo
-- No hay middleware de contexto de business
-- No hay diferenciación entre usuarios con/sin business en rutas
-
-**Impacto:**
-- Imposible escalar con múltiples businesses
-- URL sharing no funciona por business
-- Confusión en navegación para usuarios de grupos
-
-**Próximo:** SPRINT 4 implementará esta funcionalidad
+**Status:** ✅ RESUELTO (SPRINT 4 - 2025-12-19)
+**Solución Implementada:**
+- SetBusinessContext middleware establece contexto automático
+- Rutas duales: con y sin prefijo `/{business}`
+- 4 middlewares: SetBusinessContext, IndividualUser, BusinessUser, CoachMiddleware
+- 3 helpers globales: businessRoute(), currentBusiness(), isCoach()
+- Redirección inteligente post-login por rol y contexto
+- ~40 rutas duplicadas implementadas (dashboard, workouts, races, goals, reports, coach)
+- Retrocompatibilidad total: rutas sin prefijo siguen funcionando
+- 2 commits: FASE 1 (middlewares/helpers), FASE 2 (rutas/redirección)
 
 #### 2. Dashboard Único para Todos los Roles
 **Status:** ✅ RESUELTO (SPRINT 1 - 2025-12-18)
