@@ -9,8 +9,45 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 ## [Unreleased]
 
 ### Pendiente
-- SPRINT 4: Rutas multi-tenant con prefijo `/{business}`
+- SPRINT 4 FASE 2: Implementación completa de rutas duales y actualización de vistas
 - SPRINT 5: Sistema de suscripciones y límites por plan
+
+---
+
+## [2025-12-19] - SPRINT 4 FASE 1: Middlewares y Helpers Multi-tenant
+
+### ✨ Agregado
+- **4 Middlewares para contexto multi-tenant:**
+  - `SetBusinessContext` - Establece contexto de business en request y vistas
+  - `IndividualUser` - Valida usuarios SIN business (individuales)
+  - `BusinessUser` - Valida usuarios CON business y ownership
+  - `CoachMiddleware` - Valida rol coach/admin
+
+- **Archivo helpers.php** con 3 funciones globales:
+  - `businessRoute($name, $params)` - Genera URLs con contexto de business
+  - `currentBusiness()` - Obtiene business del usuario autenticado
+  - `isCoach()` - Verifica si usuario es coach/admin
+
+- **Registro de middlewares** en bootstrap/app.php:
+  - `business.context` → SetBusinessContext
+  - `individual` → IndividualUser
+  - `business.user` → BusinessUser
+  - `coach` → CoachMiddleware
+
+- **Autoload de helpers** en composer.json
+
+### 🎯 Beneficios
+- Infraestructura lista para rutas multi-tenant
+- Helpers globales para facilitar desarrollo
+- Validaciones de contexto y permisos centralizadas
+- Separation of concerns entre usuarios individuales y businesses
+
+### 📝 Notas
+- **FASE 1 completada:** Middlewares y helpers implementados
+- **FASE 2 pendiente:** Rutas duales, actualización de controllers y vistas
+- Los middlewares están registrados pero aún no se aplican en rutas (próxima fase)
+
+**Commit:** [pendiente] - `feat(multi-tenant): implementar middlewares y helpers (SPRINT 4 FASE 1)`
 
 ---
 

@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'set.business' => \App\Http\Middleware\SetCurrentBusiness::class,
+            'business.context' => \App\Http\Middleware\SetBusinessContext::class,
+            'individual' => \App\Http\Middleware\IndividualUser::class,
+            'business.user' => \App\Http\Middleware\BusinessUser::class,
+            'coach' => \App\Http\Middleware\CoachMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
