@@ -9,9 +9,98 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 ## [Unreleased]
 
 ### Pendiente
-- SPRINT 3: Training Groups con CRUD completo
 - SPRINT 4: Rutas multi-tenant con prefijo `/{business}`
 - SPRINT 5: Sistema de suscripciones y límites por plan
+
+---
+
+## [2025-12-19] - SPRINT 3: Training Groups
+
+### ✨ Agregado
+- **TrainingGroup Modelo Completo**
+  - Campos: business_id, coach_id, name, description, schedule (JSON), level, max_members, is_active
+  - 5 Relaciones: business(), coach(), members(), activeMembers()
+  - 3 Scopes: active(), forBusiness(), forCoach()
+  - Accessors: levelLabel, activeMembersCount
+  - Helper: isFull() para validar límite de miembros
+
+- **TrainingGroupController** con CRUD completo (9 métodos)
+  - `index()` - Lista de grupos con conteo de miembros
+  - `create()` - Formulario de creación
+  - `store()` - Guardar con validación
+  - `show()` - Detalle con miembros y estadísticas
+  - `edit()` - Formulario edición
+  - `update()` - Actualizar grupo
+  - `destroy()` - Desactivar (soft delete)
+  - `addMember()` - Agregar alumno con validaciones
+  - `removeMember()` - Remover alumno del grupo
+
+- **TrainingGroupPolicy** con reglas de autorización:
+  - Solo coaches/admins pueden gestionar grupos
+  - Solo pueden gestionar grupos de su propio business
+  - Validación de ownership en todas las operaciones
+  - Policy manageMembers() para gestión de miembros
+
+- **4 vistas Blade para gestión de Training Groups:**
+  - `coach/groups/index.blade.php` - Grid de grupos con badges de nivel
+  - `coach/groups/create.blade.php` - Formulario de creación
+  - `coach/groups/show.blade.php` - Detalle con miembros y modal de agregar
+  - `coach/groups/edit.blade.php` - Edición + zona de peligro
+
+- **9 rutas nuevas:**
+  - `GET /coach/groups` → index
+  - `POST /coach/groups` → store
+  - `GET /coach/groups/create` → create
+  - `GET /coach/groups/{group}` → show
+  - `GET /coach/groups/{group}/edit` → edit
+  - `PUT /coach/groups/{group}` → update
+  - `DELETE /coach/groups/{group}` → destroy
+  - `POST /coach/groups/{group}/members` → addMember
+  - `DELETE /coach/groups/{group}/members/{user}` → removeMember
+
+- **Tabla pivot training_group_user:**
+  - Campos: training_group_id, user_id, joined_at, is_active
+  - Índice compuesto para búsquedas rápidas
+  - Timestamps automáticos
+
+### 🔧 Modificado
+- **Migración:** `add_level_and_max_members_to_training_groups_table`
+  - Campo `schedule` cambiado de string a JSON
+  - Agregado `level` (beginner/intermediate/advanced)
+  - Agregado `max_members` (nullable, ilimitado por defecto)
+
+- **Modelo Business:**
+  - Nueva relación: `trainingGroups()` hasMany
+
+- **Dashboard Coach:**
+  - Reemplazado placeholder de grupos por listado real
+  - Muestra últimos 5 grupos activos con contadores
+  - Link directo a crear primer grupo
+
+- **Sidebar:**
+  - Link "Grupos" ahora funcional en sección Coaching
+  - Highlight activo en rutas coach.groups.*
+
+### 📝 Documentación
+- Actualizado `PROJECT_STATUS.md` con sección "20. Sistema de Coach - Training Groups (SPRINT 3)"
+- Actualizado `PLAN_DESARROLLO_2025.md` marcando SPRINT 3 como completado
+
+### 🎯 Beneficios
+- Coaches pueden crear y gestionar grupos de entrenamiento
+- Asignación de alumnos con validaciones robustas
+- Límite máximo de miembros por grupo (opcional)
+- Soft delete preserva datos históricos
+- Badges visuales por nivel de grupo
+- Modal para agregar miembros sin cambiar de página
+- Estadísticas de grupo: miembros, entrenamientos, kilómetros
+- Diseño consistente con el resto de la plataforma
+
+### 🐛 Corregido
+- Vistas de grupos usaban sintaxis `@extends` en lugar de `<x-app-layout>`
+- Vistas usaban Tailwind CSS en lugar de estilos inline con variables
+- Actualizado diseño para coincidir con workouts, races y goals
+
+**Commit:** [pendiente] - `feat(coach): implementar Training Groups con CRUD completo (SPRINT 3)`
 
 ---
 

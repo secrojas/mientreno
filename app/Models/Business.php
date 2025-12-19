@@ -49,6 +49,14 @@ class Business extends Model
     }
 
     /**
+     * Relación: grupos de entrenamiento del business
+     */
+    public function trainingGroups()
+    {
+        return $this->hasMany(TrainingGroup::class);
+    }
+
+    /**
      * Usar slug como route key
      */
     public function getRouteKeyName(): string

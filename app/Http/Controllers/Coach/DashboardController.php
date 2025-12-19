@@ -84,8 +84,13 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        // Placeholder para Training Groups (SPRINT 3)
-        $trainingGroups = collect(); // Vacío por ahora
+        // Training Groups (SPRINT 3)
+        $trainingGroups = $business->trainingGroups()
+            ->active()
+            ->withCount('members')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
 
         return view('coach.dashboard', compact(
             'coach',

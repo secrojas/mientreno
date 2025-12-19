@@ -317,7 +317,7 @@
                 <span class="sidebar-expanded-text">Mi Negocio</span>
             </a>
 
-            <a href="#" class="sidebar-nav-link">
+            <a href="{{ route('coach.groups.index') }}" class="sidebar-nav-link {{ request()->routeIs('coach.groups.*') ? 'active' : '' }}">
                 <!-- Groups icon (users/group) -->
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="9" cy="9" r="2.5"></circle>

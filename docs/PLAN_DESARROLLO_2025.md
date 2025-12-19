@@ -640,12 +640,18 @@ database/migrations/
 - ⚠️ Configuración de horarios: Campos preparados, UI pendiente (futuro)
 - **Commit:** ef14f94 - `feat(coach): implementar gestión completa de Business (SPRINT 2)`
 
-### Sprint 3 ⏳ **PENDIENTE**
-- ❌ Sistema completo de Training Groups
-- ❌ Gestión de miembros por grupo
-- ❌ Invitaciones a grupos funcionales
-- ❌ Tabla pivot training_group_user
-- ❌ TrainingGroupController con CRUD
+### Sprint 3 ✅ **COMPLETADO 2025-12-19**
+- ✅ Sistema completo de Training Groups (TrainingGroupController con 9 métodos)
+- ✅ Gestión de miembros por grupo (addMember, removeMember)
+- ✅ Tabla pivot training_group_user con campos joined_at, is_active
+- ✅ TrainingGroupPolicy con autorización completa
+- ✅ 4 vistas Blade (index, create, show, edit) con inline styles
+- ✅ Modal de agregar miembros sin cambiar de página
+- ✅ Validaciones: límite de miembros, rol runner, duplicados, ownership
+- ✅ Migración de campos: schedule (JSON), level, max_members
+- ✅ Dashboard coach actualizado con listado de grupos
+- ✅ Estadísticas de grupo: miembros, entrenamientos, kilómetros
+- **Commit:** [pendiente] - `feat(coach): implementar Training Groups con CRUD completo (SPRINT 3)`
 
 ### Sprint 4 ⏳ **PENDIENTE**
 - ❌ Rutas con prefijo `/{business}/*` funcionando

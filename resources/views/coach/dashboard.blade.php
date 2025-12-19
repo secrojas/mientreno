@@ -184,13 +184,42 @@
                 </x-card>
                 @endif
 
-                <!-- Training Groups Placeholder -->
-                <x-card title="Grupos de Entrenamiento" subtitle="Próximamente en SPRINT 3">
-                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
-                        La gestión de grupos estará disponible pronto.
-                        <br>
-                        <a href="#" style="color:var(--accent-secondary);margin-top:.5rem;display:inline-block;">Más información</a>
-                    </div>
+                <!-- Training Groups -->
+                <x-card title="Grupos de Entrenamiento ({{ $trainingGroups->count() }})">
+                    <x-slot name="headerAction">
+                        <a href="{{ route('coach.groups.index') }}" style="color:var(--accent-primary);font-size:.85rem;text-decoration:none;font-weight:500;">
+                            Ver todos →
+                        </a>
+                    </x-slot>
+
+                    @if($trainingGroups->isEmpty())
+                        <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                            No has creado grupos de entrenamiento aún.
+                            <br>
+                            <a href="{{ route('coach.groups.create') }}" style="color:var(--accent-primary);margin-top:.5rem;display:inline-block;font-weight:500;">Crear primer grupo</a>
+                        </div>
+                    @else
+                        <div style="display:flex;flex-direction:column;gap:.75rem;">
+                            @foreach($trainingGroups as $group)
+                                <a href="{{ route('coach.groups.show', $group) }}" style="padding:.75rem;border-radius:.5rem;background:rgba(5,8,20,.9);border:1px solid rgba(255,59,92,.15);text-decoration:none;display:flex;justify-content:space-between;align-items:center;transition:all .2s;">
+                                    <div>
+                                        <div style="font-size:.9rem;font-weight:600;color:#fff;margin-bottom:.25rem;">{{ $group->name }}</div>
+                                        <div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--text-muted);">
+                                            <span style="display:inline-block;padding:.2rem .5rem;border-radius:9999px;font-weight:600;
+                                                {{ $group->level === 'beginner' ? 'background:rgba(45,227,142,.1);color:#2DE38E;' : '' }}
+                                                {{ $group->level === 'intermediate' ? 'background:rgba(96,165,250,.1);color:#60A5FA;' : '' }}
+                                                {{ $group->level === 'advanced' ? 'background:rgba(255,59,92,.1);color:#FF3B5C;' : '' }}
+                                            ">{{ $group->level_label }}</span>
+                                            <span>{{ $group->members_count }} miembro{{ $group->members_count !== 1 ? 's' : '' }}</span>
+                                        </div>
+                                    </div>
+                                    <svg style="width:1.25rem;height:1.25rem;color:var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
                 </x-card>
             </div>
         </section>

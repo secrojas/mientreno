@@ -65,7 +65,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/business/{business}', [\App\Http\Controllers\Coach\BusinessController::class, 'update'])->name('business.update');
         Route::delete('/business/{business}', [\App\Http\Controllers\Coach\BusinessController::class, 'destroy'])->name('business.destroy');
 
-        // Más rutas de coach se agregarán en SPRINT 3 (Training Groups)
+        // Training Groups (SPRINT 3)
+        Route::resource('groups', \App\Http\Controllers\Coach\TrainingGroupController::class);
+        Route::post('/groups/{group}/members', [\App\Http\Controllers\Coach\TrainingGroupController::class, 'addMember'])->name('groups.addMember');
+        Route::delete('/groups/{group}/members/{user}', [\App\Http\Controllers\Coach\TrainingGroupController::class, 'removeMember'])->name('groups.removeMember');
     });
 });
 

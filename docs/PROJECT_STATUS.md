@@ -6,13 +6,14 @@
 
 ---
 
-## Estado Actual (2025-12-18)
+## Estado Actual (2025-12-19)
 
 ### ✨ FASE 2 COMPLETADA - Races & Goals ✅
 ### ✨ UX IMPROVEMENTS COMPLETADAS ✅
 ### ✨ WORKOUT REPORTS - FASE 3 COMPLETADA ✅ (Links Compartibles)
 ### ✨ SPRINT 1 COMPLETADO - Dashboard Coach ✅
 ### ✨ SPRINT 2 COMPLETADO - Gestión de Business ✅
+### ✨ SPRINT 3 COMPLETADO - Training Groups ✅
 
 ### Lo que ya está implementado
 
@@ -854,6 +855,185 @@ DELETE /coach/business/{business}      → destroy
 
 **Commit:** `feat(coach): implementar gestión completa de Business (SPRINT 2)` - ef14f94
 
+#### 20. Sistema de Coach - Training Groups (SPRINT 3) 👥
+
+**SPRINT 3 COMPLETADO** ✅ (2025-12-19)
+
+**Propósito:**
+Sistema completo de gestión de grupos de entrenamiento con CRUD, gestión de miembros, y validaciones avanzadas.
+
+**Base de Datos:**
+
+1. **Migración:** `2025_12_19_123302_add_level_and_max_members_to_training_groups_table.php`
+   - **Campos agregados a `training_groups`:**
+     - `schedule` → Cambiado de string a JSON
+     - `level` (string) → beginner/intermediate/advanced
+     - `max_members` (integer, nullable) → Límite de miembros (ilimitado si NULL)
+
+2. **Migración pivot:** `2025_12_19_123412_create_training_group_user_table.php`
+   - **Campos:**
+     - `training_group_id` (FK)
+     - `user_id` (FK)
+     - `joined_at` (timestamp)
+     - `is_active` (boolean)
+     - Índice compuesto: `(training_group_id, user_id)`
+
+**Modelo TrainingGroup Completo:**
+- **Fillable:** business_id, coach_id, name, description, schedule, level, max_members, is_active
+- **Casts:**
+  - `schedule` → 'array'
+  - `is_active` → 'boolean'
+- **5 Relaciones:**
+  - `business()` - belongsTo Business
+  - `coach()` - belongsTo User (coach_id)
+  - `members()` - belongsToMany User (pivot: training_group_user)
+  - `activeMembers()` - members()->where('is_active', true)
+  - Scope: `withCount('members')`
+- **3 Scopes:**
+  - `active()` - Solo grupos activos
+  - `forBusiness($businessId)` - Por business específico
+  - `forCoach($coachId)` - Por coach específico
+- **Accessors:**
+  - `getLevelLabelAttribute()` - Traduce nivel a español
+  - `getActiveMembersCountAttribute()` - Cuenta miembros activos
+- **Helper:**
+  - `isFull()` - Valida si grupo alcanzó max_members
+
+**TrainingGroupController (CRUD + Member Management):**
+- **Archivo:** `app/Http/Controllers/Coach/TrainingGroupController.php`
+- **9 métodos implementados:**
+  1. `index()` - Lista de grupos con conteo de miembros
+  2. `create()` - Formulario de creación
+  3. `store()` - Guardar con validación
+  4. `show()` - Detalle con miembros y estadísticas
+  5. `edit()` - Formulario edición
+  6. `update()` - Actualizar grupo
+  7. `destroy()` - Desactivar (soft delete vía is_active)
+  8. `addMember()` - Agregar alumno con validaciones
+  9. `removeMember()` - Remover alumno del grupo
+
+**Validaciones en addMember():**
+- ✅ Grupo no lleno (isFull())
+- ✅ Usuario existe
+- ✅ Usuario es runner (role='runner')
+- ✅ Usuario pertenece al mismo business
+- ✅ Usuario no está ya en el grupo
+
+**TrainingGroupPolicy:**
+- **Archivo:** `app/Policies/TrainingGroupPolicy.php`
+- **Reglas implementadas:**
+  - `viewAny()` - Solo coaches/admins
+  - `view()` - Solo coach del grupo o admin
+  - `create()` - Solo coaches con business
+  - `update()` - Solo coach owner del grupo
+  - `delete()` - Solo coach owner del grupo
+  - `manageMembers()` - Solo coach owner del grupo
+- **Validación de ownership:**
+  - Solo coaches/admins del mismo business pueden gestionar grupos
+
+**Vistas Blade (4 vistas):**
+
+1. **index.blade.php:**
+   - Grid responsive de grupos (minmax 340px)
+   - Badges de nivel con colores: verde (beginner), azul (intermediate), rojo (advanced)
+   - Estado activo/inactivo
+   - Contador de miembros + max_members
+   - Botones: Ver Detalle, Editar
+   - Empty state con CTA "Crear Primer Grupo"
+
+2. **create.blade.php:**
+   - Formulario max-width 720px
+   - Campos: nombre, descripción (max 1000 chars), nivel, max_members
+   - Toggle is_active (checked por defecto)
+   - Inline styles con CSS variables
+   - Botones: Crear Grupo, Cancelar
+
+3. **show.blade.php:**
+   - 4 metric cards: Total Miembros, Miembros Activos, Entrenamientos, Kilómetros Totales
+   - Descripción del grupo (si existe)
+   - Grid de miembros con avatares iniciales
+   - Botón "Agregar Alumno" (si no está lleno)
+   - Modal para agregar miembros (JavaScript inline)
+   - Botón remover miembro con confirmación
+   - Select con alumnos disponibles del business
+
+4. **edit.blade.php:**
+   - Formulario pre-poblado
+   - Validación: max_members no puede ser menor que miembros actuales
+   - Toggle is_active
+   - Zona de Peligro: Botón "Desactivar Grupo"
+   - Botones: Actualizar Grupo, Cancelar
+
+**Rutas Implementadas:**
+```php
+// Resource routes
+GET    /coach/groups                 → index
+POST   /coach/groups                 → store
+GET    /coach/groups/create          → create
+GET    /coach/groups/{group}         → show
+GET    /coach/groups/{group}/edit    → edit
+PUT    /coach/groups/{group}         → update
+DELETE /coach/groups/{group}         → destroy
+
+// Member management
+POST   /coach/groups/{group}/members              → addMember
+DELETE /coach/groups/{group}/members/{user}       → removeMember
+```
+
+**Navegación Actualizada:**
+- **Sidebar:** Link "Grupos" en sección Coaching con highlight activo
+- **Dashboard coach:** Listado de últimos 5 grupos con contadores de miembros
+- **Breadcrumb:** Links de navegación en todas las vistas
+
+**Modelo Business Actualizado:**
+- **Nueva relación:** `trainingGroups()` - hasMany TrainingGroup
+
+**Dashboard Coach Mejorado:**
+- Reemplazado placeholder de grupos por listado real
+- Muestra últimos 5 grupos activos con:
+  - Nombre del grupo
+  - Badge de nivel
+  - Contador de miembros
+- Link "Crear mi primer grupo" si no hay grupos
+- Link "Ver todos los grupos" si hay más de 5
+
+**Seeder:**
+- **Archivo:** `database/seeders/TrainingGroupSeeder.php`
+- 3 grupos de ejemplo:
+  - "Grupo Principiantes Mañana" (beginner, max 15)
+  - "Grupo Intermedio Tarde" (intermediate, max 20)
+  - "Grupo Avanzado Noche" (advanced, max 10)
+- Asignación aleatoria de 3-8 miembros por grupo
+
+**Diseño Visual:**
+- **Inline styles** con CSS variables (var(--text-muted), var(--accent-primary))
+- **NO Tailwind CSS** (consistente con resto de plataforma)
+- Colores de nivel:
+  - Beginner: rgba(45,227,142,.1) + #2DE38E
+  - Intermediate: rgba(96,165,250,.1) + #60A5FA
+  - Advanced: rgba(255,59,92,.1) + #FF3B5C
+- Font: Space Grotesk (headings), Inter (body)
+- Botones con gradiente: linear-gradient(135deg,var(--accent-primary),#FF4FA3)
+
+**Beneficios:**
+- ✅ Coaches pueden crear y gestionar grupos de entrenamiento
+- ✅ Asignación de alumnos con validaciones robustas
+- ✅ Límite máximo de miembros por grupo (opcional)
+- ✅ Soft delete preserva datos históricos
+- ✅ Badges visuales por nivel de grupo
+- ✅ Modal para agregar miembros sin cambiar de página
+- ✅ Estadísticas de grupo: miembros, entrenamientos, kilómetros
+- ✅ Diseño consistente con el resto de la plataforma
+- ✅ Gestión completa desde UI sin necesidad de seeders
+
+**Fixes Aplicados:**
+- ✅ Cambio de @extends('layouts.app') a <x-app-layout>
+- ✅ Eliminación de clases Tailwind (text-white, bg-gray-800)
+- ✅ Reemplazo por inline styles con CSS variables
+- ✅ Consistencia con vistas de workouts, races y goals
+
+**Commit:** [pendiente] - `feat(coach): implementar Training Groups con CRUD completo (SPRINT 3)`
+
 ---
 
 ## 📋 Análisis de Gaps y Plan de Desarrollo
@@ -897,17 +1077,16 @@ DELETE /coach/business/{business}      → destroy
 - 7 rutas implementadas
 
 #### 4. Training Groups Sin Funcionalidad
-**Status:** ⏳ Pendiente (SPRINT 3)
-**Problema:**
-- Tabla vacía sin controllers/vistas
-- No se pueden crear grupos dentro de business
-- No hay gestión de miembros
-
-**Impacto:**
-- Funcionalidad de grupos grupales no existe
-- No se puede organizar alumnos por nivel/horario
-
-**Próximo:** SPRINT 3 implementará esta funcionalidad
+**Status:** ✅ RESUELTO (SPRINT 3 - 2025-12-19)
+**Solución Implementada:**
+- TrainingGroupController con CRUD completo (9 métodos)
+- TrainingGroupPolicy con autorización estricta
+- 4 vistas Blade (index, create, show, edit)
+- Tabla pivot training_group_user con gestión de miembros
+- Validaciones robustas: límite de miembros, rol, duplicados
+- Modal de agregar miembros sin cambiar de página
+- Estadísticas de grupo (miembros, entrenamientos, km)
+- 9 rutas implementadas (resource + member management)
 
 #### 5. Sistema de Suscripciones No Existe
 **Status:** ⏳ Pendiente (SPRINT 5)
