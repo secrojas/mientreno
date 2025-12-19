@@ -9,8 +9,69 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 ## [Unreleased]
 
 ### Pendiente
-- SPRINT 4 FASE 2: Implementación completa de rutas duales y actualización de vistas
 - SPRINT 5: Sistema de suscripciones y límites por plan
+- Actualización gradual de vistas para usar helper businessRoute() (opcional)
+
+---
+
+## [2025-12-19] - SPRINT 4 FASE 2: Rutas Multi-tenant Duales
+
+### ✨ Agregado
+- **Sistema de rutas duales** en web.php:
+  - Rutas SIN prefijo para usuarios individuales (sin business)
+  - Rutas CON prefijo `/{business}` para usuarios con business
+  - Middleware `business.context` aplicado en todas las rutas multi-tenant
+
+- **Rutas duplicadas implementadas:**
+  - Dashboard: `/dashboard` y `/{business}/dashboard`
+  - Workouts: `/workouts/*` y `/{business}/workouts/*`
+  - Races: `/races/*` y `/{business}/races/*`
+  - Goals: `/goals/*` y `/{business}/goals/*`
+  - Reports: `/reports/*` y `/{business}/reports/*`
+  - Coach: `/coach/business/create` (sin business) y `/{business}/coach/*` (con business)
+
+- **Redirección inteligente post-login:**
+  - LoginController v1 actualizado con método `redirectPath()`
+  - AuthenticatedSessionController (Breeze) actualizado
+  - Lógica de redirección por rol y contexto:
+    - **Coaches/Admins:**
+      - Sin business → `/coach/business/create`
+      - Con business → `/{business-slug}/coach/dashboard`
+    - **Runners:**
+      - Sin business → `/dashboard`
+      - Con business → `/{business-slug}/dashboard`
+
+### 🔧 Modificado
+- **web.php:** Reorganizado con secciones claras:
+  - Sección 1: Rutas públicas (landing, auth)
+  - Sección 2: Rutas individuales (sin prefijo)
+  - Sección 3: Rutas multi-tenant (con prefijo {business})
+
+- **LoginController y AuthenticatedSessionController:**
+  - Reemplazada redirección simple por método `redirectPath(User $user)`
+  - Detección automática de contexto de business
+
+### 🎯 Beneficios
+- ✅ URLs diferenciadas por tipo de usuario
+- ✅ Contexto de business automático en todas las vistas
+- ✅ Redirección inteligente según rol y business
+- ✅ Aislamiento perfecto entre usuarios individuales y businesses
+- ✅ Coaches sin business son redirigidos a crear uno
+- ✅ URLs compartibles con contexto de business incluido
+
+### 📝 Notas Técnicas
+- Laravel resuelve automáticamente rutas duplicadas por parámetros requeridos
+- `route('dashboard')` sin params → ruta individual `/dashboard`
+- `route('dashboard', ['business' => $slug])` → ruta multi-tenant `/{business}/dashboard`
+- SetBusinessContext middleware comparte `$currentBusiness` en todas las vistas
+- Middlewares aplicados: `auth`, `business.context`, `coach` (según corresponda)
+
+### ⚠️ Breaking Changes
+- **NINGUNO:** Las rutas existentes SIN prefijo siguen funcionando
+- Usuarios con business serán redirigidos automáticamente a rutas con prefijo
+- Retrocompatibilidad total mantenida
+
+**Commit:** [pendiente] - `feat(multi-tenant): implementar rutas duales y redirección inteligente (SPRINT 4 FASE 2)`
 
 ---
 

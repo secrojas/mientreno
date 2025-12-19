@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,16 +29,10 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Redirección diferenciada por rol
+        // Redirección inteligente por rol y contexto de business
         $user = Auth::user();
 
-        // Coaches y admins van al dashboard de coach
-        if ($user->role === 'coach' || $user->role === 'admin') {
-            return redirect()->intended(route('coach.dashboard', absolute: false));
-        }
-
-        // Runners van al dashboard normal
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended($this->redirectPath($user));
     }
 
     /**
@@ -52,5 +47,33 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    /**
+     * Determina la ruta de redirección según el tipo de usuario y contexto.
+     */
+    protected function redirectPath(User $user): string
+    {
+        $business = $user->business;
+
+        // Coaches y Admins
+        if (in_array($user->role, ['coach', 'admin'])) {
+            // Si no tiene business, redirigir a crear uno
+            if (!$business) {
+                return route('coach.business.create');
+            }
+
+            // Si tiene business, ir a coach dashboard con contexto
+            return route('coach.dashboard', ['business' => $business->slug]);
+        }
+
+        // Runners
+        if ($business) {
+            // Usuario con business: ruta con prefijo
+            return route('dashboard', ['business' => $business->slug]);
+        }
+
+        // Usuario individual: ruta sin prefijo
+        return route('dashboard');
     }
 }
