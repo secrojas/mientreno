@@ -263,9 +263,11 @@ class Workout extends Model
         $data['status'] = 'completed';
         $data['skip_reason'] = null;
 
-        // Calcular pace automáticamente si tiene distance y duration
-        if (isset($data['distance']) && isset($data['duration'])) {
+        // Calcular pace automáticamente si tiene distance y duration > 0
+        if (isset($data['distance']) && isset($data['duration']) && $data['distance'] > 0 && $data['duration'] > 0) {
             $data['avg_pace'] = self::calculatePace($data['distance'], $data['duration']);
+        } else {
+            $data['avg_pace'] = null;
         }
 
         return $this->update($data);

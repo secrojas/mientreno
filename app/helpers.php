@@ -13,8 +13,13 @@ if (!function_exists('businessRoute')) {
     {
         $user = auth()->user();
 
-        // Si el usuario tiene business, usar ruta con prefijo
+        // Si el usuario tiene business, usar ruta multi-tenant (business.*)
         if ($user && $user->business_id && $user->business) {
+            // Si la ruta ya tiene el prefijo 'business.', no agregarlo de nuevo
+            if (!str_starts_with($name, 'business.')) {
+                $name = 'business.' . $name;
+            }
+
             $parameters = array_merge(['business' => $user->business->slug], $parameters);
         }
 

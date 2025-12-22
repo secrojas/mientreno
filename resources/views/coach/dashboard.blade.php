@@ -187,7 +187,7 @@
                 <!-- Training Groups -->
                 <x-card title="Grupos de Entrenamiento ({{ $trainingGroups->count() }})">
                     <x-slot name="headerAction">
-                        <a href="{{ route('coach.groups.index') }}" style="color:var(--accent-primary);font-size:.85rem;text-decoration:none;font-weight:500;">
+                        <a href="{{ businessRoute('coach.groups.index') }}" style="color:var(--accent-primary);font-size:.85rem;text-decoration:none;font-weight:500;">
                             Ver todos →
                         </a>
                     </x-slot>
@@ -196,12 +196,12 @@
                         <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
                             No has creado grupos de entrenamiento aún.
                             <br>
-                            <a href="{{ route('coach.groups.create') }}" style="color:var(--accent-primary);margin-top:.5rem;display:inline-block;font-weight:500;">Crear primer grupo</a>
+                            <a href="{{ businessRoute('coach.groups.create') }}" style="color:var(--accent-primary);margin-top:.5rem;display:inline-block;font-weight:500;">Crear primer grupo</a>
                         </div>
                     @else
                         <div style="display:flex;flex-direction:column;gap:.75rem;">
                             @foreach($trainingGroups as $group)
-                                <a href="{{ route('coach.groups.show', $group) }}" style="padding:.75rem;border-radius:.5rem;background:rgba(5,8,20,.9);border:1px solid rgba(255,59,92,.15);text-decoration:none;display:flex;justify-content:space-between;align-items:center;transition:all .2s;">
+                                <a href="{{ businessRoute('coach.groups.show', ['group' => $group]) }}" style="padding:.75rem;border-radius:.5rem;background:rgba(5,8,20,.9);border:1px solid rgba(255,59,92,.15);text-decoration:none;display:flex;justify-content:space-between;align-items:center;transition:all .2s;">
                                     <div>
                                         <div style="font-size:.9rem;font-weight:600;color:#fff;margin-bottom:.25rem;">{{ $group->name }}</div>
                                         <div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--text-muted);">

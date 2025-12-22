@@ -64,7 +64,7 @@ Route::middleware('auth')->group(function () {
 // ============================================================================
 // RUTAS MULTI-TENANT (con prefijo /{business})
 // ============================================================================
-Route::prefix('{business}')->middleware(['auth', 'business.context'])->group(function () {
+Route::prefix('{business}')->name('business.')->middleware(['auth', 'business.context'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -96,12 +96,11 @@ Route::prefix('{business}')->middleware(['auth', 'business.context'])->group(fun
     Route::prefix('coach')->name('coach.')->middleware('coach')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Coach\DashboardController::class, 'index'])->name('dashboard');
 
-        // Business management
-        Route::get('/business', [\App\Http\Controllers\Coach\BusinessController::class, 'index'])->name('business.index');
-        Route::get('/business/{business}', [\App\Http\Controllers\Coach\BusinessController::class, 'show'])->name('business.show');
-        Route::get('/business/{business}/edit', [\App\Http\Controllers\Coach\BusinessController::class, 'edit'])->name('business.edit');
-        Route::put('/business/{business}', [\App\Http\Controllers\Coach\BusinessController::class, 'update'])->name('business.update');
-        Route::delete('/business/{business}', [\App\Http\Controllers\Coach\BusinessController::class, 'destroy'])->name('business.destroy');
+        // Business management (el business ya viene del prefijo del grupo principal)
+        Route::get('/business', [\App\Http\Controllers\Coach\BusinessController::class, 'show'])->name('business.show');
+        Route::get('/business/edit', [\App\Http\Controllers\Coach\BusinessController::class, 'edit'])->name('business.edit');
+        Route::put('/business', [\App\Http\Controllers\Coach\BusinessController::class, 'update'])->name('business.update');
+        Route::delete('/business', [\App\Http\Controllers\Coach\BusinessController::class, 'destroy'])->name('business.destroy');
 
         // Training Groups
         Route::resource('groups', \App\Http\Controllers\Coach\TrainingGroupController::class);

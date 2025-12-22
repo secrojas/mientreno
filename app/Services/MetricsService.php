@@ -10,10 +10,11 @@ class MetricsService
 {
     /**
      * Obtener métricas semanales de un usuario
+     * Solo cuenta workouts completados (excluye planned y skipped)
      */
     public function getWeeklyMetrics(User $user): array
     {
-        $workouts = $user->workouts()->thisWeek()->get();
+        $workouts = $user->workouts()->thisWeek()->completed()->get();
 
         return [
             'total_distance' => $workouts->sum('distance'),
@@ -25,10 +26,11 @@ class MetricsService
 
     /**
      * Obtener métricas mensuales de un usuario
+     * Solo cuenta workouts completados (excluye planned y skipped)
      */
     public function getMonthlyMetrics(User $user): array
     {
-        $workouts = $user->workouts()->thisMonth()->get();
+        $workouts = $user->workouts()->thisMonth()->completed()->get();
 
         return [
             'total_distance' => $workouts->sum('distance'),
@@ -40,10 +42,11 @@ class MetricsService
 
     /**
      * Obtener métricas anuales de un usuario
+     * Solo cuenta workouts completados (excluye planned y skipped)
      */
     public function getYearlyMetrics(User $user): array
     {
-        $workouts = $user->workouts()->thisYear()->get();
+        $workouts = $user->workouts()->thisYear()->completed()->get();
 
         return [
             'total_distance' => $workouts->sum('distance'),
@@ -55,14 +58,15 @@ class MetricsService
 
     /**
      * Obtener métricas totales de un usuario
+     * Solo cuenta workouts completados (excluye planned y skipped)
      */
     public function getTotalMetrics(User $user): array
     {
         return [
-            'total_distance' => $user->workouts()->sum('distance'),
-            'total_duration' => $user->workouts()->sum('duration'),
-            'total_workouts' => $user->workouts()->count(),
-            'avg_pace' => $user->workouts()->avg('avg_pace'),
+            'total_distance' => $user->workouts()->completed()->sum('distance'),
+            'total_duration' => $user->workouts()->completed()->sum('duration'),
+            'total_workouts' => $user->workouts()->completed()->count(),
+            'avg_pace' => $user->workouts()->completed()->avg('avg_pace'),
         ];
     }
 
@@ -98,10 +102,12 @@ class MetricsService
 
     /**
      * Obtener distribución de tipos de entrenamientos
+     * Solo cuenta workouts completados (excluye planned y skipped)
      */
     public function getWorkoutTypeDistribution(User $user): array
     {
         return $user->workouts()
+            ->completed()
             ->selectRaw('type, COUNT(*) as count, SUM(distance) as total_distance')
             ->groupBy('type')
             ->get()
@@ -116,10 +122,12 @@ class MetricsService
 
     /**
      * Calcular racha de entrenamientos (días consecutivos)
+     * Solo cuenta workouts completados (excluye planned y skipped)
      */
     public function calculateStreak(User $user): int
     {
         $workouts = $user->workouts()
+            ->completed()
             ->orderBy('date', 'desc')
             ->get()
             ->pluck('date')
@@ -157,13 +165,15 @@ class MetricsService
 
     /**
      * Comparar métricas entre dos períodos
+     * Solo cuenta workouts completados (excluye planned y skipped)
      */
     public function compareWeekToWeek(User $user): array
     {
         $thisWeek = $this->getWeeklyMetrics($user);
 
-        // Semana anterior
+        // Semana anterior - solo completados
         $lastWeekWorkouts = $user->workouts()
+            ->completed()
             ->whereBetween('date', [
                 Carbon::now()->subWeek()->startOfWeek(),
                 Carbon::now()->subWeek()->endOfWeek(),

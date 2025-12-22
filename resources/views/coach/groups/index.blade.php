@@ -8,7 +8,7 @@
                 Gestiona tus grupos y asigna alumnos
             </p>
         </div>
-        <a href="{{ route('coach.groups.create') }}" class="btn-primary" style="display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;background:linear-gradient(135deg,var(--accent-primary),#FF4FA3);color:#0B0C12;border-radius:.6rem;font-weight:500;font-size:.9rem;border:none;cursor:pointer;transition:all .18s ease-out;">
+        <a href="{{ businessRoute('coach.groups.create') }}" class="btn-primary" style="display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;background:linear-gradient(135deg,var(--accent-primary),#FF4FA3);color:#0B0C12;border-radius:.6rem;font-weight:500;font-size:.9rem;border:none;cursor:pointer;transition:all .18s ease-out;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
                 <path d="M12 5v14M5 12h14"/>
             </svg>
@@ -37,7 +37,7 @@
             </div>
             <h3 style="font-size:1.2rem;font-weight:600;margin-bottom:.5rem;">No tienes grupos creados</h3>
             <p style="color:var(--text-muted);margin-bottom:1.5rem;font-size:.9rem;">Crea tu primer grupo de entrenamiento para organizar a tus alumnos</p>
-            <a href="{{ route('coach.groups.create') }}" style="display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;background:linear-gradient(135deg,var(--accent-primary),#FF4FA3);color:#0B0C12;border-radius:.6rem;font-weight:500;font-size:.9rem;text-decoration:none;">
+            <a href="{{ businessRoute('coach.groups.create') }}" style="display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;background:linear-gradient(135deg,var(--accent-primary),#FF4FA3);color:#0B0C12;border-radius:.6rem;font-weight:500;font-size:.9rem;text-decoration:none;">
                 Crear Primer Grupo
             </a>
         </div>
@@ -85,10 +85,10 @@
                     </div>
 
                     <div style="display:flex;gap:.5rem;">
-                        <a href="{{ route('coach.groups.show', $group) }}" style="flex:1;padding:.5rem 1rem;background:rgba(5,8,20,.9);color:var(--text-main);text-align:center;border-radius:.6rem;font-weight:500;font-size:.85rem;text-decoration:none;border:1px solid rgba(31,41,55,.7);transition:all .15s ease-out;">
+                        <a href="{{ businessRoute('coach.groups.show', ['group' => $group]) }}" style="flex:1;padding:.5rem 1rem;background:rgba(5,8,20,.9);color:var(--text-main);text-align:center;border-radius:.6rem;font-weight:500;font-size:.85rem;text-decoration:none;border:1px solid rgba(31,41,55,.7);transition:all .15s ease-out;">
                             Ver Detalle
                         </a>
-                        <a href="{{ route('coach.groups.edit', $group) }}" style="padding:.5rem .9rem;background:rgba(96,165,250,.1);color:#60A5FA;border-radius:.6rem;font-weight:500;font-size:.85rem;text-decoration:none;border:1px solid rgba(96,165,250,.2);transition:all .15s ease-out;">
+                        <a href="{{ businessRoute('coach.groups.edit', ['group' => $group]) }}" style="padding:.5rem .9rem;background:rgba(96,165,250,.1);color:#60A5FA;border-radius:.6rem;font-weight:500;font-size:.85rem;text-decoration:none;border:1px solid rgba(96,165,250,.2);transition:all .15s ease-out;">
                             Editar
                         </a>
                     </div>

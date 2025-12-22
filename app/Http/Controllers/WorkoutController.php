@@ -73,8 +73,8 @@ class WorkoutController extends Controller
             'date' => 'required|date',
             'type' => 'required|in:easy_run,intervals,tempo,long_run,recovery,race,training_run',
             'status' => 'nullable|in:planned,completed',
-            'distance' => 'required|numeric|min:0.1|max:999',
-            'duration' => 'nullable|integer|min:1', // Nullable para workouts planificados
+            'distance' => 'required|numeric|min:0|max:999', // Permite 0 para workouts planificados/salteados
+            'duration' => 'nullable|integer|min:0', // Permite 0 para workouts planificados/salteados
             'avg_heart_rate' => 'nullable|integer|min:40|max:250',
             'elevation_gain' => 'nullable|integer|min:0',
             'difficulty' => 'nullable|integer|min:1|max:5',
@@ -85,9 +85,11 @@ class WorkoutController extends Controller
         $validated['user_id'] = Auth::id();
         $validated['status'] = $validated['status'] ?? 'completed';
 
-        // Calcular pace automáticamente solo si hay duration
-        if (isset($validated['duration']) && $validated['duration'] > 0) {
+        // Calcular pace automáticamente solo si hay duration y distance > 0
+        if (isset($validated['duration']) && $validated['duration'] > 0 && $validated['distance'] > 0) {
             $validated['avg_pace'] = Workout::calculatePace($validated['distance'], $validated['duration']);
+        } else {
+            $validated['avg_pace'] = null;
         }
 
         // Si no tiene difficulty, poner 3 por defecto
@@ -148,8 +150,8 @@ class WorkoutController extends Controller
         $validated = $request->validate([
             'date' => 'required|date',
             'type' => 'required|in:easy_run,intervals,tempo,long_run,recovery,race,training_run',
-            'distance' => 'required|numeric|min:0.1|max:999',
-            'duration' => 'required|integer|min:1',
+            'distance' => 'required|numeric|min:0|max:999', // Permite 0 para workouts planificados/salteados
+            'duration' => 'required|integer|min:0', // Permite 0 para workouts planificados/salteados
             'avg_heart_rate' => 'nullable|integer|min:40|max:250',
             'elevation_gain' => 'nullable|integer|min:0',
             'difficulty' => 'required|integer|min:1|max:5',
@@ -157,8 +159,12 @@ class WorkoutController extends Controller
             'race_id' => 'nullable|exists:races,id',
         ]);
 
-        // Recalcular pace
-        $validated['avg_pace'] = Workout::calculatePace($validated['distance'], $validated['duration']);
+        // Recalcular pace solo si distance y duration son > 0
+        if ($validated['distance'] > 0 && $validated['duration'] > 0) {
+            $validated['avg_pace'] = Workout::calculatePace($validated['distance'], $validated['duration']);
+        } else {
+            $validated['avg_pace'] = null;
+        }
 
         $workout->update($validated);
 
@@ -218,8 +224,8 @@ class WorkoutController extends Controller
         }
 
         $validated = $request->validate([
-            'distance' => 'required|numeric|min:0.1|max:999',
-            'duration' => 'required|integer|min:1',
+            'distance' => 'required|numeric|min:0|max:999', // Permite 0
+            'duration' => 'required|integer|min:0', // Permite 0
             'avg_heart_rate' => 'nullable|integer|min:40|max:250',
             'elevation_gain' => 'nullable|integer|min:0',
             'difficulty' => 'required|integer|min:1|max:5',

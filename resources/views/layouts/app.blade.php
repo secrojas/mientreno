@@ -232,7 +232,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <a href="{{ route('dashboard') }}" style="display:flex;align-items:center;width:100%;">
+            <a href="{{ businessRoute('dashboard') }}" style="display:flex;align-items:center;width:100%;">
                 <img src="{{ asset('images/logo-horizontal.svg') }}" alt="MiEntreno" style="height:42px;width:auto;">
             </a>
         </div>
@@ -241,7 +241,7 @@
             <div class="sidebar-section-label">Panel</div>
 
             @if(auth()->user()->role === 'coach' || auth()->user()->role === 'admin')
-                <a href="{{ route('coach.dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('coach.dashboard') ? 'active' : '' }}">
+                <a href="{{ businessRoute('coach.dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('coach.dashboard') || request()->routeIs('business.coach.dashboard') ? 'active' : '' }}">
                     <!-- Dashboard icon -->
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
@@ -252,7 +252,7 @@
                     <span class="sidebar-expanded-text">Dashboard Coach</span>
                 </a>
             @else
-                <a href="{{ route('dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <a href="{{ businessRoute('dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('dashboard') || request()->routeIs('business.dashboard') ? 'active' : '' }}">
                     <!-- Dashboard icon -->
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
@@ -262,53 +262,53 @@
                     </svg>
                     <span class="sidebar-expanded-text">Dashboard</span>
                 </a>
+
+                <a href="{{ businessRoute('workouts.index') }}" class="sidebar-nav-link {{ request()->routeIs('workouts.*') || request()->routeIs('business.workouts.*') ? 'active' : '' }}">
+                    <!-- Workouts icon (line chart) -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19L9 10L13 15L20 5"></path>
+                        <path d="M20 10V5H15"></path>
+                    </svg>
+                    <span class="sidebar-expanded-text">Entrenamientos</span>
+                </a>
+
+                <a href="{{ businessRoute('races.index') }}" class="sidebar-nav-link {{ request()->routeIs('races.*') || request()->routeIs('business.races.*') ? 'active' : '' }}">
+                    <!-- Races icon (flag) -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 3v18"></path>
+                        <path d="M6 4h9l-1.5 3L18 10H6z"></path>
+                    </svg>
+                    <span class="sidebar-expanded-text">Carreras</span>
+                </a>
+
+                <a href="{{ businessRoute('goals.index') }}" class="sidebar-nav-link {{ request()->routeIs('goals.*') || request()->routeIs('business.goals.*') ? 'active' : '' }}">
+                    <!-- Goals icon (target) -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="8"></circle>
+                        <circle cx="12" cy="12" r="4"></circle>
+                        <path d="M12 8v2"></path>
+                        <path d="M12 14v2"></path>
+                    </svg>
+                    <span class="sidebar-expanded-text">Objetivos</span>
+                </a>
+
+                <a href="{{ businessRoute('reports.index') }}" class="sidebar-nav-link {{ request()->routeIs('reports.*') || request()->routeIs('business.reports.*') ? 'active' : '' }}">
+                    <!-- Reports icon (file/document with chart) -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <path d="M14 2v6h6"></path>
+                        <path d="M8 13h2"></path>
+                        <path d="M8 17h8"></path>
+                        <path d="M16 13l-4 4"></path>
+                    </svg>
+                    <span class="sidebar-expanded-text">Reportes</span>
+                </a>
             @endif
-
-            <a href="{{ route('workouts.index') }}" class="sidebar-nav-link {{ request()->routeIs('workouts.*') ? 'active' : '' }}">
-                <!-- Workouts icon (line chart) -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 19L9 10L13 15L20 5"></path>
-                    <path d="M20 10V5H15"></path>
-                </svg>
-                <span class="sidebar-expanded-text">Entrenamientos</span>
-            </a>
-
-            <a href="{{ route('races.index') }}" class="sidebar-nav-link {{ request()->routeIs('races.*') ? 'active' : '' }}">
-                <!-- Races icon (flag) -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M5 3v18"></path>
-                    <path d="M6 4h9l-1.5 3L18 10H6z"></path>
-                </svg>
-                <span class="sidebar-expanded-text">Carreras</span>
-            </a>
-
-            <a href="{{ route('goals.index') }}" class="sidebar-nav-link {{ request()->routeIs('goals.*') ? 'active' : '' }}">
-                <!-- Goals icon (target) -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="8"></circle>
-                    <circle cx="12" cy="12" r="4"></circle>
-                    <path d="M12 8v2"></path>
-                    <path d="M12 14v2"></path>
-                </svg>
-                <span class="sidebar-expanded-text">Objetivos</span>
-            </a>
-
-            <a href="{{ route('reports.index') }}" class="sidebar-nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
-                <!-- Reports icon (file/document with chart) -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <path d="M14 2v6h6"></path>
-                    <path d="M8 13h2"></path>
-                    <path d="M8 17h8"></path>
-                    <path d="M16 13l-4 4"></path>
-                </svg>
-                <span class="sidebar-expanded-text">Reportes</span>
-            </a>
 
             @if(auth()->user()->role === 'coach' || auth()->user()->role === 'admin')
             <div class="sidebar-section-label">Coaching</div>
 
-            <a href="{{ route('coach.business.index') }}" class="sidebar-nav-link {{ request()->routeIs('coach.business.*') ? 'active' : '' }}">
+            <a href="{{ businessRoute('coach.business.show') }}" class="sidebar-nav-link {{ request()->routeIs('coach.business.*') || request()->routeIs('business.coach.business.*') ? 'active' : '' }}">
                 <!-- Business icon (briefcase) -->
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
@@ -317,7 +317,7 @@
                 <span class="sidebar-expanded-text">Mi Negocio</span>
             </a>
 
-            <a href="{{ route('coach.groups.index') }}" class="sidebar-nav-link {{ request()->routeIs('coach.groups.*') ? 'active' : '' }}">
+            <a href="{{ businessRoute('coach.groups.index') }}" class="sidebar-nav-link {{ request()->routeIs('coach.groups.*') || request()->routeIs('business.coach.groups.*') ? 'active' : '' }}">
                 <!-- Groups icon (users/group) -->
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="9" cy="9" r="2.5"></circle>

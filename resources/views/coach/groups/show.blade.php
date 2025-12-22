@@ -1,7 +1,7 @@
 <x-app-layout>
     <div style="margin-bottom:1.5rem;">
         <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
-            <a href="{{ route('coach.groups.index') }}" style="color:var(--text-muted);display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;text-decoration:none;">
+            <a href="{{ businessRoute('coach.groups.index') }}" style="color:var(--text-muted);display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;text-decoration:none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
@@ -26,7 +26,7 @@
                     @endif
                 </div>
             </div>
-            <a href="{{ route('coach.groups.edit', $group) }}" style="padding:.6rem 1rem;background:rgba(96,165,250,.1);color:#60A5FA;border-radius:.6rem;font-weight:500;font-size:.85rem;text-decoration:none;border:1px solid rgba(96,165,250,.2);display:inline-flex;align-items:center;gap:.4rem;">
+            <a href="{{ businessRoute('coach.groups.edit', ['group' => $group]) }}" style="padding:.6rem 1rem;background:rgba(96,165,250,.1);color:#60A5FA;border-radius:.6rem;font-weight:500;font-size:.85rem;text-decoration:none;border:1px solid rgba(96,165,250,.2);display:inline-flex;align-items:center;gap:.4rem;">
                 <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                 </svg>
@@ -114,7 +114,7 @@
                                 <div style="color:var(--text-muted);font-size:.75rem;">{{ $member->email }}</div>
                             </div>
                         </div>
-                        <form method="POST" action="{{ route('coach.groups.removeMember', [$group, $member]) }}" onsubmit="return confirm('¿Remover a {{ $member->name }} del grupo?')" style="margin:0;">
+                        <form method="POST" action="{{ businessRoute('coach.groups.removeMember', ['group' => $group, 'user' => $member]) }}" onsubmit="return confirm('¿Remover a {{ $member->name }} del grupo?')" style="margin:0;">
                             @csrf
                             @method('DELETE')
                             <button type="submit" style="padding:.4rem;background:transparent;border:none;color:var(--text-muted);cursor:pointer;transition:color .15s ease-out;border-radius:.4rem;">
@@ -139,7 +139,7 @@
             @elseif($availableStudents->isEmpty())
                 <p style="color:var(--text-muted);font-size:.9rem;">No hay alumnos disponibles. Todos los alumnos de tu negocio ya están en este grupo.</p>
             @else
-                <form method="POST" action="{{ route('coach.groups.addMember', $group) }}">
+                <form method="POST" action="{{ businessRoute('coach.groups.addMember', ['group' => $group]) }}">
                     @csrf
                     <div style="margin-bottom:1.25rem;">
                         <label for="user_id" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">

@@ -90,13 +90,16 @@
                         name="distance"
                         type="number"
                         step="0.01"
-                        min="0.1"
+                        min="0"
                         max="999"
                         required
                         value="{{ old('distance') }}"
                         placeholder="10.5"
                         style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;"
                     >
+                    @error('distance')
+                        <span style="font-size:.75rem;color:var(--accent-primary);">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>

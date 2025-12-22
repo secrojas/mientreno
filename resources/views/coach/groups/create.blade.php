@@ -2,7 +2,7 @@
     <div style="max-width:720px;">
         <div style="margin-bottom:1.5rem;">
             <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
-                <a href="{{ route('coach.groups.index') }}" style="color:var(--text-muted);display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;text-decoration:none;">
+                <a href="{{ businessRoute('coach.groups.index') }}" style="color:var(--text-muted);display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;text-decoration:none;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
                         <path d="M19 12H5M12 19l-7-7 7-7"/>
                     </svg>
@@ -17,7 +17,7 @@
             </p>
         </div>
 
-        <form method="POST" action="{{ route('coach.groups.store') }}" style="background:rgba(15,23,42,.9);border-radius:1rem;padding:1.5rem;border:1px solid var(--border-subtle);display:grid;gap:1.25rem;">
+        <form method="POST" action="{{ businessRoute('coach.groups.store') }}" style="background:rgba(15,23,42,.9);border-radius:1rem;padding:1.5rem;border:1px solid var(--border-subtle);display:grid;gap:1.25rem;">
             @csrf
 
             @if($errors->any())
@@ -126,7 +126,7 @@
                     Crear Grupo
                 </button>
                 <a
-                    href="{{ route('coach.groups.index') }}"
+                    href="{{ businessRoute('coach.groups.index') }}"
                     style="padding:.7rem 1.2rem;background:rgba(5,8,20,.9);color:var(--text-main);border:1px solid rgba(31,41,55,.7);border-radius:.6rem;font-weight:500;font-size:.9rem;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease-out;"
                 >
                     Cancelar

@@ -55,14 +55,14 @@ class LoginController extends Controller
                 return route('coach.business.create');
             }
 
-            // Si tiene business, ir a coach dashboard con contexto
-            return route('coach.dashboard', ['business' => $business->slug]);
+            // Si tiene business, ir a coach dashboard con contexto (business.coach.dashboard)
+            return route('business.coach.dashboard', ['business' => $business->slug]);
         }
 
         // Runners
         if ($business) {
-            // Usuario con business: ruta con prefijo
-            return route('dashboard', ['business' => $business->slug]);
+            // Usuario con business: ruta con prefijo (business.dashboard)
+            return route('business.dashboard', ['business' => $business->slug]);
         }
 
         // Usuario individual: ruta sin prefijo

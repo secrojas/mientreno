@@ -80,7 +80,8 @@ class TrainingGroupController extends Controller
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
-        return redirect()->route('coach.groups.show', $group)
+        $business = Auth::user()->business;
+        return redirect()->route('business.coach.groups.show', ['business' => $business->slug, 'group' => $group])
             ->with('success', 'Grupo de entrenamiento creado exitosamente.');
     }
 
@@ -153,7 +154,8 @@ class TrainingGroupController extends Controller
             'is_active' => $validated['is_active'] ?? $group->is_active,
         ]);
 
-        return redirect()->route('coach.groups.show', $group)
+        $business = Auth::user()->business;
+        return redirect()->route('business.coach.groups.show', ['business' => $business->slug, 'group' => $group])
             ->with('success', 'Grupo actualizado exitosamente.');
     }
 
@@ -170,7 +172,8 @@ class TrainingGroupController extends Controller
         // Soft delete: marcar como inactivo en lugar de eliminar
         $group->update(['is_active' => false]);
 
-        return redirect()->route('coach.groups.index')
+        $business = Auth::user()->business;
+        return redirect()->route('business.coach.groups.index', ['business' => $business->slug])
             ->with('success', 'Grupo desactivado exitosamente.');
     }
 

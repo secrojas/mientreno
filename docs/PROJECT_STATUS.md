@@ -6,7 +6,7 @@
 
 ---
 
-## Estado Actual (2025-12-19)
+## Estado Actual (2025-12-22)
 
 ### ✨ FASE 2 COMPLETADA - Races & Goals ✅
 ### ✨ UX IMPROVEMENTS COMPLETADAS ✅
@@ -15,6 +15,7 @@
 ### ✨ SPRINT 2 COMPLETADO - Gestión de Business ✅
 ### ✨ SPRINT 3 COMPLETADO - Training Groups ✅
 ### ✨ SPRINT 4 COMPLETADO - Sistema Multi-tenant ✅
+### ✨ SPRINT 4 - CORRECCIONES Y MEJORAS ✅ (2025-12-22)
 
 ### Lo que ya está implementado
 
@@ -1229,6 +1230,196 @@ if (runner) {
 **Commits:**
 - FASE 1: `ae4d458` - `feat(multi-tenant): implementar middlewares y helpers (SPRINT 4 FASE 1)`
 - FASE 2: `884909b` - `feat(multi-tenant): implementar rutas duales y redirección inteligente (SPRINT 4 FASE 2)`
+
+#### 22. Correcciones y Mejoras Post-Sprint 4 🔧
+
+**CORRECCIONES COMPLETADAS** ✅ (2025-12-22)
+
+**Propósito:**
+Resolver problemas identificados en la implementación del sistema multi-tenant y optimizar la experiencia de usuario según roles.
+
+**Problemas Identificados y Solucionados:**
+
+**A) Conflictos de Nombres de Rutas** ✅
+
+**Problema:**
+- Rutas con y sin prefijo `{business}` compartían el mismo nombre
+- Ejemplo: ambas `dashboard` y `{business}/dashboard` se llamaban `'dashboard'`
+- Error: "Missing required parameter for [Route: dashboard] [URI: {business}/dashboard]"
+- Laravel usaba la última definición (con prefijo) para todos los casos
+
+**Solución Implementada:**
+1. **Rutas renombradas en `routes/web.php`:**
+   - Rutas multi-tenant ahora tienen prefijo `business.*`
+   - Ejemplos:
+     - `dashboard` (sin prefijo) → `/dashboard`
+     - `business.dashboard` (con prefijo) → `/{business}/dashboard`
+     - `coach.dashboard` (sin prefijo) → `/coach/dashboard`
+     - `business.coach.dashboard` (con prefijo) → `/{business}/coach/dashboard`
+
+2. **Controllers actualizados:**
+   - `LoginController.php` - `redirectPath()` usa nombres correctos
+   - `AuthenticatedSessionController.php` - `redirectPath()` usa nombres correctos
+   - `BusinessController.php` - Rutas corregidas, métodos sin parámetro `$business` duplicado
+   - `TrainingGroupController.php` - Rutas con prefijo correcto
+
+3. **Helper `businessRoute()` mejorado:**
+   - Prefija automáticamente con `business.` cuando usuario tiene business
+   - Previene doble prefijo con validación `str_starts_with()`
+   - Ejemplo: `businessRoute('dashboard')` → `route('business.dashboard', ['business' => $slug])`
+
+4. **Vistas actualizadas:**
+   - `layouts/app.blade.php` - Sidebar usa `businessRoute()` para todos los links
+   - `coach/business/*.blade.php` - Rutas corregidas sin duplicar parámetros
+   - `coach/groups/*.blade.php` - Todas las rutas con `businessRoute()`
+   - `coach/dashboard.blade.php` - Links actualizados
+
+**Archivos Modificados:**
+- `routes/web.php` - Rutas renombradas con prefijo `business.*`
+- `app/Http/Controllers/Auth/v1/LoginController.php`
+- `app/Http/Controllers/Auth/AuthenticatedSessionController.php`
+- `app/Http/Controllers/Coach/BusinessController.php`
+- `app/Http/Controllers/Coach/TrainingGroupController.php`
+- `app/helpers.php` - Helper `businessRoute()` mejorado
+- `resources/views/layouts/app.blade.php`
+- `resources/views/coach/business/*.blade.php` (3 archivos)
+- `resources/views/coach/groups/*.blade.php` (4 archivos)
+- `resources/views/coach/dashboard.blade.php`
+
+**B) Sidebar de Coaches Optimizado** ✅
+
+**Problema:**
+- Coaches veían opciones personales (Entrenamientos, Carreras, Objetivos, Reportes)
+- Estas opciones son para gestión individual, no para coaches
+- Coaches deben ver datos agregados de alumnos, no datos propios
+
+**Solución Implementada:**
+- **Sidebar reorganizado** (`layouts/app.blade.php`):
+  - Coaches/Admins solo ven:
+    - Dashboard Coach
+    - Mi Negocio (Coaching)
+    - Grupos (Coaching)
+    - Mi Perfil (Cuenta)
+    - Salir (Cuenta)
+  - Runners ven:
+    - Dashboard
+    - Entrenamientos
+    - Carreras
+    - Objetivos
+    - Reportes
+    - Mi Perfil
+    - Salir
+
+**Beneficio:**
+- ✅ Experiencia de usuario diferenciada por rol
+- ✅ Coaches enfocados en gestión de alumnos
+- ✅ Runners enfocados en su entrenamiento personal
+
+**C) Workouts Salteados - Exclusión de Métricas** ✅
+
+**Problema:**
+- Entrenamientos marcados como "salteados" (`status='skipped'`) contaban en métricas
+- Esto distorsionaba kilómetros totales, tiempos y cantidad de entrenamientos
+- Los workouts salteados deben aparecer en reportes pero NO sumar a métricas
+
+**Solución Implementada:**
+
+1. **MetricsService actualizado** (`app/Services/MetricsService.php`):
+   - Todos los métodos ahora filtran por `.completed()`
+   - Métodos modificados:
+     - `getWeeklyMetrics()` - Solo cuenta completados
+     - `getMonthlyMetrics()` - Solo cuenta completados
+     - `getYearlyMetrics()` - Solo cuenta completados
+     - `getTotalMetrics()` - Solo cuenta completados
+     - `getWorkoutTypeDistribution()` - Solo cuenta completados
+     - `calculateStreak()` - Solo cuenta completados
+     - `compareWeekToWeek()` - Solo cuenta completados
+
+2. **ReportService actualizado** (`app/Services/ReportService.php`):
+   - `calculateSummary()` - Filtra solo completados para métricas
+   - `getWorkoutDistribution()` - Solo completados
+   - `getInsights()` - Solo completados
+   - `getWeeklyReport()` - Muestra TODOS los workouts (incluye skipped en lista)
+   - `getMonthlyReport()` - Muestra TODOS los workouts (incluye skipped en lista)
+
+**Resultado:**
+- ✅ Workouts completados: Cuentan en todas las métricas
+- ✅ Workouts planeados: NO cuentan (aún no realizados)
+- ✅ Workouts salteados: NO cuentan pero aparecen en reportes
+- ✅ Estadísticas precisas sin distorsión
+
+**Ejemplo Práctico:**
+```
+Semana:
+- Lunes: 10km completado ✅
+- Miércoles: 8km saltado ⏭️ (Lluvia)
+- Viernes: 12km completado ✅
+
+Métricas:
+- Total km: 22km (solo completados)
+- Entrenamientos: 2 (solo completados)
+
+Reporte muestra:
+✅ Lunes 10km - Completado
+⏭️ Miércoles 8km - Saltado (Lluvia)
+✅ Viernes 12km - Completado
+```
+
+**D) Validaciones de Workouts - Permite Valores en 0** ✅
+
+**Problema:**
+- Validaciones requerían `distance >= 0.1` y `duration >= 1`
+- No se podían guardar workouts planificados/salteados con valores en 0
+- Casos de uso: entrenamientos que no se realizaron
+
+**Solución Implementada:**
+
+1. **Validaciones actualizadas en WorkoutController:**
+   - `store()`: `distance` min:0, `duration` min:0
+   - `update()`: `distance` min:0, `duration` min:0
+   - `markCompleted()`: `distance` min:0, `duration` min:0
+
+2. **Lógica de cálculo de pace modificada:**
+   ```php
+   // Solo calcula pace si ambos valores son > 0
+   if ($distance > 0 && $duration > 0) {
+       $avg_pace = calculatePace(...);
+   } else {
+       $avg_pace = null;
+   }
+   ```
+
+3. **Modelo Workout actualizado:**
+   - `markAsCompleted()` - Valida valores > 0 antes de calcular pace
+
+4. **Formularios HTML actualizados:**
+   - `workouts/create.blade.php` - `min="0"` en distancia
+   - `workouts/edit.blade.php` - `min="0"` en distancia
+   - `workouts/mark-completed.blade.php` - `min="0"` en distancia
+   - Campos de duración ya permitían 0
+
+**Casos de Uso Soportados:**
+- ✅ Workout planificado no realizado: `distance=0`, `duration=0`
+- ✅ Solo distancia sin tiempo: `distance=10`, `duration=0` (pace=null)
+- ✅ Solo tiempo sin distancia: `distance=0`, `duration=90` (pace=null)
+- ✅ Workout completo: `distance=10`, `duration=3600` (pace calculado)
+
+**Archivos Modificados:**
+- `app/Http/Controllers/WorkoutController.php` (3 métodos)
+- `app/Models/Workout.php` (`markAsCompleted()`)
+- `resources/views/workouts/create.blade.php`
+- `resources/views/workouts/edit.blade.php`
+- `resources/views/workouts/mark-completed.blade.php`
+
+**Tiempo Total de Correcciones:** ~3 horas ✅
+
+**Beneficios Generales:**
+- ✅ Sistema multi-tenant completamente funcional
+- ✅ Experiencia diferenciada por rol (coach vs runner)
+- ✅ Métricas precisas sin entrenamientos salteados
+- ✅ Flexibilidad para registrar entrenamientos no realizados
+- ✅ Reportes completos con contexto de planificación vs realidad
+- ✅ Navegación limpia y enfocada según tipo de usuario
 
 ---
 

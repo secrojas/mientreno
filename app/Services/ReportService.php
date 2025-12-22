@@ -151,15 +151,19 @@ class ReportService
 
     /**
      * Calcular resumen de métricas
+     * Solo cuenta workouts completados para métricas (excluye planned y skipped)
      */
     protected function calculateSummary(Collection $workouts): array
     {
-        $totalDistance = $workouts->sum('distance');
-        $totalDuration = $workouts->sum('duration');
-        $totalSessions = $workouts->count();
-        $avgPace = $workouts->avg('avg_pace');
-        $avgHeartRate = $workouts->whereNotNull('avg_heart_rate')->avg('avg_heart_rate');
-        $elevationGain = $workouts->sum('elevation_gain');
+        // Filtrar solo workouts completados para métricas
+        $completedWorkouts = $workouts->where('status', 'completed');
+
+        $totalDistance = $completedWorkouts->sum('distance');
+        $totalDuration = $completedWorkouts->sum('duration');
+        $totalSessions = $completedWorkouts->count();
+        $avgPace = $completedWorkouts->avg('avg_pace');
+        $avgHeartRate = $completedWorkouts->whereNotNull('avg_heart_rate')->avg('avg_heart_rate');
+        $elevationGain = $completedWorkouts->sum('elevation_gain');
 
         return [
             'total_distance' => round($totalDistance, 2),
@@ -175,16 +179,20 @@ class ReportService
 
     /**
      * Obtener distribución de tipos de entrenamientos con porcentajes
+     * Solo cuenta workouts completados (excluye planned y skipped)
      */
     public function getWorkoutDistribution(Collection $workouts): array
     {
-        if ($workouts->isEmpty()) {
+        // Filtrar solo completados para distribución
+        $completedWorkouts = $workouts->where('status', 'completed');
+
+        if ($completedWorkouts->isEmpty()) {
             return [];
         }
 
-        $totalDistance = $workouts->sum('distance');
+        $totalDistance = $completedWorkouts->sum('distance');
 
-        $distribution = $workouts->groupBy('type')->map(function ($group) use ($totalDistance) {
+        $distribution = $completedWorkouts->groupBy('type')->map(function ($group) use ($totalDistance) {
             $distance = $group->sum('distance');
             return [
                 'count' => $group->count(),
@@ -288,17 +296,21 @@ class ReportService
 
     /**
      * Generar insights automáticos
+     * Solo usa workouts completados para insights (excluye planned y skipped)
      */
     public function getInsights(Collection $workouts, User $user): array
     {
         $insights = [];
 
-        if ($workouts->isEmpty()) {
+        // Filtrar solo completados para insights
+        $completedWorkouts = $workouts->where('status', 'completed');
+
+        if ($completedWorkouts->isEmpty()) {
             return $insights;
         }
 
         // Insight 1: Mejor entrenamiento del período (mayor distancia)
-        $bestWorkout = $workouts->sortByDesc('distance')->first();
+        $bestWorkout = $completedWorkouts->sortByDesc('distance')->first();
         if ($bestWorkout) {
             $insights[] = [
                 'icon' => '🏆',
@@ -308,7 +320,7 @@ class ReportService
         }
 
         // Insight 2: Racha de días consecutivos en el período
-        $streak = $this->calculatePeriodStreak($workouts);
+        $streak = $this->calculatePeriodStreak($completedWorkouts);
         if ($streak >= 3) {
             $insights[] = [
                 'icon' => '🔥',
@@ -317,7 +329,7 @@ class ReportService
         }
 
         // Insight 3: Pace más rápido
-        $fastestWorkout = $workouts->where('avg_pace', '>', 0)->sortBy('avg_pace')->first();
+        $fastestWorkout = $completedWorkouts->where('avg_pace', '>', 0)->sortBy('avg_pace')->first();
         if ($fastestWorkout) {
             $insights[] = [
                 'icon' => '⚡',
@@ -327,7 +339,7 @@ class ReportService
         }
 
         // Insight 4: Tipo de entrenamiento más frecuente
-        $typeDistribution = $workouts->groupBy('type');
+        $typeDistribution = $completedWorkouts->groupBy('type');
         if ($typeDistribution->count() > 1) {
             $mostFrequent = $typeDistribution->sortByDesc(fn($group) => $group->count())->first();
             if ($mostFrequent && $mostFrequent->count() >= 2) {
@@ -340,7 +352,7 @@ class ReportService
         }
 
         // Insight 5: Entrenamiento más largo
-        $longestDuration = $workouts->sortByDesc('duration')->first();
+        $longestDuration = $completedWorkouts->sortByDesc('duration')->first();
         if ($longestDuration && $longestDuration->duration >= 3600) { // >= 1 hora
             $insights[] = [
                 'icon' => '⏱️',

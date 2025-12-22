@@ -22,7 +22,7 @@ class BusinessController extends Controller
                 ->with('info', 'Necesitás crear tu negocio primero.');
         }
 
-        return redirect()->route('coach.business.show', $business);
+        return redirect()->route('business.coach.business.show', ['business' => $business->slug]);
     }
 
     /**
@@ -34,7 +34,7 @@ class BusinessController extends Controller
 
         // Si ya tiene business, redirigir al show
         if ($coach->business) {
-            return redirect()->route('coach.business.show', $coach->business)
+            return redirect()->route('business.coach.business.show', ['business' => $coach->business->slug])
                 ->with('info', 'Ya tenés un negocio creado.');
         }
 
@@ -50,7 +50,7 @@ class BusinessController extends Controller
 
         // Validar que no tenga business ya
         if ($coach->business) {
-            return redirect()->route('coach.business.show', $coach->business)
+            return redirect()->route('business.coach.business.show', ['business' => $coach->business->slug])
                 ->with('error', 'Ya tenés un negocio creado.');
         }
 
@@ -79,20 +79,22 @@ class BusinessController extends Controller
         $coach->business_id = $business->id;
         $coach->save();
 
-        return redirect()->route('coach.business.show', $business)
+        return redirect()->route('business.coach.business.show', ['business' => $business->slug])
             ->with('success', '¡Negocio creado exitosamente!');
     }
 
     /**
      * Mostrar detalle del business
      */
-    public function show(Business $business)
+    public function show()
     {
         $coach = Auth::user();
+        $business = $coach->business;
 
-        // Verificar que sea el dueño
-        if ($business->owner_id !== $coach->id) {
-            abort(403, 'No tenés permiso para ver este negocio.');
+        // Verificar que tenga business
+        if (!$business) {
+            return redirect()->route('coach.business.create')
+                ->with('info', 'Necesitás crear tu negocio primero.');
         }
 
         // Cargar relaciones
@@ -104,13 +106,15 @@ class BusinessController extends Controller
     /**
      * Formulario para editar business
      */
-    public function edit(Business $business)
+    public function edit()
     {
         $coach = Auth::user();
+        $business = $coach->business;
 
-        // Verificar que sea el dueño
-        if ($business->owner_id !== $coach->id) {
-            abort(403, 'No tenés permiso para editar este negocio.');
+        // Verificar que tenga business
+        if (!$business) {
+            return redirect()->route('coach.business.create')
+                ->with('info', 'Necesitás crear tu negocio primero.');
         }
 
         return view('coach.business.edit', compact('business'));
@@ -119,13 +123,15 @@ class BusinessController extends Controller
     /**
      * Actualizar business
      */
-    public function update(Request $request, Business $business)
+    public function update(Request $request)
     {
         $coach = Auth::user();
+        $business = $coach->business;
 
-        // Verificar que sea el dueño
-        if ($business->owner_id !== $coach->id) {
-            abort(403, 'No tenés permiso para editar este negocio.');
+        // Verificar que tenga business
+        if (!$business) {
+            return redirect()->route('coach.business.create')
+                ->with('error', 'No tenés un negocio para actualizar.');
         }
 
         // Validar datos
@@ -149,20 +155,22 @@ class BusinessController extends Controller
             'is_active' => $validated['is_active'] ?? $business->is_active,
         ]);
 
-        return redirect()->route('coach.business.show', $business)
+        return redirect()->route('business.coach.business.show', ['business' => $business->slug])
             ->with('success', 'Negocio actualizado exitosamente.');
     }
 
     /**
      * Eliminar business (soft delete - solo desactivar)
      */
-    public function destroy(Business $business)
+    public function destroy()
     {
         $coach = Auth::user();
+        $business = $coach->business;
 
-        // Verificar que sea el dueño
-        if ($business->owner_id !== $coach->id) {
-            abort(403, 'No tenés permiso para eliminar este negocio.');
+        // Verificar que tenga business
+        if (!$business) {
+            return redirect()->route('coach.business.create')
+                ->with('error', 'No tenés un negocio para desactivar.');
         }
 
         // Desactivar en lugar de eliminar
