@@ -42,6 +42,18 @@ class RegisterController extends Controller
             $businessId = $this->decodeInvitationToken($request->input('invitation_token'));
         }
 
+        // VALIDACIÓN DE LÍMITES: Verificar si el business puede agregar más estudiantes
+        if ($businessId) {
+            $business = Business::find($businessId);
+
+            if ($business && !$business->canAddStudents(1)) {
+                return back()->withErrors([
+                    'invitation_token' => 'Este negocio ' . lcfirst(subscriptionLimitMessage('students', $business)) .
+                                         ' El coach debe actualizar su plan para poder agregar más alumnos.'
+                ])->withInput();
+            }
+        }
+
         $user = User::create([
             'name'        => $data['name'],
             'email'       => $data['email'],

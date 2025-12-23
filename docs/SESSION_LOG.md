@@ -573,4 +573,326 @@ if ($validated['distance'] > 0 && $validated['duration'] > 0) {
 
 ---
 
-**Última actualización**: 2025-12-22
+## Session 09: Sistema de Suscripciones (Sprint 5)
+**Fecha**: 2025-12-23
+**Objetivos**: Implementar sistema completo de suscripciones con 4 planes para monetización y control de capacidad
+
+### Contexto de inicio
+
+**Situación:**
+- Sprint 4 completado y funcionando
+- Sistema multi-tenant operativo
+- Necesidad de implementar modelo de negocio
+- Sprint 5 planificado en 4 fases para gestión de tokens
+
+**Tareas pendientes:**
+- Crear sistema de suscripciones con planes
+- Aplicar límites por plan (estudiantes, grupos, storage)
+- Crear panel UI para gestión
+- Validaciones automáticas de límites
+
+### Trabajo realizado
+
+#### FASE 1: Modelos y Migraciones ✅
+
+**Migraciones creadas (2):**
+
+1. **subscription_plans** (2025_12_22_194843):
+   - Campos: id, name, slug, description, monthly_price, annual_price, currency, features (JSON), is_active, timestamps
+   - Features JSON: student_limit, group_limit, storage_limit_gb
+   - Index en slug para lookups rápidos
+   - **Corrección aplicada**: Agregado campo slug que faltaba en primera versión
+
+2. **subscriptions** (2025_12_23_123858):
+   - Campos: business_id (FK), plan_id (FK), status, current_period_start, current_period_end, next_billing_date, auto_renew, cancellation_reason
+   - Estados: active, cancelled, expired, trial
+   - Índices optimizados para queries frecuentes
+
+**Modelos implementados (3):**
+
+1. **SubscriptionPlan** (`app/Models/SubscriptionPlan.php`):
+   - 13 métodos implementados
+   - Getters de límites: getStudentLimit(), getGroupLimit(), getStorageLimitGb()
+   - Verificadores: hasStudentLimit(), hasGroupLimit(), hasStorageLimit(), isFree()
+   - Helper: getAnnualDiscount() (calcula % descuento anual)
+   - Scope: active()
+   - Casts automáticos de JSON y decimales
+
+2. **Subscription** (`app/Models/Subscription.php`):
+   - 17 métodos implementados
+   - Gestión de ciclo de vida: activate(), cancel(), expire(), renew()
+   - Verificadores de estado: isActive(), isCancelled(), isExpired(), isTrial(), isValid()
+   - Validaciones de límites: canAddStudents(), canAddGroups(), hasStorageAvailable()
+   - Helpers de período: daysRemaining(), isNearExpiration()
+   - 4 scopes: active(), cancelled(), expired(), trial()
+
+3. **Business** (actualizado):
+   - 9 métodos nuevos agregados
+   - Relaciones: subscriptions(), activeSubscription(), groups()
+   - Métodos de suscripción: getActiveSubscription(), hasActiveSubscription(), getCurrentPlan()
+   - Validaciones: canAddStudents(), canAddGroups(), hasStorageAvailable()
+   - Fallback a plan Free cuando no hay suscripción (5 estudiantes, 2 grupos)
+
+**Migraciones ejecutadas:**
+- `php artisan migrate` → 2 tablas creadas exitosamente
+
+#### FASE 2: Validaciones en Controladores ✅
+
+**Controladores actualizados (2):**
+
+1. **RegisterController** (`app/Http/Controllers/Auth/v1/RegisterController.php`):
+   - Validación agregada en register() antes de crear usuario
+   - Verifica business->canAddStudents(1)
+   - Mensaje de error con plan actual y límite
+   - Bloquea registro cuando se alcanza límite
+
+2. **TrainingGroupController** (`app/Http/Controllers/Coach/TrainingGroupController.php`):
+   - Validación agregada en store() antes de crear grupo
+   - Verifica business->canAddGroups(1)
+   - Usa helper subscriptionLimitMessage()
+   - Import de Auth facade agregado
+
+**Helper creado:**
+
+**subscriptionLimitMessage()** (`app/helpers.php`):
+- Genera mensajes de error consistentes
+- Parámetros: recurso ('students' o 'groups'), business
+- Incluye nombre de plan, límite y sugerencia de upgrade
+- Reutilizable en toda la aplicación
+
+#### FASE 3: Panel UI para Gestión ✅
+
+**Controlador creado:**
+
+**SubscriptionController** (`app/Http/Controllers/Coach/SubscriptionController.php`):
+- 4 métodos implementados:
+  - index(): Muestra suscripción actual y uso de recursos
+  - plans(): Lista todos los planes disponibles
+  - subscribe(Request): Cambiar de plan
+  - cancel(Request): Cancelar suscripción
+- Validaciones: ownership de business, plan no duplicado
+- Lógica: cancela suscripción anterior al cambiar
+
+**Rutas agregadas (4):**
+```php
+Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+    Route::get('/', 'index');
+    Route::get('/plans', 'plans');
+    Route::post('/subscribe', 'subscribe');
+    Route::post('/cancel', 'cancel');
+});
+```
+
+**Vistas creadas (2):**
+
+1. **index.blade.php**:
+   - Card de plan actual con estado visual
+   - Días restantes y fecha de vencimiento
+   - Alertas de próximo vencimiento (≤7 días)
+   - Card de uso de recursos con barras de progreso
+   - Alertas cuando uso >= 80%
+   - Formulario de cancelación con motivo opcional
+   - Links rápidos a ver planes
+
+2. **plans.blade.php**:
+   - Grid responsive con 4 planes
+   - Destaca plan actual con badge y borde
+   - Muestra precio mensual y anual con descuento
+   - Lista características de cada plan
+   - Botón para activar/cambiar plan
+   - Diseño consistente con aplicación
+
+**Navegación actualizada:**
+- Sidebar: Enlace "Suscripción" agregado para coaches
+- Icono de tarjeta de crédito
+- Active state implementado
+
+#### FASE 4: Seeders y Datos ✅
+
+**Seeder creado:**
+
+**SubscriptionPlanSeeder** (`database/seeders/SubscriptionPlanSeeder.php`):
+- 4 planes configurados usando updateOrCreate()
+- Planes:
+  - **Free**: $0 → 5 estudiantes, 2 grupos, 1GB
+  - **Starter**: $19.99/mes ($199.99/año) → 20 estudiantes, 5 grupos, 5GB
+  - **Pro**: $49.99/mes ($499.99/año) → 100 estudiantes, 20 grupos, 20GB
+  - **Enterprise**: $99.99/mes ($999.99/año) → Ilimitado
+- Descuento anual: ~17% en todos los planes de pago
+- Output informativo con resumen de planes
+
+**Seeder ejecutado:**
+- `php artisan db:seed --class=SubscriptionPlanSeeder`
+- 4 planes creados correctamente en base de datos
+
+### Archivos modificados
+
+**Migraciones (2 nuevas):**
+- `database/migrations/2025_12_22_194843_create_subscription_plans_table.php`
+- `database/migrations/2025_12_23_123858_create_subscriptions_table.php`
+
+**Modelos (2 nuevos, 1 actualizado):**
+- `app/Models/SubscriptionPlan.php` → 13 métodos
+- `app/Models/Subscription.php` → 17 métodos
+- `app/Models/Business.php` → 9 métodos agregados
+
+**Controladores (1 nuevo, 2 actualizados):**
+- `app/Http/Controllers/Coach/SubscriptionController.php` → 4 métodos
+- `app/Http/Controllers/Auth/v1/RegisterController.php` → validación agregada
+- `app/Http/Controllers/Coach/TrainingGroupController.php` → validación agregada
+
+**Helpers (1 función agregada):**
+- `app/helpers.php` → subscriptionLimitMessage()
+
+**Rutas (4 agregadas):**
+- `routes/web.php` → subscriptions.index, plans, subscribe, cancel
+
+**Vistas (2 nuevas, 1 actualizada):**
+- `resources/views/coach/subscriptions/index.blade.php` → gestión completa
+- `resources/views/coach/subscriptions/plans.blade.php` → lista de planes
+- `resources/views/layouts/app.blade.php` → enlace sidebar
+
+**Seeders (1 nuevo):**
+- `database/seeders/SubscriptionPlanSeeder.php`
+
+**Documentación (2 actualizadas):**
+- `docs/PROJECT_STATUS.md` → Sección 23 agregada
+- `docs/SESSION_LOG.md` → Sesión 09 agregada
+
+### Flujos implementados
+
+**1. Ver suscripción actual:**
+```
+Coach → Sidebar → Suscripción
+→ Ve plan actual (nombre, estado, días restantes)
+→ Ve barras de progreso (estudiantes X/límite, grupos X/límite)
+→ Ve alertas si cerca de límite (80%+)
+→ Ve alerta si próximo a vencer (≤7 días)
+```
+
+**2. Cambiar de plan:**
+```
+Coach → Suscripción → Ver Planes
+→ Ve grid con 4 planes
+→ Selecciona plan → POST /subscribe
+→ Sistema cancela suscripción anterior (si existe)
+→ Crea nueva suscripción activa
+→ Redirect a index con mensaje de éxito
+```
+
+**3. Cancelar suscripción:**
+```
+Coach → Suscripción → Formulario cancelar
+→ Ingresa motivo (opcional)
+→ POST /cancel
+→ Suscripción.status = 'cancelled'
+→ auto_renew = false
+→ Mantiene acceso hasta current_period_end
+```
+
+**4. Validación de límites automática:**
+```
+Coach intenta agregar estudiante/grupo
+→ Sistema verifica business->canAddStudents()/canAddGroups()
+→ SI alcanzó límite:
+   → Mensaje: "Has alcanzado el límite de [recurso] de tu plan [nombre] ([límite] [recurso]). Actualiza tu plan..."
+   → Acción bloqueada
+→ SI tiene espacio:
+   → Permite la acción
+```
+
+### Testing validado manualmente
+
+**Sistema de Suscripciones:**
+1. ✅ Seeder crea 4 planes correctamente
+2. ✅ Vista de planes muestra grid responsive
+3. ✅ Vista index muestra plan actual (free por defecto)
+4. ✅ Barras de progreso calculan % correctamente
+5. ✅ Sidebar muestra enlace "Suscripción" solo para coaches
+
+**Validaciones de Límites:**
+1. ✅ Business sin suscripción usa límites de Free (5, 2)
+2. ✅ Métodos canAddStudents() y canAddGroups() funcionan
+3. ✅ Helper subscriptionLimitMessage() genera mensajes correctos
+
+**Modelos:**
+1. ✅ SubscriptionPlan.getStudentLimit() retorna valor correcto o null
+2. ✅ SubscriptionPlan.getAnnualDiscount() calcula % descuento
+3. ✅ Subscription.isValid() verifica estado + fecha
+4. ✅ Subscription.daysRemaining() calcula días correctamente
+5. ✅ Business.getActiveSubscription() retorna null cuando no hay
+
+### Estado al final de la sesión
+
+- **SPRINT 5**: ✅ **100% COMPLETADO**
+- **Base de datos**: ✅ **2 tablas creadas, 4 planes seedeados**
+- **Modelos**: ✅ **2 nuevos + 1 actualizado con 39 métodos totales**
+- **Validaciones**: ✅ **Límites aplicados en registro y creación de grupos**
+- **Panel UI**: ✅ **2 vistas profesionales con diseño consistente**
+- **Documentación**: ✅ **PROJECT_STATUS.md y SESSION_LOG.md actualizados**
+
+### Mejoras logradas
+
+**Modelo de Negocio:**
+- Sistema de monetización implementado
+- 4 planes configurados con precios
+- Límites claros por plan
+- Descuentos anuales calculados automáticamente
+
+**Control de Capacidad:**
+- Validaciones automáticas en registro de estudiantes
+- Validaciones automáticas en creación de grupos
+- Fallback a plan Free cuando no hay suscripción
+- Mensajes informativos con plan actual y límite
+
+**Experiencia de Usuario:**
+- Panel visual con estado de suscripción
+- Barras de progreso para ver uso
+- Alertas de límite cercano (80%+)
+- Alertas de vencimiento próximo (≤7 días)
+- Proceso de upgrade/downgrade simple
+
+**Arquitectura:**
+- Modelos con responsabilidades claras
+- Validaciones centralizadas en modelos
+- Helper reutilizable para mensajes
+- Scopes para filtrar por estado
+- Relaciones bien definidas
+
+### Próximos pasos sugeridos
+
+**Integración de Pagos (Sprint 6):**
+1. Stripe/PayPal integration
+2. Checkout flow para planes de pago
+3. Webhooks para actualización de estados
+4. Facturación automática mensual/anual
+5. Historial de pagos
+
+**Notificaciones (Sprint 7):**
+1. Email de bienvenida al activar plan
+2. Email 7 días antes de vencimiento
+3. Email al alcanzar 80% de límite
+4. Email de renovación exitosa
+5. Email de cancelación confirmada
+
+**Panel Admin (Sprint 8):**
+1. Vista de todos los businesses y sus planes
+2. Asignación manual de planes
+3. Estadísticas de suscripciones
+4. Gestión de planes (CRUD)
+5. Reportes de facturación
+
+### Notas adicionales
+
+- Sprint dividido en 4 fases por gestión de tokens (objetivo: ~70K tokens)
+- Todas las validaciones son retrocompatibles
+- Sistema funciona sin suscripción (fallback a Free)
+- Preparado para integración con pasarela de pagos
+- Diseño visual consistente con resto de aplicación
+
+### Tiempo invertido
+~6 horas (4 fases + documentación + testing)
+
+---
+
+**Última actualización**: 2025-12-23

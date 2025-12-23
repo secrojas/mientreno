@@ -6,7 +6,7 @@
 
 ---
 
-## Estado Actual (2025-12-22)
+## Estado Actual (2025-12-23)
 
 ### ✨ FASE 2 COMPLETADA - Races & Goals ✅
 ### ✨ UX IMPROVEMENTS COMPLETADAS ✅
@@ -16,6 +16,7 @@
 ### ✨ SPRINT 3 COMPLETADO - Training Groups ✅
 ### ✨ SPRINT 4 COMPLETADO - Sistema Multi-tenant ✅
 ### ✨ SPRINT 4 - CORRECCIONES Y MEJORAS ✅ (2025-12-22)
+### ✨ SPRINT 5 COMPLETADO - Sistema de Suscripciones ✅ (2025-12-23)
 
 ### Lo que ya está implementado
 
@@ -1421,6 +1422,257 @@ Reporte muestra:
 - ✅ Reportes completos con contexto de planificación vs realidad
 - ✅ Navegación limpia y enfocada según tipo de usuario
 
+#### 23. Sistema de Suscripciones 💳
+
+**SPRINT 5 COMPLETADO** ✅ (2025-12-23)
+
+**Propósito:**
+Implementar sistema completo de suscripciones con 4 planes para monetizar la plataforma y establecer límites por negocio.
+
+**Objetivos Alcanzados:**
+- ✅ Base de datos: Migraciones para planes y suscripciones
+- ✅ Modelos: SubscriptionPlan y Subscription con lógica de negocio
+- ✅ Validaciones: Límites aplicados en registro y creación de grupos
+- ✅ Panel UI: Interfaz completa para gestión de suscripciones
+- ✅ Seeders: 4 planes pre-configurados (Free, Starter, Pro, Enterprise)
+
+**FASE 1: Modelos y Migraciones** ✅
+
+**Tablas Creadas:**
+
+1. **`subscription_plans`:**
+   - Campos: id, name, slug, description, monthly_price, annual_price, currency, features (JSON), is_active, timestamps
+   - Features JSON: `student_limit`, `group_limit`, `storage_limit_gb`
+   - Index en `slug` para lookups rápidos
+   - Archivo: `database/migrations/2025_12_22_194843_create_subscription_plans_table.php`
+
+2. **`subscriptions`:**
+   - Campos: id, business_id (FK), plan_id (FK), status, current_period_start, current_period_end, next_billing_date, auto_renew, cancellation_reason, timestamps
+   - Estados: `active`, `cancelled`, `expired`, `trial`
+   - Índices optimizados: business_id, plan_id, status, [business_id, status]
+   - Archivo: `database/migrations/2025_12_23_123858_create_subscriptions_table.php`
+
+**Modelos Implementados:**
+
+1. **SubscriptionPlan** (`app/Models/SubscriptionPlan.php`):
+   - Métodos de límites:
+     - `getStudentLimit()`: Retorna límite de estudiantes o null (ilimitado)
+     - `getGroupLimit()`: Retorna límite de grupos o null (ilimitado)
+     - `getStorageLimitGb()`: Retorna límite de almacenamiento o null (ilimitado)
+   - Verificadores:
+     - `hasStudentLimit()`, `hasGroupLimit()`, `hasStorageLimit()`
+     - `isFree()`: Verifica si es plan gratuito
+   - Helpers:
+     - `getAnnualDiscount()`: Calcula % de descuento del plan anual
+   - Scope: `active()` para filtrar solo planes activos
+   - Relaciones: `hasMany(Subscription::class)`
+
+2. **Subscription** (`app/Models/Subscription.php`):
+   - Gestión de ciclo de vida:
+     - `activate()`, `cancel()`, `expire()`, `renew()`
+   - Verificadores de estado:
+     - `isActive()`, `isCancelled()`, `isExpired()`, `isTrial()`, `isValid()`
+   - Validaciones de límites:
+     - `canAddStudents($count)`: Verifica si puede agregar N estudiantes
+     - `canAddGroups($count)`: Verifica si puede agregar N grupos
+     - `hasStorageAvailable($requiredGb)`: Verifica almacenamiento disponible
+   - Helpers de período:
+     - `daysRemaining()`: Días restantes del período actual
+     - `isNearExpiration()`: True si faltan 7 días o menos
+   - Scopes: `active()`, `cancelled()`, `expired()`, `trial()`
+   - Relaciones: `belongsTo(Business)`, `belongsTo(SubscriptionPlan)`
+
+3. **Business** (Actualizado - `app/Models/Business.php`):
+   - Nuevas relaciones:
+     - `subscriptions()`: hasMany(Subscription)
+     - `activeSubscription()`: hasOne de suscripción vigente
+     - `groups()`: Alias de trainingGroups()
+   - Métodos de suscripción:
+     - `getActiveSubscription()`: Obtiene suscripción activa
+     - `hasActiveSubscription()`: Verifica si tiene suscripción
+     - `getCurrentPlan()`: Obtiene plan actual o null
+   - Validaciones de límites:
+     - `canAddStudents($count)`: Verifica límite (fallback a Free: 5)
+     - `canAddGroups($count)`: Verifica límite (fallback a Free: 2)
+     - `hasStorageAvailable($requiredGb)`: Verifica almacenamiento
+
+**FASE 2: Validaciones en Controladores** ✅
+
+**Controladores Actualizados:**
+
+1. **RegisterController** (`app/Http/Controllers/Auth/v1/RegisterController.php`):
+   - Validación en `register()` antes de crear usuario con invitation token
+   - Bloquea registro si business alcanzó límite de estudiantes
+   - Mensaje informativo con plan actual y límite alcanzado
+
+2. **TrainingGroupController** (`app/Http/Controllers/Coach/TrainingGroupController.php`):
+   - Validación en `store()` antes de crear grupo
+   - Bloquea creación si business alcanzó límite de grupos
+   - Usa helper `subscriptionLimitMessage()` para mensaje consistente
+
+**Helper Creado:**
+
+**`subscriptionLimitMessage()`** (`app/helpers.php`):
+- Genera mensajes de error consistentes para límites alcanzados
+- Parámetros: tipo de recurso ('students' o 'groups') y business
+- Incluye: nombre del plan, límite, y sugerencia de actualizar
+- Reutilizable en toda la aplicación
+
+**FASE 3: Panel UI para Gestión** ✅
+
+**Controlador:**
+
+**SubscriptionController** (`app/Http/Controllers/Coach/SubscriptionController.php`):
+- `index()`: Muestra suscripción actual y uso de recursos
+- `plans()`: Muestra todos los planes disponibles
+- `subscribe(Request)`: Cambiar de plan (upgrade/downgrade)
+- `cancel(Request)`: Cancelar suscripción actual
+
+**Rutas Agregadas** (`routes/web.php:110-116`):
+```php
+Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+    Route::get('/', [SubscriptionController::class, 'index']);
+    Route::get('/plans', [SubscriptionController::class, 'plans']);
+    Route::post('/subscribe', [SubscriptionController::class, 'subscribe']);
+    Route::post('/cancel', [SubscriptionController::class, 'cancel']);
+});
+```
+
+**Vistas Creadas:**
+
+1. **`resources/views/coach/subscriptions/index.blade.php`:**
+   - Card de plan actual con estado (activa, trial, cancelada)
+   - Días restantes y fecha de vencimiento
+   - Alertas de próximo vencimiento (7 días o menos)
+   - Card de uso de recursos con barras de progreso:
+     - Estudiantes: X / límite (con % visual)
+     - Grupos: X / límite (con % visual)
+     - Alertas cuando uso >= 80%
+   - Formulario para cancelar suscripción con motivo opcional
+   - Link rápido a ver otros planes
+
+2. **`resources/views/coach/subscriptions/plans.blade.php`:**
+   - Grid responsive con los 4 planes disponibles
+   - Destaca plan actual con badge y borde especial
+   - Cada plan muestra:
+     - Nombre y descripción
+     - Precio mensual y anual (con % descuento calculado)
+     - Características (estudiantes, grupos, almacenamiento)
+     - Botón para activar/cambiar plan
+   - Diseño consistente con el resto de la aplicación
+
+**Navegación Actualizada:**
+
+**Sidebar** (`resources/views/layouts/app.blade.php:340-347`):
+- Nuevo enlace "Suscripción" para coaches
+- Icono de tarjeta de crédito
+- Active state cuando se navega en sección
+
+**FASE 4: Seeders y Datos** ✅
+
+**Seeder Creado:**
+
+**SubscriptionPlanSeeder** (`database/seeders/SubscriptionPlanSeeder.php`):
+- Crea/actualiza 4 planes usando `updateOrCreate()`
+- Planes configurados:
+
+| Plan | Precio/mes | Precio/año | Estudiantes | Grupos | Storage | Descuento Anual |
+|------|-----------|-----------|-------------|--------|---------|----------------|
+| **Free** | $0 | $0 | 5 | 2 | 1GB | - |
+| **Starter** | $19.99 | $199.99 | 20 | 5 | 5GB | ~17% |
+| **Pro** | $49.99 | $499.99 | 100 | 20 | 20GB | ~17% |
+| **Enterprise** | $99.99 | $999.99 | ∞ | ∞ | ∞ | ~17% |
+
+- Ejecutado: `php artisan db:seed --class=SubscriptionPlanSeeder`
+- Output informativo con resumen de planes creados
+
+**Archivos Creados/Modificados:**
+
+**Migraciones:**
+- `database/migrations/2025_12_22_194843_create_subscription_plans_table.php`
+- `database/migrations/2025_12_23_123858_create_subscriptions_table.php`
+
+**Modelos:**
+- `app/Models/SubscriptionPlan.php` (nuevo)
+- `app/Models/Subscription.php` (nuevo)
+- `app/Models/Business.php` (actualizado)
+
+**Controladores:**
+- `app/Http/Controllers/Coach/SubscriptionController.php` (nuevo)
+- `app/Http/Controllers/Auth/v1/RegisterController.php` (actualizado)
+- `app/Http/Controllers/Coach/TrainingGroupController.php` (actualizado)
+
+**Helpers:**
+- `app/helpers.php` (función `subscriptionLimitMessage()` agregada)
+
+**Rutas:**
+- `routes/web.php` (4 rutas de subscriptions agregadas)
+
+**Vistas:**
+- `resources/views/coach/subscriptions/index.blade.php` (nuevo)
+- `resources/views/coach/subscriptions/plans.blade.php` (nuevo)
+- `resources/views/layouts/app.blade.php` (enlace sidebar agregado)
+
+**Seeders:**
+- `database/seeders/SubscriptionPlanSeeder.php` (nuevo)
+
+**Flujos Implementados:**
+
+1. **Ver suscripción actual:**
+   - Coach → Sidebar → Suscripción → Index
+   - Ve plan actual, estado, días restantes
+   - Ve uso de recursos con porcentajes visuales
+
+2. **Cambiar de plan:**
+   - Coach → Suscripción → Ver Planes
+   - Selecciona plan → Confirma
+   - Sistema cancela suscripción anterior
+   - Crea nueva suscripción activa
+   - Límites actualizados automáticamente
+
+3. **Cancelar suscripción:**
+   - Coach → Suscripción → Cancelar
+   - Ingresa motivo (opcional) → Confirma
+   - Suscripción marcada como cancelada
+   - Mantiene acceso hasta fin de período
+
+4. **Validación de límites:**
+   - Coach intenta agregar estudiante/grupo
+   - Sistema verifica `canAddStudents()` / `canAddGroups()`
+   - Si alcanzó límite → Mensaje con plan actual y sugerencia
+   - Si tiene espacio → Permite la acción
+
+**Características Destacadas:**
+
+- **Diseño consistente**: Mismo estilo de la aplicación
+- **Responsive**: Adapta a móviles y tablets
+- **UX clara**: Información organizada y fácil de entender
+- **Validaciones robustas**: Verifica ownership y límites
+- **Mensajes informativos**: Errores claros con soluciones
+- **Visual feedback**: Barras de progreso, alertas, badges de estado
+- **Seguridad**: Todas las acciones verifican permisos
+- **Flexibilidad**: Soporte para planes con límites o ilimitados
+
+**Beneficios Implementados:**
+
+- ✅ **Monetización**: 4 planes de pago configurados
+- ✅ **Control de capacidad**: Límites por plan aplicados
+- ✅ **Escalabilidad**: Plan Enterprise sin límites
+- ✅ **UX profesional**: Panel completo de gestión
+- ✅ **Validaciones automáticas**: Límites aplicados en tiempo real
+- ✅ **Modelo de negocio**: Base para facturación futura
+- ✅ **Transparencia**: Usuarios ven claramente su uso y límites
+- ✅ **Flexibilidad**: Fácil upgrade/downgrade entre planes
+
+**Tiempo Total del Sprint 5:** ~6 horas ✅
+
+**Próximos Pasos Sugeridos:**
+- Integración con pasarela de pagos (Stripe/PayPal)
+- Facturación automática mensual/anual
+- Webhooks para actualización de estados
+- Notificaciones por email de vencimiento
+- Panel de administración para gestionar planes
+
 ---
 
 ## 📋 Análisis de Gaps y Plan de Desarrollo
@@ -1474,17 +1726,19 @@ Reporte muestra:
 - 9 rutas implementadas (resource + member management)
 
 #### 5. Sistema de Suscripciones No Existe
-**Status:** ⏳ Pendiente (SPRINT 5)
-**Problema:**
-- No está documentado ni implementado
-- No hay límites por business
-- No hay monetización
-
-**Impacto:**
-- Modelo de negocio no implementado
-- Crecimiento sin control de capacidad
-
-**Próximo:** SPRINT 5 implementará esta funcionalidad
+**Status:** ✅ RESUELTO (SPRINT 5 - 2025-12-23)
+**Solución Implementada:**
+- 2 migraciones: subscription_plans y subscriptions
+- 2 modelos: SubscriptionPlan y Subscription con lógica completa
+- Business actualizado con métodos de validación de límites
+- 4 planes pre-configurados: Free, Starter, Pro, Enterprise
+- SubscriptionController con 4 métodos (index, plans, subscribe, cancel)
+- 2 vistas Blade profesionales (index, plans)
+- Validaciones en RegisterController y TrainingGroupController
+- Helper subscriptionLimitMessage() para mensajes consistentes
+- 4 rutas implementadas bajo prefijo subscriptions
+- Seeder ejecutado con 4 planes en base de datos
+- Panel completo de gestión con barras de progreso y alertas
 
 ### Plan de Desarrollo Completo
 

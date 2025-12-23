@@ -336,6 +336,15 @@
                 </svg>
                 <span class="sidebar-expanded-text">Alumnos</span>
             </a>
+
+            <a href="{{ businessRoute('coach.subscriptions.index') }}" class="sidebar-nav-link {{ request()->routeIs('coach.subscriptions.*') || request()->routeIs('business.coach.subscriptions.*') ? 'active' : '' }}">
+                <!-- Subscription icon (credit card) -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                    <path d="M2 10h20"></path>
+                </svg>
+                <span class="sidebar-expanded-text">Suscripción</span>
+            </a>
             @endif
 
             <div class="sidebar-section-label">Cuenta</div>

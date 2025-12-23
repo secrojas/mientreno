@@ -58,3 +58,29 @@ if (!function_exists('isCoach')) {
         return in_array(auth()->user()->role, ['coach', 'admin']);
     }
 }
+
+if (!function_exists('subscriptionLimitMessage')) {
+    /**
+     * Generate a subscription limit message.
+     *
+     * @param string $resource 'students' or 'groups'
+     * @param \App\Models\Business $business
+     * @return string
+     */
+    function subscriptionLimitMessage(string $resource, \App\Models\Business $business): string
+    {
+        $currentPlan = $business->getCurrentPlan();
+        $planName = $currentPlan ? $currentPlan->name : 'free';
+
+        if ($resource === 'students') {
+            $limit = $currentPlan ? $currentPlan->getStudentLimit() : 5;
+            $resourceLabel = 'estudiantes';
+        } else {
+            $limit = $currentPlan ? $currentPlan->getGroupLimit() : 2;
+            $resourceLabel = 'grupos';
+        }
+
+        return "Has alcanzado el límite de {$resourceLabel} de tu plan {$planName} ({$limit} {$resourceLabel}). " .
+               "Actualiza tu plan para poder agregar más {$resourceLabel}.";
+    }
+}

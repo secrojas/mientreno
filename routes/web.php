@@ -106,6 +106,14 @@ Route::prefix('{business}')->name('business.')->middleware(['auth', 'business.co
         Route::resource('groups', \App\Http\Controllers\Coach\TrainingGroupController::class);
         Route::post('/groups/{group}/members', [\App\Http\Controllers\Coach\TrainingGroupController::class, 'addMember'])->name('groups.addMember');
         Route::delete('/groups/{group}/members/{user}', [\App\Http\Controllers\Coach\TrainingGroupController::class, 'removeMember'])->name('groups.removeMember');
+
+        // Subscriptions
+        Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Coach\SubscriptionController::class, 'index'])->name('index');
+            Route::get('/plans', [\App\Http\Controllers\Coach\SubscriptionController::class, 'plans'])->name('plans');
+            Route::post('/subscribe', [\App\Http\Controllers\Coach\SubscriptionController::class, 'subscribe'])->name('subscribe');
+            Route::post('/cancel', [\App\Http\Controllers\Coach\SubscriptionController::class, 'cancel'])->name('cancel');
+        });
     });
 });
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TrainingGroup;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 class TrainingGroupController extends Controller
@@ -66,6 +67,12 @@ class TrainingGroupController extends Controller
 
         if (!$user->business_id) {
             return back()->with('error', 'Debes tener un negocio para crear grupos.');
+        }
+
+        // VALIDACIÓN DE LÍMITES: Verificar si el business puede agregar más grupos
+        $business = $user->business;
+        if (!$business->canAddGroups(1)) {
+            return back()->with('error', subscriptionLimitMessage('groups', $business));
         }
 
         // Crear el grupo

@@ -57,6 +57,103 @@ class Business extends Model
     }
 
     /**
+     * Relación: grupos de entrenamiento del business (alias)
+     */
+    public function groups()
+    {
+        return $this->trainingGroups();
+    }
+
+    /**
+     * Relación: suscripciones del business
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * Obtener suscripción activa actual
+     */
+    public function activeSubscription()
+    {
+        return $this->hasOne(Subscription::class)
+            ->whereIn('status', ['active', 'trial'])
+            ->where('current_period_end', '>=', now())
+            ->latest('current_period_end');
+    }
+
+    /**
+     * Obtener suscripción activa (helper)
+     */
+    public function getActiveSubscription(): ?Subscription
+    {
+        return $this->activeSubscription;
+    }
+
+    /**
+     * Verificar si tiene suscripción activa
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return $this->activeSubscription()->exists();
+    }
+
+    /**
+     * Obtener plan actual
+     */
+    public function getCurrentPlan(): ?SubscriptionPlan
+    {
+        $subscription = $this->getActiveSubscription();
+        return $subscription ? $subscription->plan : null;
+    }
+
+    /**
+     * Verificar si puede agregar más estudiantes
+     */
+    public function canAddStudents(int $count = 1): bool
+    {
+        $subscription = $this->getActiveSubscription();
+
+        if (!$subscription) {
+            // Sin suscripción, usar plan free por defecto (límite: 5)
+            return $this->runners()->count() + $count <= 5;
+        }
+
+        return $subscription->canAddStudents($count);
+    }
+
+    /**
+     * Verificar si puede agregar más grupos
+     */
+    public function canAddGroups(int $count = 1): bool
+    {
+        $subscription = $this->getActiveSubscription();
+
+        if (!$subscription) {
+            // Sin suscripción, usar plan free por defecto (límite: 2)
+            return $this->groups()->count() + $count <= 2;
+        }
+
+        return $subscription->canAddGroups($count);
+    }
+
+    /**
+     * Verificar límite de almacenamiento
+     */
+    public function hasStorageAvailable(float $requiredGb = 0): bool
+    {
+        $subscription = $this->getActiveSubscription();
+
+        if (!$subscription) {
+            // Sin suscripción, usar plan free por defecto (límite: 1GB)
+            return true; // Por ahora siempre retorna true
+        }
+
+        return $subscription->hasStorageAvailable($requiredGb);
+    }
+
+    /**
      * Usar slug como route key
      */
     public function getRouteKeyName(): string
