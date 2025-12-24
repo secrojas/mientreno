@@ -59,7 +59,7 @@ class RegisterController extends Controller
             'email'       => $data['email'],
             'password'    => Hash::make($data['password']),
             'business_id' => $businessId,
-            'role'        => $data['role'] ?? 'runner',
+            'role'        => $data['role'], // Ya no usamos fallback porque role es required
         ]);
 
         Auth::login($user);
