@@ -1,8 +1,9 @@
 # Sistema de Suscripciones - MiEntreno
 
-**Versión**: 1.0
-**Fecha**: 2025-12-23
-**Sprint**: 5
+**Versión**: 1.1
+**Fecha**: 2025-12-24
+**Sprint Actual**: 5 (completado)
+**Sprint Pendiente**: 6 (suscripciones individuales - decisión estratégica requerida)
 
 ---
 
@@ -50,6 +51,47 @@ Business alcanza límite → Mensaje sugiriendo upgrade
                 ↓
 Business puede upgrade/downgrade en cualquier momento
 ```
+
+### Enfoque de Monetización
+
+**Arquitectura Actual: B2B (Business to Business)**
+
+El sistema está diseñado como un **SaaS B2B** donde:
+
+- **Coaches/Negocios (Business)**: Son los clientes que PAGAN por usar la plataforma
+  - Suscripciones vinculadas a entidad `Business` (no a `User`)
+  - Límites aplicados a nivel de negocio (estudiantes, grupos, almacenamiento)
+  - Planes: Free, Starter ($19.99/mes), Pro ($49.99/mes), Enterprise ($99.99/mes)
+
+- **Usuarios Individuales (Runners/Alumnos)**: Uso GRATUITO e ILIMITADO
+  - NO tienen suscripciones asociadas
+  - NO tienen límites de uso
+  - Pueden registrarse y usar planes de entrenamiento sin restricciones
+  - Incentivo para que se unan a negocios de coaches
+
+**Diferencias Clave:**
+
+| Aspecto | Coaches/Negocios | Usuarios Individuales |
+|---------|------------------|----------------------|
+| Paga suscripción | ✅ Sí | ❌ No (gratis) |
+| Tiene límites | ✅ Según plan | ❌ Uso ilimitado |
+| Tabla suscripciones | `business_id` | Sin registro |
+| Validaciones | En controllers | Sin validar |
+| Modelo de ingresos | Recurrente (SaaS) | Freemium |
+
+**Razón de este enfoque:**
+
+1. **Simplicidad inicial**: Monetizar solo coaches reduce complejidad
+2. **Adquisición de usuarios**: Runners gratis atraen más usuarios a la plataforma
+3. **Network effect**: Más runners → más coaches necesitan planes pagos
+4. **Modelo B2B**: Coaches gestionan múltiples alumnos, tienen mayor willingness to pay
+
+**Estado Actual (Sprint 5):**
+- ✅ Sistema completo para suscripciones de Business
+- ❌ NO implementadas suscripciones individuales
+- ✅ Usuarios individuales pueden usar la plataforma libremente
+
+**Pendiente (Sprint 6):** Ver sección "Próximos Pasos" para implementación de suscripciones individuales opcionales.
 
 ---
 
@@ -1118,7 +1160,111 @@ public function business_can_change_to_higher_plan()
 
 ## Próximos Pasos
 
-### Sprint 6: Integración de Pagos
+### Sprint 6: Suscripciones para Usuarios Individuales
+
+**Objetivo:** Implementar sistema de suscripciones para runners/alumnos individuales (opcional).
+
+**Contexto:**
+Actualmente, el sistema solo maneja suscripciones a nivel de Business (coaches). Los usuarios individuales (runners que NO pertenecen a un negocio) tienen uso gratuito e ilimitado. Este sprint permitiría monetizar también a usuarios finales.
+
+**Decisión Estratégica Pendiente:**
+- ¿Mantener runners individuales 100% gratis (modelo freemium actual)?
+- ¿O implementar planes individuales para features premium?
+
+**Posibles Escenarios:**
+
+**Escenario A: Freemium con features premium para individuales**
+```
+- Plan Free Individual: Acceso básico a planes de entrenamiento
+- Plan Premium Individual ($9.99/mes):
+  - Análisis avanzados
+  - Métricas detalladas
+  - Sincronización con wearables
+  - Planes personalizados con IA
+```
+
+**Escenario B: Mantener status quo (runners gratis, coaches pagan)**
+- Continuar con modelo B2B exclusivamente
+- Runners gratis incentivan adopción
+- Monetización 100% vía coaches/negocios
+
+**Tareas (si se decide implementar Escenario A):**
+
+1. **Arquitectura de datos:**
+   - Agregar columna `user_id` nullable a tabla `subscriptions`
+   - Crear constraint: `business_id` XOR `user_id` (uno debe ser null)
+   - Crear planes específicos para usuarios individuales en seeder
+
+2. **Modelos:**
+   - Actualizar modelo `Subscription` para relación polimórfica o dual
+   - Agregar métodos en `User` model:
+     ```php
+     // app/Models/User.php
+     public function subscription() { return $this->hasOne(Subscription::class); }
+     public function hasActiveSubscription() { ... }
+     public function canAccessFeature($feature) { ... }
+     ```
+
+3. **Migraciones:**
+   ```php
+   Schema::table('subscriptions', function (Blueprint $table) {
+       $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
+       $table->index('user_id');
+   });
+   ```
+
+4. **Controllers:**
+   - `app/Http/Controllers/Runner/SubscriptionController.php`
+   - Endpoints: `index`, `subscribe`, `cancel`, `changePlan`
+
+5. **Validaciones:**
+   - Middleware para features premium
+   - Checks en controllers de training plans
+
+6. **UI:**
+   - `resources/views/runner/subscription/index.blade.php`
+   - `resources/views/runner/subscription/plans.blade.php`
+   - Agregar enlace en sidebar para runners
+
+7. **Seeders:**
+   - Crear planes individuales: Free Individual, Premium Individual
+   ```php
+   [
+       'name' => 'Free Individual',
+       'slug' => 'free-individual',
+       'monthly_price' => 0,
+       'features' => ['basic_plans' => true],
+   ],
+   [
+       'name' => 'Premium Individual',
+       'slug' => 'premium-individual',
+       'monthly_price' => 9.99,
+       'features' => [
+           'advanced_analytics' => true,
+           'ai_personalization' => true,
+           'wearables_sync' => true,
+       ],
+   ]
+   ```
+
+**Archivos a crear (Escenario A):**
+- Migración: `add_user_id_to_subscriptions_table.php`
+- Controller: `app/Http/Controllers/Runner/SubscriptionController.php`
+- Vistas: `resources/views/runner/subscription/*.blade.php`
+- Middleware: `app/Http/Middleware/CheckIndividualSubscription.php`
+- Actualizar: `database/seeders/SubscriptionPlanSeeder.php`
+
+**Estimación de esfuerzo:**
+- Tareas de backend: ~6 horas
+- Tareas de frontend: ~4 horas
+- Testing y ajustes: ~2 horas
+- **Total: ~12 horas de desarrollo**
+
+**Nota:** Este sprint está marcado como PENDIENTE porque requiere decisión de producto/negocio. No iniciar desarrollo hasta confirmar estrategia de monetización para usuarios individuales.
+
+---
+
+### Sprint 7: Integración de Pagos
 
 **Objetivo:** Conectar con pasarela de pagos para cobros reales.
 
@@ -1141,7 +1287,7 @@ public function business_can_change_to_higher_plan()
 
 ---
 
-### Sprint 7: Sistema de Notificaciones
+### Sprint 8: Sistema de Notificaciones
 
 **Objetivo:** Alertas por email sobre suscripciones.
 
@@ -1162,7 +1308,7 @@ public function business_can_change_to_higher_plan()
 
 ---
 
-### Sprint 8: Panel de Administración
+### Sprint 9: Panel de Administración
 
 **Objetivo:** Gestión de suscripciones desde admin.
 
@@ -1215,6 +1361,18 @@ public function business_can_change_to_higher_plan()
 
 ## Changelog
 
+### v1.1 - 2025-12-24 (Documentación Sprint 6)
+
+**Agregado:**
+- Sección "Enfoque de Monetización" explicando modelo B2B actual
+- Documentación completa de arquitectura para usuarios individuales vs negocios
+- Sprint 6: Plan detallado para suscripciones de usuarios individuales (PENDIENTE)
+- Renumeración de sprints (Pagos → Sprint 7, Notificaciones → Sprint 8, Admin → Sprint 9)
+
+**Modificado:**
+- docs/SUBSCRIPTIONS.md (nueva sección de enfoque B2B vs B2C)
+- Roadmap de sprints actualizado
+
 ### v1.0 - 2025-12-23 (Sprint 5)
 
 **Agregado:**
@@ -1241,4 +1399,4 @@ public function business_can_change_to_higher_plan()
 
 ---
 
-**Última actualización:** 2025-12-23
+**Última actualización:** 2025-12-24

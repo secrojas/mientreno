@@ -241,16 +241,27 @@
             <div class="sidebar-section-label">Panel</div>
 
             @if(auth()->user()->role === 'coach' || auth()->user()->role === 'admin')
-                <a href="{{ businessRoute('coach.dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('coach.dashboard') || request()->routeIs('business.coach.dashboard') ? 'active' : '' }}">
-                    <!-- Dashboard icon -->
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-                        <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-                        <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-                        <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-                    </svg>
-                    <span class="sidebar-expanded-text">Dashboard Coach</span>
-                </a>
+                @if(auth()->user()->business_id && auth()->user()->business)
+                    <a href="{{ businessRoute('coach.dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('coach.dashboard') || request()->routeIs('business.coach.dashboard') ? 'active' : '' }}">
+                        <!-- Dashboard icon -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                        </svg>
+                        <span class="sidebar-expanded-text">Dashboard Coach</span>
+                    </a>
+                @else
+                    <a href="{{ route('coach.business.create') }}" class="sidebar-nav-link {{ request()->routeIs('coach.business.create') ? 'active' : '' }}">
+                        <!-- Business icon -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 3h-8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"></path>
+                        </svg>
+                        <span class="sidebar-expanded-text">Crear Mi Negocio</span>
+                    </a>
+                @endif
             @else
                 <a href="{{ businessRoute('dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('dashboard') || request()->routeIs('business.dashboard') ? 'active' : '' }}">
                     <!-- Dashboard icon -->
