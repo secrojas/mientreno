@@ -317,45 +317,47 @@
             @endif
 
             @if(auth()->user()->role === 'coach' || auth()->user()->role === 'admin')
-            <div class="sidebar-section-label">Coaching</div>
+                @if(auth()->user()->business_id && auth()->user()->business)
+                    <div class="sidebar-section-label">Coaching</div>
 
-            <a href="{{ businessRoute('coach.business.show') }}" class="sidebar-nav-link {{ request()->routeIs('coach.business.*') || request()->routeIs('business.coach.business.*') ? 'active' : '' }}">
-                <!-- Business icon (briefcase) -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                    <path d="M16 3h-8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"></path>
-                </svg>
-                <span class="sidebar-expanded-text">Mi Negocio</span>
-            </a>
+                    <a href="{{ businessRoute('coach.business.show') }}" class="sidebar-nav-link {{ request()->routeIs('coach.business.*') || request()->routeIs('business.coach.business.*') ? 'active' : '' }}">
+                        <!-- Business icon (briefcase) -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 3h-8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"></path>
+                        </svg>
+                        <span class="sidebar-expanded-text">Mi Negocio</span>
+                    </a>
 
-            <a href="{{ businessRoute('coach.groups.index') }}" class="sidebar-nav-link {{ request()->routeIs('coach.groups.*') || request()->routeIs('business.coach.groups.*') ? 'active' : '' }}">
-                <!-- Groups icon (users/group) -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="9" cy="9" r="2.5"></circle>
-                    <circle cx="17" cy="9" r="2.5"></circle>
-                    <path d="M4 19c.6-2.2 2.6-3.5 5-3.5s4.4 1.3 5 3.5"></path>
-                    <path d="M12 15.5c.6-2.2 2.6-3.5 5-3.5 2.4 0 4.4 1.3 5 3.5"></path>
-                </svg>
-                <span class="sidebar-expanded-text">Grupos</span>
-            </a>
+                    <a href="{{ businessRoute('coach.groups.index') }}" class="sidebar-nav-link {{ request()->routeIs('coach.groups.*') || request()->routeIs('business.coach.groups.*') ? 'active' : '' }}">
+                        <!-- Groups icon (users/group) -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="9" r="2.5"></circle>
+                            <circle cx="17" cy="9" r="2.5"></circle>
+                            <path d="M4 19c.6-2.2 2.6-3.5 5-3.5s4.4 1.3 5 3.5"></path>
+                            <path d="M12 15.5c.6-2.2 2.6-3.5 5-3.5 2.4 0 4.4 1.3 5 3.5"></path>
+                        </svg>
+                        <span class="sidebar-expanded-text">Grupos</span>
+                    </a>
 
-            <a href="#" class="sidebar-nav-link">
-                <!-- Students icon (graduation cap) -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <span class="sidebar-expanded-text">Alumnos</span>
-            </a>
+                    <a href="#" class="sidebar-nav-link">
+                        <!-- Students icon (graduation cap) -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="sidebar-expanded-text">Alumnos</span>
+                    </a>
 
-            <a href="{{ businessRoute('coach.subscriptions.index') }}" class="sidebar-nav-link {{ request()->routeIs('coach.subscriptions.*') || request()->routeIs('business.coach.subscriptions.*') ? 'active' : '' }}">
-                <!-- Subscription icon (credit card) -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                    <path d="M2 10h20"></path>
-                </svg>
-                <span class="sidebar-expanded-text">Suscripción</span>
-            </a>
+                    <a href="{{ businessRoute('coach.subscriptions.index') }}" class="sidebar-nav-link {{ request()->routeIs('coach.subscriptions.*') || request()->routeIs('business.coach.subscriptions.*') ? 'active' : '' }}">
+                        <!-- Subscription icon (credit card) -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                            <path d="M2 10h20"></path>
+                        </svg>
+                        <span class="sidebar-expanded-text">Suscripción</span>
+                    </a>
+                @endif
             @endif
 
             <div class="sidebar-section-label">Cuenta</div>

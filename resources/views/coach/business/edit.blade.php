@@ -131,7 +131,7 @@
                 </button>
                 <a
                     href="{{ businessRoute('coach.business.show') }}"
-                    style="padding:.65rem 1.5rem;border-radius:.6rem;background:rgba(31,41,55,.5);color:var(--text-main);font-size:.9rem;border:1px solid rgba(31,41,55,.7);display:inline-flex;align-items:center;justify-content:center;"
+                    style="padding:.65rem 1.5rem;border-radius:.6rem;background:rgba(31,41,55,.5);color:var(--text-main);font-size:.9rem;border:1px solid rgba(31,41,55,.7);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;"
                 >
                     Cancelar
                 </a>
