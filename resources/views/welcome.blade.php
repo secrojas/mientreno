@@ -241,7 +241,7 @@
 
                 <p style="color:var(--text-muted);max-width:32rem;margin-bottom:1.5rem;font-size:.98rem;">
                     MiEntreno es tu bitácora de running: carga tus entrenamientos, ritmos y carreras.
-                    Como un dashboard de developer, pero para tus kilómetros.
+                    Analiza tu progreso, planifica tus metas y lleva tu rendimiento al siguiente nivel.
                 </p>
 
                 <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1.75rem;">
