@@ -15,33 +15,19 @@ class DeployController extends Controller
     public function deploy(Request $request)
     {
         // Validar token de seguridad
-        $token = $request->header('X-Deploy-Token') ?? $request->input('token');
+        $token = $request->header('X-Deploy-Token') ?? $request->input('token') ?? $request->get('token');
 
         if ($token !== config('app.deploy_token')) {
             Log::warning('Deploy: Intento de acceso no autorizado', [
                 'ip' => $request->ip(),
                 'token_received' => $token,
+                'headers' => $request->headers->all(),
             ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized'
             ], 401);
-        }
-
-        // Validar que sea un push a main (si viene desde GitHub)
-        $payload = $request->input('payload');
-        if ($payload) {
-            $data = json_decode($payload, true);
-            $ref = $data['ref'] ?? '';
-
-            if ($ref !== 'refs/heads/main') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Deploy only triggered on main branch',
-                    'ref' => $ref,
-                ], 200);
-            }
         }
 
         Log::info('Deploy: Iniciando deploy automático', [
