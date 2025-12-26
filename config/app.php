@@ -56,6 +56,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Deploy Webhook Token
+    |--------------------------------------------------------------------------
+    |
+    | This token is used to authenticate deploy webhook requests from GitHub
+    | Actions. Generate a secure random token and set it in your .env file.
+    |
+    */
+
+    'deploy_token' => env('DEPLOY_TOKEN'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

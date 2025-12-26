@@ -120,4 +120,8 @@ Route::prefix('{business}')->name('business.')->middleware(['auth', 'business.co
 // Public shared report (no auth required)
 Route::get('/share/{token}', [\App\Http\Controllers\ReportController::class, 'showShared'])->name('reports.shared');
 
+// Deploy webhook (no auth required, uses token)
+Route::post('/deploy/webhook', [\App\Http\Controllers\DeployController::class, 'deploy'])->name('deploy.webhook');
+Route::get('/deploy/ping', [\App\Http\Controllers\DeployController::class, 'ping'])->name('deploy.ping');
+
 require __DIR__.'/auth.php';

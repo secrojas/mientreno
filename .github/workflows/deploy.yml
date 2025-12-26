@@ -1,0 +1,46 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to cPanel
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Trigger deploy webhook
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Deploy-Token: ${{ secrets.DEPLOY_TOKEN }}" \
+            "${{ secrets.DEPLOY_URL }}")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "Deploy failed with status code $http_code"
+            exit 1
+          fi
+
+          echo "Deploy triggered successfully!"
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Deploy to production completed successfully"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Deploy to production failed"
+          exit 1

@@ -133,6 +133,50 @@ php artisan serve
 - Dashboard integration
 - Ejemplos de uso
 
+### `DEPLOY_CPANEL.md`
+**Qué es**: Guía completa de deploy en hosting compartido con cPanel.
+
+**Cuándo leerlo**:
+- Al configurar el servidor de producción por primera vez
+- Para hacer deploy manual
+- Para solucionar problemas de deploy
+
+**Contiene**:
+- Estructura de directorios en producción
+- Script de deploy bash optimizado
+- Configuración inicial paso a paso
+- Proceso de deploy manual
+- Troubleshooting común
+- Acceso por Terminal de cPanel
+
+### `AUTO_DEPLOY.md`
+**Qué es**: Sistema de deploy automático con GitHub Actions.
+
+**Cuándo leerlo**:
+- Para configurar auto-deploy por primera vez
+- Para entender cómo funciona el webhook
+- Para debuggear problemas de deploy automático
+
+**Contiene**:
+- Cómo funciona GitHub Actions + webhook
+- Configuración de tokens y secrets
+- Endpoint de deploy en Laravel
+- Monitoreo y logs de deploy
+- Seguridad y troubleshooting
+
+### `USER_DATA_MIGRATION.md`
+**Qué es**: Comandos para exportar/importar usuarios y workouts.
+
+**Cuándo leerlo**:
+- Para migrar datos entre ambientes (local → producción)
+- Para hacer backups de usuarios específicos
+
+**Contiene**:
+- Comando `user:export` para generar JSON
+- Comando `user:import` para importar desde JSON
+- Proceso completo de migración
+- Manejo de duplicados y errores
+
 ---
 
 ## Flujo de Trabajo Recomendado
