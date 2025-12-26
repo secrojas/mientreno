@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'business.user' => \App\Http\Middleware\BusinessUser::class,
             'coach' => \App\Http\Middleware\CoachMiddleware::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'deploy/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         
