@@ -5,6 +5,10 @@ set -e
 # Ubicación en servidor: /home/srojasw1/deploy_mientreno.sh
 # Uso: ./deploy_mientreno.sh
 
+# Variables de entorno necesarias
+export HOME="/home/srojasw1"
+export COMPOSER_HOME="$HOME/.composer"
+
 REPO="/home/srojasw1/repositories/mientreno"
 APP_DEST="/home/srojasw1/public_html/mientreno/app"
 PUBLIC_DEST="/home/srojasw1/public_html/mientreno/public"
