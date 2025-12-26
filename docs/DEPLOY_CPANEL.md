@@ -2,6 +2,104 @@
 
 Documentación completa para hacer deploy de la aplicación Laravel en hosting compartido con cPanel.
 
+## Acceso a la Terminal
+
+### Opción 1: Terminal de cPanel (Recomendado)
+
+La forma más sencilla de acceder a la terminal es a través del panel de control de cPanel:
+
+1. Acceder a cPanel del hosting
+2. Buscar "Terminal" en las herramientas
+3. Click en "Terminal" para abrir la consola web
+4. Ya estás conectado y puedes ejecutar comandos
+
+**Ventajas:**
+- ✅ No requiere configuración adicional
+- ✅ Acceso inmediato desde el navegador
+- ✅ No necesitas gestionar claves SSH
+
+**Desventajas:**
+- ❌ La sesión puede cerrarse por inactividad
+- ❌ No puedes copiar archivos fácilmente con SCP/SFTP
+
+### Opción 2: SSH desde tu PC (Opcional)
+
+Si prefieres conectarte desde tu PC local usando SSH:
+
+**Requisitos:**
+- Tener acceso SSH habilitado en tu hosting
+- Generar y configurar claves SSH
+- Cliente SSH instalado (PuTTY en Windows, ssh nativo en Linux/Mac)
+
+**Pasos para configurar:**
+
+1. **Generar par de claves en cPanel:**
+   - Ir a cPanel → "Acceso SSH" o "SSH Access"
+   - Click en "Gestionar claves SSH" o "Manage SSH Keys"
+   - Generar nueva clave o importar existente
+   - Autorizar la clave pública
+
+2. **Descargar clave privada:**
+   - Descargar el archivo de clave privada
+   - Guardar en `C:\Users\TU_USUARIO\.ssh\` (Windows)
+   - O en `~/.ssh/` (Linux/Mac)
+
+3. **Configurar permisos (importante):**
+   ```bash
+   # En Linux/Mac
+   chmod 600 ~/.ssh/deploy-mientreno
+
+   # En Windows (PowerShell como Administrador)
+   icacls C:\Users\sroja\.ssh\deploy-mientreno /inheritance:r
+   icacls C:\Users\sroja\.ssh\deploy-mientreno /grant:r "%USERNAME%:R"
+   ```
+
+4. **Conectar:**
+   ```bash
+   ssh -i C:\Users\sroja\.ssh\deploy-mientreno srojasw1@tu-servidor.com
+
+   # O agregar al archivo ~/.ssh/config:
+   Host mientreno
+       HostName tu-servidor.com
+       User srojasw1
+       IdentityFile C:\Users\sroja\.ssh\deploy-mientreno
+
+   # Luego conectar con:
+   ssh mientreno
+   ```
+
+**Troubleshooting SSH:**
+
+Si no puedes conectarte, verifica:
+
+```bash
+# 1. Ver errores detallados de conexión
+ssh -vvv -i C:\Users\sroja\.ssh\deploy-mientreno srojasw1@servidor
+
+# Errores comunes:
+# - "Permission denied (publickey)": La clave pública no está autorizada en el servidor
+# - "Bad permissions": Los permisos del archivo de clave son muy abiertos
+# - "Connection refused": El puerto SSH está bloqueado o el servidor no acepta SSH
+```
+
+Desde la terminal de cPanel, verifica:
+```bash
+# Ver claves autorizadas
+cat ~/.ssh/authorized_keys
+
+# Ver permisos (deben ser 700 para .ssh y 600 para authorized_keys)
+ls -la ~/.ssh/
+```
+
+Si la clave pública no está en `authorized_keys`, agrégala:
+```bash
+# Copiar contenido de deploy-mientreno.pub y agregarlo a:
+nano ~/.ssh/authorized_keys
+# Pegar la clave pública en una nueva línea
+```
+
+**Para esta documentación, asumiremos que usas la Terminal de cPanel**, pero todos los comandos funcionan igual por SSH.
+
 ## Estructura de Directorios en Producción
 
 ```
@@ -266,8 +364,12 @@ git push origin main
 
 ### 2. En Producción - Ejecutar Script de Deploy
 
+**Desde la Terminal de cPanel:**
+
+1. Acceder a cPanel → Terminal
+2. Ejecutar el script:
+
 ```bash
-ssh usuario@servidor
 cd /home/srojasw1
 ./deploy_mientreno.sh
 ```
@@ -475,7 +577,7 @@ find . -name "*.log" -mtime +30 -delete
 ## Checklist de Deploy
 
 - [ ] Código commiteado y pusheado a GitHub
-- [ ] SSH al servidor
+- [ ] Acceder a la Terminal de cPanel
 - [ ] Ejecutar `./deploy_mientreno.sh`
 - [ ] Ejecutar migraciones si hay nuevas: `php artisan migrate --force`
 - [ ] Verificar que la app funcione en el navegador
