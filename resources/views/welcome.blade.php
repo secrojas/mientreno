@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
-    <title>MiEntreno · Más que números, tu historia running</title>
+    <title>MiEntreno · Tu historia running en cada kilómetro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Favicons -->
