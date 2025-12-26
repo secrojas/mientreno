@@ -50,16 +50,18 @@ fi
 
 echo ">> Composer install"
 cd "$APP_DEST"
-composer install --no-dev --optimize-autoloader --no-interaction
+/home/srojasw1/bin/composer install --no-dev --optimize-autoloader --no-interaction
 
 echo ">> Build assets (npm)"
-npm ci --production=false
-npm run build
+# Nota: npm no está disponible en este hosting
+# Los assets deben compilarse localmente antes de hacer push
+# Ejecutar en local: npm run build
+# El directorio public/build se copia automáticamente en el paso anterior
 
 echo ">> Optimizaciones Laravel"
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+/opt/cpanel/ea-php84/root/usr/bin/php artisan config:cache
+/opt/cpanel/ea-php84/root/usr/bin/php artisan route:cache
+/opt/cpanel/ea-php84/root/usr/bin/php artisan view:cache
 
 echo ">> Permisos"
 chmod -R 775 storage bootstrap/cache
@@ -67,4 +69,4 @@ chmod -R 775 storage bootstrap/cache
 echo "✅ Deploy completado"
 echo ""
 echo "Siguiente paso: Si hay migraciones nuevas, ejecutar:"
-echo "  cd $APP_DEST && php artisan migrate --force"
+echo "  cd $APP_DEST && /opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force"
