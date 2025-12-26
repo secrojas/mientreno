@@ -1,6 +1,6 @@
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/srojasw1/public_html/mientreno/app/
+    - export DEPLOYPATH=/home/srojasw1/public_html/mientreno
     - /usr/bin/rsync -a --delete \
         --exclude ".git" \
         --exclude ".cpanel.yml" \
