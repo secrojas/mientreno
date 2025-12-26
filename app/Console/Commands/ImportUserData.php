@@ -145,8 +145,7 @@ class ImportUserData extends Command
             'email' => $userData['email'],
             'password' => $userData['password'], // Ya hasheada
             'business_id' => $businessId,
-            'role' => $userData['role'] ?? 'athlete',
-            'profile' => $userData['profile'],
+            'role' => $userData['role'] ?? 'runner',
             'avatar' => $userData['avatar'],
             'birth_date' => $userData['birth_date'],
             'gender' => $userData['gender'],

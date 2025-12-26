@@ -47,7 +47,6 @@ class ExportUserData extends Command
             'email' => $user->email,
             'password' => $user->password, // Ya hasheada
             'role' => $user->role,
-            'profile' => $user->profile,
             'avatar' => $user->avatar,
             'birth_date' => $user->birth_date?->format('Y-m-d'),
             'gender' => $user->gender,

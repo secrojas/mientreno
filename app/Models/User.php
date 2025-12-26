@@ -23,7 +23,6 @@ class User extends Authenticatable
         'password',
         'business_id',
         'role',
-        'profile',
         'avatar',
         'birth_date',
         'gender',
@@ -52,7 +51,6 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'profile' => 'array',
             'birth_date' => 'date',
             'weight' => 'decimal:2',
         ];
