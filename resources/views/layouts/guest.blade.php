@@ -127,7 +127,7 @@
     </main>
 
     <footer class="footer">
-        <span>© 2025 MiEntreno · Running training logs</span>
+        <span>© 2025 MiEntreno · Más que números, tu historia running</span>
         <span>By <a href="https://srojasweb.dev" target="_blank" rel="noopener noreferrer">srojasweb.dev</a></span>
     </footer>
 </div>

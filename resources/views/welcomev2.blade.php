@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
-    <title>MiEntreno · Running training logs</title>
+    <title>MiEntreno · Más que números, tu historia running</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Favicons -->
@@ -853,7 +853,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>© 2025 MiEntreno · Running training logs</span>
+            <span>© 2025 MiEntreno · Más que números, tu historia running</span>
             <span>Built with ❤️ by <a href="https://srojasweb.dev" target="_blank" rel="noopener noreferrer" style="color:var(--accent-secondary);font-weight:500;">srojasweb.dev</a></span>
         </div>
     </footer>
