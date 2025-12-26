@@ -19,6 +19,7 @@ jobs:
           response=$(curl -s -w "\n%{http_code}" -X POST \
             -H "Content-Type: application/json" \
             -H "X-Deploy-Token: ${{ secrets.DEPLOY_TOKEN }}" \
+            -d '{"source":"github-actions","branch":"main"}' \
             "${{ secrets.DEPLOY_URL }}")
 
           http_code=$(echo "$response" | tail -n1)
