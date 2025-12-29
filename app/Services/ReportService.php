@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class ReportService
 {
@@ -22,6 +23,20 @@ class ReportService
     {
         $year = $year ?? now()->year;
         $week = $week ?? now()->week;
+
+        $cacheKey = "report_weekly_user_{$user->id}_year_{$year}_week_{$week}";
+        $cacheTTL = now()->addMinutes(15);
+
+        return Cache::remember($cacheKey, $cacheTTL, function () use ($user, $year, $week) {
+            return $this->generateWeeklyReport($user, $year, $week);
+        });
+    }
+
+    /**
+     * Generar reporte semanal (lógica extraída para caching)
+     */
+    protected function generateWeeklyReport(User $user, int $year, int $week): array
+    {
 
         // Calcular fechas de inicio y fin de la semana (ISO 8601: Lunes a Domingo)
         $startDate = Carbon::now()->setISODate($year, $week)->startOfWeek();
@@ -89,6 +104,20 @@ class ReportService
     {
         $year = $year ?? now()->year;
         $month = $month ?? now()->month;
+
+        $cacheKey = "report_monthly_user_{$user->id}_year_{$year}_month_{$month}";
+        $cacheTTL = now()->addMinutes(15);
+
+        return Cache::remember($cacheKey, $cacheTTL, function () use ($user, $year, $month) {
+            return $this->generateMonthlyReport($user, $year, $month);
+        });
+    }
+
+    /**
+     * Generar reporte mensual (lógica extraída para caching)
+     */
+    protected function generateMonthlyReport(User $user, int $year, int $month): array
+    {
 
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
