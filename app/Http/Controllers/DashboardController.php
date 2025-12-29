@@ -26,14 +26,14 @@ class DashboardController extends Controller
             // Métricas de la semana usando el service
             $weekStats = $this->metricsService->getWeeklyMetrics($user);
 
-            // Últimos 5 entrenamientos
+            // Últimos 5 entrenamientos (with eager loading)
             $recentWorkouts = $this->metricsService->getRecentWorkouts($user, 5);
 
             // Próxima carrera
             $nextRace = $user->races()->upcoming()->first();
 
-            // Objetivos activos
-            $activeGoals = $user->goals()->active()->limit(3)->get();
+            // Objetivos activos (with eager loading for race relationship)
+            $activeGoals = $user->goals()->with('race')->active()->limit(3)->get();
 
             // Estadísticas de cumplimiento de la semana
             $weeklyCompletion = [

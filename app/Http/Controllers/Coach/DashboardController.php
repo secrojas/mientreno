@@ -24,55 +24,68 @@ class DashboardController extends Controller
         }
 
         // Obtener alumnos del business (runners)
-        $students = $business->users()
+        $studentIds = $business->users()
             ->where('role', 'runner')
             ->where('id', '!=', $coach->id)
-            ->get();
+            ->pluck('id');
 
-        $totalStudents = $students->count();
+        $totalStudents = $studentIds->count();
 
-        // Métricas agregadas de alumnos
+        $weekStart = now()->startOfWeek();
+        $weekEnd = now()->endOfWeek();
+
+        // Métricas agregadas de alumnos - usando query única optimizada
+        $weekMetrics = DB::table('workouts')
+            ->whereIn('user_id', $studentIds)
+            ->whereBetween('date', [$weekStart, $weekEnd])
+            ->selectRaw('
+                COUNT(*) as total_workouts,
+                SUM(distance) as total_distance,
+                COUNT(DISTINCT user_id) as active_students
+            ')
+            ->first();
+
         $studentMetrics = [
-            'total_workouts_this_week' => $students->sum(function ($student) {
-                return $student->workouts()
-                    ->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])
-                    ->count();
-            }),
-            'total_distance_this_week' => $students->sum(function ($student) {
-                return $student->workouts()
-                    ->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])
-                    ->sum('distance');
-            }),
-            'active_students_this_week' => $students->filter(function ($student) {
-                return $student->workouts()
-                    ->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])
-                    ->exists();
-            })->count(),
+            'total_workouts_this_week' => $weekMetrics->total_workouts ?? 0,
+            'total_distance_this_week' => $weekMetrics->total_distance ?? 0,
+            'active_students_this_week' => $weekMetrics->active_students ?? 0,
         ];
 
-        // Top 3 alumnos por kilómetros esta semana
-        $topStudents = $students->map(function ($student) {
-            $weekDistance = $student->workouts()
-                ->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])
-                ->sum('distance');
+        // Top 3 alumnos por kilómetros esta semana - usando query optimizada
+        $topStudentsData = DB::table('workouts')
+            ->join('users', 'workouts.user_id', '=', 'users.id')
+            ->whereIn('workouts.user_id', $studentIds)
+            ->whereBetween('workouts.date', [$weekStart, $weekEnd])
+            ->selectRaw('
+                users.id,
+                users.name,
+                SUM(workouts.distance) as total_distance
+            ')
+            ->groupBy('users.id', 'users.name')
+            ->orderByDesc('total_distance')
+            ->limit(3)
+            ->get();
 
+        $topStudents = $topStudentsData->map(function ($item) {
             return [
-                'student' => $student,
-                'distance' => $weekDistance
+                'student' => (object)['id' => $item->id, 'name' => $item->name],
+                'distance' => $item->total_distance
             ];
-        })
-        ->sortByDesc('distance')
-        ->take(3)
-        ->filter(fn($item) => $item['distance'] > 0);
+        });
 
-        // Alumnos inactivos (sin entrenamientos en las últimas 2 semanas)
-        $inactiveStudents = $students->filter(function ($student) {
-            $lastWorkout = $student->workouts()->latest('date')->first();
-            if (!$lastWorkout) {
-                return true;
-            }
-            return $lastWorkout->date->lt(now()->subWeeks(2));
-        })->take(5);
+        // Alumnos inactivos - usando query optimizada
+        $twoWeeksAgo = now()->subWeeks(2);
+        $inactiveStudentIds = DB::table('users')
+            ->leftJoin('workouts', function($join) use ($twoWeeksAgo) {
+                $join->on('users.id', '=', 'workouts.user_id')
+                     ->where('workouts.date', '>=', $twoWeeksAgo);
+            })
+            ->whereIn('users.id', $studentIds)
+            ->whereNull('workouts.id')
+            ->limit(5)
+            ->pluck('users.id');
+
+        $inactiveStudents = User::whereIn('id', $inactiveStudentIds)->get();
 
         // Actividad reciente de alumnos (últimos 10 entrenamientos)
         $recentActivity = DB::table('workouts')

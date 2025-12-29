@@ -33,7 +33,9 @@ class GoalController extends Controller
             $query->where('type', $request->type);
         }
 
-        $goals = $query->orderBy('status', 'asc')
+        // Eager load race relationship to avoid N+1
+        $goals = $query->with('race')
+            ->orderBy('status', 'asc')
             ->orderBy('target_date', 'asc')
             ->paginate(15);
 

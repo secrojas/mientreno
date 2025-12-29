@@ -46,7 +46,8 @@ class WorkoutController extends Controller
             $query->where('notes', 'like', '%' . $request->search . '%');
         }
 
-        $workouts = $query->orderBy('date', 'desc')->paginate(20);
+        // Eager load race relationship to avoid N+1
+        $workouts = $query->with('race')->orderBy('date', 'desc')->paginate(20);
 
         // Obtener tipos para el filtro
         $types = Workout::typeLabels();
