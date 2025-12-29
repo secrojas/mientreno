@@ -1,104 +1,109 @@
-# Deploy en cPanel
+# Deploy en cPanel - MiEntreno
 
 Documentación completa para hacer deploy de la aplicación Laravel en hosting compartido con cPanel.
 
-## Acceso a la Terminal
+## Métodos de Deploy
 
-### Opción 1: Terminal de cPanel (Recomendado)
+### Deploy Automático (Recomendado)
 
-La forma más sencilla de acceder a la terminal es a través del panel de control de cPanel:
+**El método principal de deploy es automático mediante GitHub Actions.**
 
-1. Acceder a cPanel del hosting
-2. Buscar "Terminal" en las herramientas
-3. Click en "Terminal" para abrir la consola web
-4. Ya estás conectado y puedes ejecutar comandos
+Cada vez que haces `git push origin main`:
+1. GitHub Actions detecta el push
+2. Ejecuta el workflow de deploy
+3. Llama al webhook en producción
+4. El servidor ejecuta el script de deploy automáticamente
+5. Los cambios se reflejan en https://mientreno.srojasweb.dev
+
+**No necesitas hacer deploy manual** a menos que:
+- Estés configurando el proyecto por primera vez
+- El auto-deploy falle y necesites intervenir manualmente
+- Necesites ejecutar comandos específicos (migraciones, seeders, etc.)
+
+Ver [AUTO_DEPLOY.md](AUTO_DEPLOY.md) para detalles de configuración del auto-deploy.
+
+### Deploy Manual
+
+Para casos especiales donde necesitas hacer deploy manual, tienes dos opciones:
+
+#### Opción 1: Terminal de cPanel (Web)
 
 **Ventajas:**
 - ✅ No requiere configuración adicional
 - ✅ Acceso inmediato desde el navegador
-- ✅ No necesitas gestionar claves SSH
+- ✅ No necesitas gestionar claves SSH localmente
 
 **Desventajas:**
 - ❌ La sesión puede cerrarse por inactividad
 - ❌ No puedes copiar archivos fácilmente con SCP/SFTP
+- ❌ Más lento que SSH directo
 
-### Opción 2: SSH desde tu PC (Opcional)
+**Cómo acceder:**
+1. Acceder a cPanel del hosting
+2. Buscar "Terminal" en las herramientas
+3. Click en "Terminal" para abrir la consola web
+4. Ejecutar el script de deploy:
 
-Si prefieres conectarte desde tu PC local usando SSH:
+```bash
+bash /home/srojasw1/deploy_mientreno.sh
+```
 
-**Requisitos:**
-- Tener acceso SSH habilitado en tu hosting
-- Generar y configurar claves SSH
-- Cliente SSH instalado (PuTTY en Windows, ssh nativo en Linux/Mac)
+#### Opción 2: SSH desde tu PC (Local)
 
-**Pasos para configurar:**
+**Ventajas:**
+- ✅ Más rápido y eficiente
+- ✅ Puedes usar SCP/SFTP para copiar archivos
+- ✅ Mejor experiencia de terminal (autocompletado, historial, etc.)
+- ✅ Puedes usar herramientas como tmux/screen
 
-1. **Generar par de claves en cPanel:**
-   - Ir a cPanel → "Acceso SSH" o "SSH Access"
-   - Click en "Gestionar claves SSH" o "Manage SSH Keys"
-   - Generar nueva clave o importar existente
-   - Autorizar la clave pública
+**Desventajas:**
+- ❌ Requiere configuración inicial de claves SSH
 
-2. **Descargar clave privada:**
-   - Descargar el archivo de clave privada
-   - Guardar en `C:\Users\TU_USUARIO\.ssh\` (Windows)
-   - O en `~/.ssh/` (Linux/Mac)
+**Configuración SSH (Solo primera vez):**
 
-3. **Configurar permisos (importante):**
-   ```bash
-   # En Linux/Mac
-   chmod 600 ~/.ssh/deploy-mientreno
+1. **Generar clave SSH sin passphrase (ya configurado):**
 
-   # En Windows (PowerShell como Administrador)
-   icacls C:\Users\sroja\.ssh\deploy-mientreno /inheritance:r
-   icacls C:\Users\sroja\.ssh\deploy-mientreno /grant:r "%USERNAME%:R"
+   La clave ya está generada y configurada:
+   - Ubicación: `~/.ssh/deploy-mientreno-new`
+   - Tipo: RSA 4096 bits
+   - Sin passphrase (necesario para deploy automatizado)
+
+2. **Configuración SSH (ya está en `~/.ssh/config`):**
+
+   ```
+   Host mientreno-prod
+     HostName srojasweb.dev
+     User srojasw1
+     Port 22278
+     IdentityFile ~/.ssh/deploy-mientreno-new
+     IdentitiesOnly yes
    ```
 
-4. **Conectar:**
+3. **Conectar desde tu PC:**
+
    ```bash
-   ssh -i C:\Users\sroja\.ssh\deploy-mientreno srojasw1@tu-servidor.com
+   # Conexión simple con alias
+   ssh mientreno-prod
 
-   # O agregar al archivo ~/.ssh/config:
-   Host mientreno
-       HostName tu-servidor.com
-       User srojasw1
-       IdentityFile C:\Users\sroja\.ssh\deploy-mientreno
-
-   # Luego conectar con:
-   ssh mientreno
+   # O conexión completa
+   ssh -p 22278 -i ~/.ssh/deploy-mientreno-new srojasw1@srojasweb.dev
    ```
 
-**Troubleshooting SSH:**
+4. **Ejecutar deploy manual por SSH:**
 
-Si no puedes conectarte, verifica:
+   ```bash
+   # Desde tu PC local, ejecutar deploy remoto
+   ssh mientreno-prod "bash /home/srojasw1/deploy_mientreno.sh"
 
-```bash
-# 1. Ver errores detallados de conexión
-ssh -vvv -i C:\Users\sroja\.ssh\deploy-mientreno srojasw1@servidor
+   # O conectarte y ejecutar
+   ssh mientreno-prod
+   bash /home/srojasw1/deploy_mientreno.sh
+   ```
 
-# Errores comunes:
-# - "Permission denied (publickey)": La clave pública no está autorizada en el servidor
-# - "Bad permissions": Los permisos del archivo de clave son muy abiertos
-# - "Connection refused": El puerto SSH está bloqueado o el servidor no acepta SSH
-```
-
-Desde la terminal de cPanel, verifica:
-```bash
-# Ver claves autorizadas
-cat ~/.ssh/authorized_keys
-
-# Ver permisos (deben ser 700 para .ssh y 600 para authorized_keys)
-ls -la ~/.ssh/
-```
-
-Si la clave pública no está en `authorized_keys`, agrégala:
-```bash
-# Copiar contenido de deploy-mientreno.pub y agregarlo a:
-nano ~/.ssh/authorized_keys
-# Pegar la clave pública en una nueva línea
-```
-
-**Para esta documentación, asumiremos que usas la Terminal de cPanel**, pero todos los comandos funcionan igual por SSH.
+**Nota importante sobre el puerto SSH:**
+- El hosting usa el puerto **22278** (no el estándar 22)
+- Esto es por seguridad contra ataques de fuerza bruta
+- La autenticación es **solo con claves SSH** (no contraseñas)
 
 ## Estructura de Directorios en Producción
 
@@ -111,38 +116,46 @@ nano ~/.ssh/authorized_keys
 │       ├── composer.json
 │       └── ...
 │
-└── public_html/
-    └── mientreno/
-        ├── app/                      # Laravel application (destino del deploy)
-        │   ├── artisan
-        │   ├── app/
-        │   ├── bootstrap/
-        │   ├── config/
-        │   ├── database/
-        │   ├── routes/
-        │   ├── resources/
-        │   ├── storage/              # Persistente (NO se sobrescribe)
-        │   ├── vendor/
-        │   ├── .env                  # Persistente (NO se sobrescribe)
-        │   ├── composer.json
-        │   └── ...
-        │
-        └── public/                   # Document root (accesible por web)
-            ├── index.php             # CUSTOM - NO sobrescribir
-            ├── .htaccess
-            ├── css/
-            ├── js/
-            ├── build/
-            └── storage/              # Symlink a ../app/storage/app/public
+├── public_html/
+│   └── mientreno/
+│       ├── app/                      # Laravel application (destino del deploy)
+│       │   ├── artisan
+│       │   ├── app/
+│       │   ├── bootstrap/
+│       │   ├── config/
+│       │   ├── database/
+│       │   ├── routes/
+│       │   ├── resources/
+│       │   ├── storage/              # Persistente (NO se sobrescribe)
+│       │   ├── vendor/
+│       │   ├── .env                  # Persistente (NO se sobrescribe)
+│       │   ├── composer.json
+│       │   └── ...
+│       │
+│       └── public/                   # Document root (accesible por web)
+│           ├── index.php             # CUSTOM - NO sobrescribir
+│           ├── .htaccess
+│           ├── css/
+│           ├── js/
+│           ├── build/
+│           └── storage/              # Symlink a ../app/storage/app/public
+│
+└── deploy_mientreno.sh               # Script de deploy
 ```
 
 ## Script de Deploy
 
-Ubicación: `/home/srojasw1/deploy_mientreno.sh`
+**Ubicación:** `/home/srojasw1/deploy_mientreno.sh`
+
+El script actualizado (sin npm - los assets se compilan localmente antes del push):
 
 ```bash
 #!/bin/bash
 set -e
+
+# Variables de entorno necesarias para composer
+export HOME="/home/srojasw1"
+export COMPOSER_HOME="$HOME/.composer"
 
 REPO="/home/srojasw1/repositories/mientreno"
 APP_DEST="/home/srojasw1/public_html/mientreno/app"
@@ -188,22 +201,23 @@ fi
 
 echo ">> Composer install"
 cd "$APP_DEST"
-composer install --no-dev --optimize-autoloader --no-interaction
-
-echo ">> Build assets (npm)"
-npm ci --production=false
-npm run build
+/home/srojasw1/bin/composer install --no-dev --optimize-autoloader --no-interaction
 
 echo ">> Optimizaciones Laravel"
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+/opt/cpanel/ea-php84/root/usr/bin/php artisan config:cache
+/opt/cpanel/ea-php84/root/usr/bin/php artisan route:cache
+/opt/cpanel/ea-php84/root/usr/bin/php artisan view:cache
 
 echo ">> Permisos"
 chmod -R 775 storage bootstrap/cache
 
 echo "✅ Deploy completado"
 ```
+
+**Notas importantes:**
+- **No usa npm en producción**: Los assets (CSS/JS) se compilan localmente con `npm run build` antes de hacer push
+- **Rutas absolutas**: Usa rutas absolutas para `composer` y `php` porque el webhook no tiene el PATH configurado
+- **Variables de entorno**: Exporta `HOME` y `COMPOSER_HOME` para que composer funcione vía webhook
 
 ## Archivos que NO se Deben Sobrescribir
 
@@ -296,7 +310,7 @@ APP_NAME="MiEntreno"
 APP_ENV=production
 APP_KEY=base64:TU_APP_KEY_GENERADA
 APP_DEBUG=false
-APP_URL=https://tudominio.com
+APP_URL=https://mientreno.srojasweb.dev
 
 DB_CONNECTION=mysql
 DB_HOST=localhost
@@ -309,6 +323,9 @@ CACHE_DRIVER=database
 SESSION_DRIVER=database
 QUEUE_CONNECTION=sync
 
+# Deploy webhook token (para auto-deploy)
+DEPLOY_TOKEN=tu_token_generado
+
 MAIL_MAILER=smtp
 # ... resto de configuración
 ```
@@ -317,21 +334,21 @@ MAIL_MAILER=smtp
 
 ```bash
 cd /home/srojasw1/public_html/mientreno/app
-php artisan key:generate
+/opt/cpanel/ea-php84/root/usr/bin/php artisan key:generate
 ```
 
 ### 6. Crear Storage Symlink
 
 ```bash
 cd /home/srojasw1/public_html/mientreno/app
-php artisan storage:link
+/opt/cpanel/ea-php84/root/usr/bin/php artisan storage:link
 ```
 
 ### 7. Ejecutar Migraciones
 
 ```bash
 cd /home/srojasw1/public_html/mientreno/app
-php artisan migrate --force
+/opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force
 ```
 
 ### 8. Configurar Permisos
@@ -352,67 +369,87 @@ nano /home/srojasw1/deploy_mientreno.sh
 chmod +x /home/srojasw1/deploy_mientreno.sh
 ```
 
-## Proceso de Deploy (Cada Actualización)
+### 10. Configurar Auto-Deploy
 
-### 1. Desde Local - Push a GitHub
+Ver [AUTO_DEPLOY.md](AUTO_DEPLOY.md) para configurar GitHub Actions y el webhook.
+
+## Flujo de Trabajo Completo
+
+### Desarrollo Local → Producción
+
+1. **Desarrollar localmente:**
+   ```bash
+   # Hacer cambios en el código
+   npm run dev  # Para desarrollo
+   ```
+
+2. **Compilar assets antes de commit:**
+   ```bash
+   npm run build  # Compila para producción
+   ```
+
+3. **Commit y push:**
+   ```bash
+   git add .
+   git commit -m "feat: nueva funcionalidad"
+   git push origin main
+   ```
+
+4. **Auto-deploy se ejecuta automáticamente:**
+   - GitHub Actions detecta el push
+   - Llama al webhook de producción
+   - El script de deploy se ejecuta
+   - Los cambios están en producción en ~1-2 minutos
+
+5. **Verificar:**
+   - Revisar que el workflow de GitHub Actions pasó (salió verde ✅)
+   - Verificar en https://mientreno.srojasweb.dev que los cambios estén aplicados
+
+### Si hay Migraciones Nuevas
+
+Después del auto-deploy, ejecutar manualmente:
 
 ```bash
-git add .
-git commit -m "feat: nueva funcionalidad"
-git push origin main
-```
-
-### 2. En Producción - Ejecutar Script de Deploy
-
-**Desde la Terminal de cPanel:**
-
-1. Acceder a cPanel → Terminal
-2. Ejecutar el script:
-
-```bash
-cd /home/srojasw1
-./deploy_mientreno.sh
-```
-
-El script automáticamente:
-1. ✅ Hace pull del repositorio
-2. ✅ Copia archivos de la app (sin tocar storage ni .env)
-3. ✅ Copia archivos públicos (sin tocar storage ni index.php)
-4. ✅ Instala dependencias de Composer
-5. ✅ Compila assets con Vite/npm
-6. ✅ Cachea configuración, rutas y vistas
-7. ✅ Ajusta permisos
-
-### 3. Ejecutar Migraciones (si hay nuevas)
-
-```bash
+# Por SSH
+ssh mientreno-prod
 cd /home/srojasw1/public_html/mientreno/app
-php artisan migrate --force
+/opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force
+
+# O en una sola línea desde tu PC
+ssh mientreno-prod "cd /home/srojasw1/public_html/mientreno/app && /opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force"
 ```
 
-### 4. Verificar
+## Comandos Útiles
 
-Acceder a la aplicación en el navegador y verificar que todo funcione correctamente.
+### Deploy Manual (Casos de Emergencia)
 
-## Comandos Útiles Post-Deploy
+```bash
+# Por Terminal de cPanel
+bash /home/srojasw1/deploy_mientreno.sh
+
+# Por SSH desde tu PC
+ssh mientreno-prod "bash /home/srojasw1/deploy_mientreno.sh"
+```
 
 ### Limpiar Cachés
 
 ```bash
 cd /home/srojasw1/public_html/mientreno/app
 
-php artisan cache:clear
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
+/opt/cpanel/ea-php84/root/usr/bin/php artisan cache:clear
+/opt/cpanel/ea-php84/root/usr/bin/php artisan config:clear
+/opt/cpanel/ea-php84/root/usr/bin/php artisan route:clear
+/opt/cpanel/ea-php84/root/usr/bin/php artisan view:clear
 ```
 
 ### Re-cachear (Para mejor performance)
 
 ```bash
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+cd /home/srojasw1/public_html/mientreno/app
+
+/opt/cpanel/ea-php84/root/usr/bin/php artisan config:cache
+/opt/cpanel/ea-php84/root/usr/bin/php artisan route:cache
+/opt/cpanel/ea-php84/root/usr/bin/php artisan view:cache
 ```
 
 ### Ver Logs
@@ -423,6 +460,9 @@ tail -50 /home/srojasw1/public_html/mientreno/app/storage/logs/laravel.log
 
 # Ver errores de hoy
 grep "$(date +%Y-%m-%d)" /home/srojasw1/public_html/mientreno/app/storage/logs/laravel.log
+
+# Seguir logs en tiempo real
+tail -f /home/srojasw1/public_html/mientreno/app/storage/logs/laravel.log
 ```
 
 ### Verificar Configuración
@@ -430,15 +470,16 @@ grep "$(date +%Y-%m-%d)" /home/srojasw1/public_html/mientreno/app/storage/logs/l
 ```bash
 cd /home/srojasw1/public_html/mientreno/app
 
-# Ver configuración cargada
-php artisan config:show
-
 # Ver rutas
-php artisan route:list
+/opt/cpanel/ea-php84/root/usr/bin/php artisan route:list
+
+# Ver configuración
+/opt/cpanel/ea-php84/root/usr/bin/php artisan config:show
 
 # Verificar conexión a BD
-php artisan tinker
+/opt/cpanel/ea-php84/root/usr/bin/php artisan tinker
 >>> DB::connection()->getPdo();
+>>> exit
 ```
 
 ## Troubleshooting
@@ -455,13 +496,15 @@ nano /home/srojasw1/public_html/mientreno/public/index.php
 
 ### Archivos CSS/JS no se actualizan
 
-**Causa:** Caché del navegador o assets no compilados.
+**Causa:** No compilaste los assets antes de hacer push.
 
 **Solución:**
 ```bash
-cd /home/srojasw1/public_html/mientreno/app
+# En local
 npm run build
-php artisan view:clear
+git add public/build
+git commit -m "build: compilar assets"
+git push origin main
 ```
 
 Luego Ctrl+Shift+R en el navegador (hard refresh).
@@ -473,7 +516,7 @@ Luego Ctrl+Shift+R en el navegador (hard refresh).
 **Solución:**
 ```bash
 cd /home/srojasw1/public_html/mientreno/app
-php artisan storage:link
+/opt/cpanel/ea-php84/root/usr/bin/php artisan storage:link
 ```
 
 ### Error de permisos (Permission Denied)
@@ -485,30 +528,53 @@ chmod -R 775 storage
 chmod -R 775 bootstrap/cache
 ```
 
-### Migraciones fallan
+### Auto-deploy no funciona
 
-**Verificar que:**
-1. Las credenciales de BD en `.env` sean correctas
-2. El usuario de BD tenga permisos
-3. La base de datos exista
+1. **Verificar GitHub Actions:**
+   - Ve a la pestaña "Actions" en GitHub
+   - Revisa el log del workflow que falló
+   - Busca el error específico
 
-```bash
-cd /home/srojasw1/public_html/mientreno/app
-php artisan migrate:status
-```
+2. **Verificar endpoint del webhook:**
+   ```bash
+   # Probar desde terminal de cPanel o SSH
+   curl -X POST \
+     -H "Content-Type: application/json" \
+     -H "X-Deploy-Token: tu_token" \
+     -d '{"source":"test"}' \
+     https://mientreno.srojasweb.dev/deploy/webhook
 
-### Composer no instala dependencias
+   # Debe responder: {"success":true,"message":"Deploy completed successfully"}
+   ```
 
-**Verificar versión de PHP:**
-```bash
-php -v  # Debe ser PHP 8.x
-```
+3. **Verificar logs del webhook:**
+   ```bash
+   grep "Deploy:" /home/srojasw1/public_html/mientreno/app/storage/logs/laravel.log | tail -20
+   ```
 
-**Si usa PHP 7.x por defecto:**
-```bash
-# Usar PHP 8.4 explícitamente (ajustar según versión disponible)
-/opt/cpanel/ea-php84/root/usr/bin/php composer install
-```
+### SSH Connection Refused
+
+**Si ves "Connection refused" al conectar por SSH:**
+
+1. **Verifica que estás usando el puerto correcto:**
+   ```bash
+   ssh -p 22278 srojasw1@srojasweb.dev
+   # NO el puerto 22 (estándar)
+   ```
+
+2. **Verifica que la clave esté autorizada en cPanel:**
+   - Ve a cPanel → "Acceso SSH" → "Manage SSH Keys"
+   - La clave debe estar en estado "Authorized"
+
+3. **Verifica permisos de la clave local:**
+   ```bash
+   # En Windows (PowerShell como Admin)
+   icacls $HOME\.ssh\deploy-mientreno-new /inheritance:r
+   icacls $HOME\.ssh\deploy-mientreno-new /grant:r "$env:USERNAME`:R"
+
+   # En Linux/Mac
+   chmod 600 ~/.ssh/deploy-mientreno-new
+   ```
 
 ## Seguridad
 
@@ -520,6 +586,7 @@ Asegurarse que estos archivos NO estén en el repositorio:
 - `vendor/`
 - `node_modules/`
 - Archivos de backup con extensión `.sql`
+- Claves SSH privadas
 
 ### Verificar .gitignore
 
@@ -536,6 +603,7 @@ Debe incluir:
 /vendor
 .env
 .env.backup
+.phpunit.result.cache
 ```
 
 ### Backups
@@ -552,6 +620,10 @@ mysqldump -u usuario -p srojasw1_mientreno > backup-$(date +%Y%m%d).sql
 # Backup de storage
 tar -czf storage-backup-$(date +%Y%m%d).tar.gz \
   /home/srojasw1/public_html/mientreno/app/storage/app/public
+
+# Backup de .env
+cp /home/srojasw1/public_html/mientreno/app/.env \
+   /home/srojasw1/backups/env-backup-$(date +%Y%m%d)
 ```
 
 ## Monitoreo
@@ -576,14 +648,45 @@ find . -name "*.log" -mtime +30 -delete
 
 ## Checklist de Deploy
 
-- [ ] Código commiteado y pusheado a GitHub
-- [ ] Acceder a la Terminal de cPanel
-- [ ] Ejecutar `./deploy_mientreno.sh`
-- [ ] Ejecutar migraciones si hay nuevas: `php artisan migrate --force`
+### Automático (Normal)
+- [ ] Assets compilados: `npm run build`
+- [ ] Código commiteado y pusheado: `git push origin main`
+- [ ] Verificar que GitHub Actions pasó (verde ✅)
 - [ ] Verificar que la app funcione en el navegador
-- [ ] Revisar logs por errores: `tail -50 storage/logs/laravel.log`
-- [ ] Limpiar caché si es necesario
-- [ ] Verificar que assets (CSS/JS) estén actualizados
+- [ ] Si hay migraciones, ejecutarlas manualmente
+- [ ] Revisar logs por errores
+
+### Manual (Emergencia)
+- [ ] Conectar por SSH o Terminal de cPanel
+- [ ] Ejecutar: `bash /home/srojasw1/deploy_mientreno.sh`
+- [ ] Ejecutar migraciones si hay nuevas
+- [ ] Verificar que la app funcione
+- [ ] Revisar logs por errores
+
+## Resumen de Comandos Rápidos
+
+```bash
+# CONEXIÓN
+ssh mientreno-prod                    # Conectar por SSH
+
+# DEPLOY
+bash /home/srojasw1/deploy_mientreno.sh  # Deploy manual
+
+# MIGRACIONES
+cd /home/srojasw1/public_html/mientreno/app
+/opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force
+
+# CACHÉS
+/opt/cpanel/ea-php84/root/usr/bin/php artisan config:cache
+/opt/cpanel/ea-php84/root/usr/bin/php artisan route:cache
+/opt/cpanel/ea-php84/root/usr/bin/php artisan view:cache
+
+# LOGS
+tail -50 /home/srojasw1/public_html/mientreno/app/storage/logs/laravel.log
+
+# VERIFICACIÓN
+/opt/cpanel/ea-php84/root/usr/bin/php artisan route:list
+```
 
 ## Contacto y Soporte
 
