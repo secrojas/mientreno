@@ -250,7 +250,7 @@
                         <span style="font-size:1rem;">→</span>
                     </a>
                     <a href="#features" class="btn-secondary">
-                        Ver cómo funciona
+                        Conocer más
                     </a>
                 </div>
 
