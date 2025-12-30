@@ -5,8 +5,11 @@
 .env.production
 .phpactor.json
 .phpunit.result.cache
+/.claude
+/.cursor
 /.fleet
 /.idea
+/.junie
 /.nova
 /.phpunit.cache
 /.vscode
