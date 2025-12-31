@@ -298,6 +298,15 @@
 **Fecha:** 31 Diciembre 2025
 **Calidad:** Production-ready
 **Mobile-First:** 100% implementado
+**Deploy:** Automático con copia de assets a ambos destinos ✅
+
+---
+
+## 🔧 Última Actualización
+
+**31 Dic 2025:** Fix de deploy automático implementado. Los assets compilados ahora se copian correctamente a:
+- `PUBLIC_DEST/build/` - Docroot público
+- `APP_DEST/public/build/` - Laravel app (donde Vite busca manifests)
 
 ---
 
