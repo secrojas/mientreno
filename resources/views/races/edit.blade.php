@@ -1,15 +1,15 @@
 <x-app-layout>
-    <div style="max-width:700px;margin:0 auto;">
-        <div style="margin-bottom:1.5rem;">
-            <a href="{{ route('races.index') }}" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--text-muted);">
+    <div class="max-w-3xl mx-auto">
+        <div class="mb-6">
+            <a href="{{ route('races.index') }}" class="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-main transition-colors">
                 ← Volver
             </a>
         </div>
 
-        <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.6rem;margin-bottom:.5rem;">
+        <h1 class="font-display text-responsive-2xl mb-2">
             Editar Carrera
         </h1>
-        <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.5rem;">
+        <p class="text-responsive-sm text-text-muted mb-6">
             {{ $race->name }} · {{ $race->date->format('d/m/Y') }}
         </p>
 
@@ -18,73 +18,66 @@
                 @csrf
                 @method('PUT')
 
-                <div style="display:grid;gap:1rem;">
+                <div class="grid gap-4">
                     <!-- Nombre -->
                     <div>
-                        <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Nombre de la carrera *</label>
-                        <input type="text" name="name" value="{{ old('name', $race->name) }}" required
-                            style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                        <label class="form-label">Nombre de la carrera *</label>
+                        <input type="text" name="name" value="{{ old('name', $race->name) }}" required class="form-input">
                         @error('name')
-                            <span style="color:#ff6b6b;font-size:.8rem;">{{ $message }}</span>
+                            <span class="text-xs text-accent-primary">{{ $message }}</span>
                         @enderror
                     </div>
 
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <!-- Distancia -->
                         <div>
-                            <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Distancia (km) *</label>
-                            <input type="number" name="distance" value="{{ old('distance', $race->distance) }}" required step="0.01" min="0.1"
-                                style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                            <label class="form-label">Distancia (km) *</label>
+                            <input type="number" name="distance" value="{{ old('distance', $race->distance) }}" required step="0.01" min="0.1" class="form-input">
                             @error('distance')
-                                <span style="color:#ff6b6b;font-size:.8rem;">{{ $message }}</span>
+                                <span class="text-xs text-accent-primary">{{ $message }}</span>
                             @enderror
                         </div>
 
                         <!-- Fecha -->
                         <div>
-                            <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Fecha *</label>
-                            <input type="date" name="date" value="{{ old('date', $race->date->format('Y-m-d')) }}" required
-                                style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                            <label class="form-label">Fecha *</label>
+                            <input type="date" name="date" value="{{ old('date', $race->date->format('Y-m-d')) }}" required class="form-input">
                             @error('date')
-                                <span style="color:#ff6b6b;font-size:.8rem;">{{ $message }}</span>
+                                <span class="text-xs text-accent-primary">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
 
                     <!-- Ubicación -->
                     <div>
-                        <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Ubicación</label>
-                        <input type="text" name="location" value="{{ old('location', $race->location) }}"
-                            style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                        <label class="form-label">Ubicación</label>
+                        <input type="text" name="location" value="{{ old('location', $race->location) }}" class="form-input">
                     </div>
 
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <!-- Tiempo objetivo -->
                         <div>
-                            <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Tiempo objetivo (segundos)</label>
-                            <input type="number" name="target_time" value="{{ old('target_time', $race->target_time) }}" min="1"
-                                style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                            <label class="form-label">Tiempo objetivo (segundos)</label>
+                            <input type="number" name="target_time" value="{{ old('target_time', $race->target_time) }}" min="1" class="form-input">
                         </div>
 
                         <!-- Tiempo real -->
                         <div>
-                            <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Tiempo real (segundos)</label>
-                            <input type="number" name="actual_time" value="{{ old('actual_time', $race->actual_time) }}" min="1"
-                                style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                            <label class="form-label">Tiempo real (segundos)</label>
+                            <input type="number" name="actual_time" value="{{ old('actual_time', $race->actual_time) }}" min="1" class="form-input">
                         </div>
                     </div>
 
                     <!-- Posición -->
                     <div>
-                        <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Posición general</label>
-                        <input type="number" name="position" value="{{ old('position', $race->position) }}" min="1"
-                            style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                        <label class="form-label">Posición general</label>
+                        <input type="number" name="position" value="{{ old('position', $race->position) }}" min="1" class="form-input">
                     </div>
 
                     <!-- Status -->
                     <div>
-                        <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Estado *</label>
-                        <select name="status" required style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                        <label class="form-label">Estado *</label>
+                        <select name="status" required class="form-select">
                             @foreach($statusOptions as $value => $label)
                                 <option value="{{ $value }}" {{ old('status', $race->status) == $value ? 'selected' : '' }}>
                                     {{ $label }}
@@ -95,13 +88,12 @@
 
                     <!-- Notas -->
                     <div>
-                        <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Notas</label>
-                        <textarea name="notes" rows="3"
-                            style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);resize:vertical;">{{ old('notes', $race->notes) }}</textarea>
+                        <label class="form-label">Notas</label>
+                        <textarea name="notes" rows="3" class="form-input resize-y">{{ old('notes', $race->notes) }}</textarea>
                     </div>
 
                     <!-- Submit -->
-                    <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">
+                    <button type="submit" class="btn-primary w-full justify-center min-h-touch">
                         Actualizar Carrera
                     </button>
                 </div>

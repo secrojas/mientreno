@@ -32,3 +32,7 @@ Thumbs.db
 /resources/views/vendor/pagination/semantic-ui.blade.php
 /resources/views/vendor/pagination/simple-*.blade.php
 /resources/views/vendor/pagination/tailwind.blade.php
+
+# Allow Vite build in shared hosting
+!public/build
+!public/build/**

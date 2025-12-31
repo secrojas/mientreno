@@ -1,15 +1,15 @@
 <x-app-layout>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-            <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.6rem;margin-bottom:.3rem;">
+            <h1 class="font-display text-responsive-2xl mb-1">
                 Mis Objetivos
             </h1>
-            <p style="font-size:.9rem;color:var(--text-muted);">
+            <p class="text-responsive-sm text-text-muted">
                 Gestiona tus metas de entrenamiento.
             </p>
         </div>
-        <a href="{{ route('goals.create') }}" class="btn-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+        <a href="{{ route('goals.create') }}" class="btn-primary w-full sm:w-auto justify-center min-h-touch">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
                 <path d="M12 5v14M5 12h14"/>
             </svg>
             Nuevo Objetivo
@@ -17,57 +17,65 @@
     </div>
 
     @if (session('success'))
-        <div style="padding:.75rem 1rem;background:rgba(45,227,142,.1);border:1px solid rgba(45,227,142,.3);border-radius:.6rem;font-size:.85rem;color:var(--accent-secondary);margin-bottom:1rem;">
+        <div class="px-4 py-3 bg-accent-secondary/10 border border-accent-secondary/30 rounded-btn text-sm text-accent-secondary mb-4">
             {{ session('success') }}
         </div>
     @endif
 
     <x-card>
         @if($goals->count() > 0)
-            <div style="display:grid;gap:.75rem;">
+            <div class="grid gap-3">
                 @foreach($goals as $goal)
-                    <div style="padding:1rem;border-radius:.7rem;background:rgba(5,8,20,.9);border:1px solid {{ $goal->status === 'active' ? 'rgba(45,227,142,.3)' : 'rgba(31,41,55,.7)' }};">
-                        <div style="display:grid;grid-template-columns:1fr auto auto;gap:1rem;align-items:center;">
-                            <div>
-                                <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">
-                                    <span style="padding:.15rem .5rem;border-radius:.4rem;background:rgba(45,227,142,.1);border:1px solid rgba(45,227,142,.3);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;">
+                    <div class="p-4 rounded-card bg-bg-sidebar border {{ $goal->status === 'active' ? 'border-accent-secondary/30' : 'border-border-subtle' }}">
+                        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+                            <!-- Información del objetivo -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                    <span class="px-2 py-1 rounded-btn bg-accent-secondary/10 border border-accent-secondary/30 text-xs uppercase tracking-wide">
                                         {{ $goal->type_label }}
                                     </span>
-                                    <span style="padding:.15rem .5rem;border-radius:.4rem;background:rgba(15,23,42,.9);border:1px solid rgba(31,41,55,.7);font-size:.7rem;">
+                                    <span class="px-2 py-1 rounded-btn bg-bg-main border border-border-subtle text-xs">
                                         {{ $goal->status_label }}
                                     </span>
                                 </div>
-                                <div style="font-size:1rem;font-weight:600;margin-bottom:.3rem;">{{ $goal->title }}</div>
-                                <div style="font-size:.85rem;color:var(--text-muted);">
+                                <div class="text-base font-semibold mb-1">{{ $goal->title }}</div>
+                                <div class="text-sm text-text-muted">
                                     {{ $goal->getTargetDescription() }}
                                     @if($goal->target_date)
                                         · Fecha límite: {{ $goal->target_date->format('d/m/Y') }}
                                         @if($goal->days_until !== null && $goal->days_until >= 0)
-                                            <span style="color:var(--accent-secondary);">({{ $goal->days_until }} días)</span>
+                                            <span class="text-accent-secondary">({{ $goal->days_until }} días)</span>
                                         @elseif($goal->isOverdue())
-                                            <span style="color:#ff6b6b;">(vencido)</span>
+                                            <span class="text-red-400">(vencido)</span>
                                         @endif
                                     @endif
                                 </div>
                                 @if($goal->progress_percentage > 0)
-                                    <div style="margin-top:.5rem;">
-                                        <div style="width:100%;height:4px;background:rgba(15,23,42,.9);border-radius:999px;overflow:hidden;">
-                                            <div style="width:{{ $goal->progress_percentage }}%;height:100%;background:var(--accent-secondary);"></div>
+                                    <div class="mt-3">
+                                        <div class="w-full h-1 bg-bg-main rounded-full overflow-hidden">
+                                            <div class="h-full bg-accent-secondary transition-all duration-300" style="width: {{ $goal->progress_percentage }}%"></div>
                                         </div>
-                                        <div style="font-size:.75rem;color:var(--text-muted);margin-top:.3rem;">
+                                        <div class="text-xs text-text-muted mt-1">
                                             {{ $goal->progress_percentage }}% completado
                                         </div>
                                     </div>
                                 @endif
                             </div>
-                            <div style="display:flex;gap:.5rem;">
-                                <a href="{{ route('goals.edit', $goal) }}" style="padding:.35rem .6rem;border-radius:.5rem;background:rgba(15,23,42,.9);border:1px solid #1F2937;color:var(--text-muted);font-size:.8rem;">
+
+                            <!-- Acciones -->
+                            <div class="flex gap-2 lg:flex-col xl:flex-row">
+                                <a href="{{ route('goals.edit', $goal) }}"
+                                   class="btn-ghost flex-1 lg:flex-initial justify-center min-h-touch text-sm">
                                     Editar
                                 </a>
-                                <form method="POST" action="{{ route('goals.destroy', $goal) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este objetivo?');">
+                                <form method="POST" action="{{ route('goals.destroy', $goal) }}"
+                                      class="flex-1 lg:flex-initial"
+                                      onsubmit="return confirm('¿Eliminar este objetivo?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" style="padding:.35rem .6rem;border-radius:.5rem;background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.3);color:#ff6b6b;cursor:pointer;font-size:.8rem;">
+                                    <button type="submit"
+                                            class="w-full px-3 py-2 rounded-btn bg-accent-primary/10 border border-accent-primary/30
+                                                   text-red-400 text-sm hover:bg-accent-primary/20 transition-colors min-h-touch">
                                         Eliminar
                                     </button>
                                 </form>
@@ -77,14 +85,14 @@
                 @endforeach
             </div>
 
-            <div style="margin-top:1rem;">
+            <div class="mt-4">
                 {{ $goals->links() }}
             </div>
         @else
-            <div style="text-align:center;padding:3rem;color:var(--text-muted);">
-                <div style="font-size:1.1rem;margin-bottom:.5rem;">No hay objetivos registrados</div>
-                <p style="margin-bottom:1.5rem;">Empezá a definir tus metas de entrenamiento.</p>
-                <a href="{{ route('goals.create') }}" class="btn-primary">
+            <div class="text-center py-12 px-4">
+                <div class="text-lg mb-2">No hay objetivos registrados</div>
+                <p class="text-text-muted mb-6">Empezá a definir tus metas de entrenamiento.</p>
+                <a href="{{ route('goals.create') }}" class="btn-primary inline-flex">
                     Crear Primer Objetivo
                 </a>
             </div>

@@ -1,15 +1,15 @@
 <x-app-layout>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-            <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.6rem;margin-bottom:.3rem;">
+            <h1 class="font-display text-responsive-2xl mb-1">
                 Mis Carreras
             </h1>
-            <p style="font-size:.9rem;color:var(--text-muted);">
+            <p class="text-responsive-sm text-text-muted">
                 Gestiona tus carreras próximas y pasadas.
             </p>
         </div>
-        <a href="{{ route('races.create') }}" class="btn-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+        <a href="{{ route('races.create') }}" class="btn-primary w-full sm:w-auto justify-center min-h-touch">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
                 <path d="M12 5v14M5 12h14"/>
             </svg>
             Nueva Carrera
@@ -17,37 +17,38 @@
     </div>
 
     @if (session('success'))
-        <div style="padding:.75rem 1rem;background:rgba(45,227,142,.1);border:1px solid rgba(45,227,142,.3);border-radius:.6rem;font-size:.85rem;color:var(--accent-secondary);margin-bottom:1rem;">
+        <div class="px-4 py-3 bg-accent-secondary/10 border border-accent-secondary/30 rounded-btn text-sm text-accent-secondary mb-4">
             {{ session('success') }}
         </div>
     @endif
 
     <!-- Próximas carreras -->
     @if($upcomingRaces->count() > 0)
-        <x-card title="Próximas Carreras" subtitle="{{ $upcomingRaces->count() }} carrera(s)" style="margin-bottom:1.5rem;">
-            <div style="display:grid;gap:.75rem;">
+        <x-card title="Próximas Carreras" :subtitle="$upcomingRaces->count() . ' carrera(s)'" class="mb-6">
+            <div class="grid gap-3">
                 @foreach($upcomingRaces as $race)
-                    <div style="padding:1rem;border-radius:.7rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);">
-                        <div style="display:grid;grid-template-columns:1fr auto auto;gap:1rem;align-items:center;">
-                            <div>
-                                <div style="font-size:1.1rem;font-weight:600;margin-bottom:.3rem;">{{ $race->name }}</div>
-                                <div style="font-size:.85rem;color:var(--text-muted);">
-                                    <span style="font-family:'Space Grotesk',monospace;">{{ $race->distance_label }}</span>
+                    <div class="p-4 rounded-card bg-bg-sidebar border border-border-subtle">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-lg font-semibold mb-1">{{ $race->name }}</div>
+                                <div class="text-sm text-text-muted">
+                                    <span class="font-mono">{{ $race->distance_label }}</span>
                                     @if($race->location)
                                         · {{ $race->location }}
                                     @endif
                                     · {{ $race->date->format('d/m/Y') }}
                                     @if($race->days_until >= 0)
-                                        · <span style="color:var(--accent-secondary);">en {{ $race->days_until }} días</span>
+                                        · <span class="text-accent-secondary">en {{ $race->days_until }} días</span>
                                     @endif
                                 </div>
                                 @if($race->target_time)
-                                    <div style="font-size:.8rem;color:var(--text-muted);margin-top:.3rem;">
-                                        Objetivo: <span style="font-family:'Space Grotesk',monospace;">{{ $race->formatted_target_time }}</span>
+                                    <div class="text-xs text-text-muted mt-1">
+                                        Objetivo: <span class="font-mono">{{ $race->formatted_target_time }}</span>
                                     </div>
                                 @endif
                             </div>
-                            <a href="{{ route('races.edit', $race) }}" style="padding:.4rem .7rem;border-radius:.5rem;background:rgba(15,23,42,.9);border:1px solid #1F2937;color:var(--text-muted);font-size:.85rem;">
+                            <a href="{{ route('races.edit', $race) }}"
+                               class="btn-ghost justify-center min-h-touch text-sm">
                                 Editar
                             </a>
                         </div>
@@ -60,38 +61,44 @@
     <!-- Carreras pasadas -->
     <x-card title="Carreras Pasadas" :subtitle="$pastRaces->total() . ' carrera(s)'">
         @if($pastRaces->count() > 0)
-            <div style="display:grid;gap:.5rem;">
+            <!-- Desktop: tabla horizontal -->
+            <div class="hidden md:grid gap-2">
                 @foreach($pastRaces as $race)
-                    <div style="display:grid;grid-template-columns:100px 1fr 150px 120px;gap:1rem;padding:.75rem;border-bottom:1px solid rgba(15,23,42,.9);align-items:center;">
-                        <div style="font-family:'Space Grotesk',monospace;color:var(--text-muted);font-size:.85rem;">
+                    <div class="grid grid-cols-[100px_1fr_150px_120px] gap-4 items-center p-3 border-b border-bg-main last:border-0">
+                        <div class="font-mono text-text-muted text-sm">
                             {{ $race->date->format('d/m/Y') }}
                         </div>
                         <div>
-                            <div style="font-weight:500;">{{ $race->name }}</div>
-                            <div style="font-size:.8rem;color:var(--text-muted);">
+                            <div class="font-medium">{{ $race->name }}</div>
+                            <div class="text-xs text-text-muted">
                                 {{ $race->distance_label }}
                                 @if($race->location)
                                     · {{ $race->location }}
                                 @endif
                             </div>
                         </div>
-                        <div style="font-family:'Space Grotesk',monospace;font-size:.85rem;">
+                        <div class="font-mono text-sm">
                             @if($race->actual_time)
-                                <span style="color:var(--accent-secondary);">{{ $race->formatted_actual_time }}</span>
+                                <span class="text-accent-secondary">{{ $race->formatted_actual_time }}</span>
                             @elseif($race->target_time)
-                                <span style="color:var(--text-muted);">{{ $race->formatted_target_time }}</span>
+                                <span class="text-text-muted">{{ $race->formatted_target_time }}</span>
                             @else
                                 –
                             @endif
                         </div>
-                        <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-                            <a href="{{ route('races.edit', $race) }}" style="padding:.35rem .6rem;border-radius:.5rem;background:rgba(15,23,42,.9);border:1px solid #1F2937;color:var(--text-muted);font-size:.8rem;">
+                        <div class="flex gap-2 justify-end">
+                            <a href="{{ route('races.edit', $race) }}"
+                               class="btn-ghost text-sm px-2 py-1">
                                 Editar
                             </a>
-                            <form method="POST" action="{{ route('races.destroy', $race) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar esta carrera?');">
+                            <form method="POST" action="{{ route('races.destroy', $race) }}"
+                                  class="inline"
+                                  onsubmit="return confirm('¿Eliminar esta carrera?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" style="padding:.35rem .6rem;border-radius:.5rem;background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.3);color:#ff6b6b;cursor:pointer;font-size:.8rem;">
+                                <button type="submit"
+                                        class="px-2 py-1 rounded-btn bg-accent-primary/10 border border-accent-primary/30
+                                               text-red-400 text-sm hover:bg-accent-primary/20 transition-colors">
                                     Eliminar
                                 </button>
                             </form>
@@ -100,11 +107,57 @@
                 @endforeach
             </div>
 
-            <div style="margin-top:1rem;">
+            <!-- Mobile: cards -->
+            <div class="md:hidden grid gap-3">
+                @foreach($pastRaces as $race)
+                    <div class="p-4 rounded-card bg-bg-sidebar border border-border-subtle">
+                        <div class="mb-3">
+                            <div class="font-semibold mb-1">{{ $race->name }}</div>
+                            <div class="text-sm text-text-muted">
+                                {{ $race->distance_label }}
+                                @if($race->location)
+                                    · {{ $race->location }}
+                                @endif
+                            </div>
+                            <div class="font-mono text-xs text-text-muted mt-1">
+                                {{ $race->date->format('d/m/Y') }}
+                            </div>
+                            @if($race->actual_time || $race->target_time)
+                                <div class="font-mono text-sm mt-2">
+                                    @if($race->actual_time)
+                                        <span class="text-accent-secondary">{{ $race->formatted_actual_time }}</span>
+                                    @elseif($race->target_time)
+                                        <span class="text-text-muted">{{ $race->formatted_target_time }}</span>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="{{ route('races.edit', $race) }}"
+                               class="btn-ghost flex-1 justify-center min-h-touch text-sm">
+                                Editar
+                            </a>
+                            <form method="POST" action="{{ route('races.destroy', $race) }}"
+                                  class="flex-1"
+                                  onsubmit="return confirm('¿Eliminar esta carrera?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                        class="w-full px-3 py-2 rounded-btn bg-accent-primary/10 border border-accent-primary/30
+                                               text-red-400 text-sm hover:bg-accent-primary/20 transition-colors min-h-touch">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="mt-4">
                 {{ $pastRaces->links() }}
             </div>
         @else
-            <div style="text-align:center;padding:2rem;color:var(--text-muted);">
+            <div class="text-center py-8 px-4 text-text-muted">
                 No hay carreras pasadas registradas.
             </div>
         @endif

@@ -1,15 +1,15 @@
 <x-app-layout>
-    <div style="max-width:700px;margin:0 auto;">
-        <div style="margin-bottom:1.5rem;">
-            <a href="{{ route('goals.index') }}" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--text-muted);">
+    <div class="max-w-3xl mx-auto">
+        <div class="mb-6">
+            <a href="{{ route('goals.index') }}" class="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-main transition-colors">
                 ← Volver
             </a>
         </div>
 
-        <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.6rem;margin-bottom:.5rem;">
+        <h1 class="font-display text-responsive-2xl mb-2">
             Editar Objetivo
         </h1>
-        <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.5rem;">
+        <p class="text-responsive-sm text-text-muted mb-6">
             {{ $goal->title }}
         </p>
 
@@ -18,14 +18,13 @@
                 @csrf
                 @method('PUT')
 
-                <div style="display:grid;gap:1rem;">
+                <div class="grid gap-4">
                     <!-- Título -->
                     <div>
-                        <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Título *</label>
-                        <input type="text" name="title" value="{{ old('title', $goal->title) }}" required
-                            style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                        <label class="form-label">Título *</label>
+                        <input type="text" name="title" value="{{ old('title', $goal->title) }}" required class="form-input">
                         @error('title')
-                            <span style="color:#ff6b6b;font-size:.8rem;">{{ $message }}</span>
+                            <span class="text-xs text-accent-primary">{{ $message }}</span>
                         @enderror
                     </div>
 
@@ -53,11 +52,11 @@
                         $frequencyPeriod = $targetValue['period'] ?? 'week';
                     @endphp
 
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <!-- Tipo -->
                         <div>
-                            <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Tipo *</label>
-                            <select name="type" id="goal-type" required style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                            <label class="form-label">Tipo *</label>
+                            <select name="type" id="goal-type" required class="form-select">
                                 @foreach($typeOptions as $value => $label)
                                     <option value="{{ $value }}" {{ old('type', $goal->type) == $value ? 'selected' : '' }}>
                                         {{ $label }}
@@ -68,8 +67,8 @@
 
                         <!-- Status -->
                         <div>
-                            <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Estado *</label>
-                            <select name="status" required style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                            <label class="form-label">Estado *</label>
+                            <select name="status" required class="form-select">
                                 @foreach($statusOptions as $value => $label)
                                     <option value="{{ $value }}" {{ old('status', $goal->status) == $value ? 'selected' : '' }}>
                                         {{ $label }}
@@ -82,112 +81,103 @@
                     <!-- Campos dinámicos según tipo de objetivo -->
                     <div id="dynamic-fields">
                         <!-- Race type -->
-                        <div id="fields-race" class="goal-type-fields" style="display:none;">
-                            <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Tiempo objetivo *</label>
-                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;">
+                        <div id="fields-race" class="goal-type-fields hidden">
+                            <label class="form-label">Tiempo objetivo *</label>
+                            <div class="grid grid-cols-3 gap-3">
                                 <div>
-                                    <label style="display:block;font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Horas</label>
-                                    <input type="number" id="race-hours" min="0" max="10" value="{{ $raceHours }}"
-                                        style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                                    <label class="text-xs text-text-muted block mb-1">Horas</label>
+                                    <input type="number" id="race-hours" min="0" max="10" value="{{ $raceHours }}" class="form-input text-center">
                                 </div>
                                 <div>
-                                    <label style="display:block;font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Minutos</label>
-                                    <input type="number" id="race-minutes" min="0" max="59" value="{{ $raceMinutes }}"
-                                        style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                                    <label class="text-xs text-text-muted block mb-1">Minutos</label>
+                                    <input type="number" id="race-minutes" min="0" max="59" value="{{ $raceMinutes }}" class="form-input text-center">
                                 </div>
                                 <div>
-                                    <label style="display:block;font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Segundos</label>
-                                    <input type="number" id="race-seconds" min="0" max="59" value="{{ $raceSeconds }}"
-                                        style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                                    <label class="text-xs text-text-muted block mb-1">Segundos</label>
+                                    <input type="number" id="race-seconds" min="0" max="59" value="{{ $raceSeconds }}" class="form-input text-center">
                                 </div>
                             </div>
-                            <small style="font-size:.75rem;color:var(--text-muted);">Ej: 0h 45m 0s para una meta de 45 minutos</small>
+                            <small class="text-xs text-text-muted block mt-1">Ej: 0h 45m 0s para una meta de 45 minutos</small>
                         </div>
 
                         <!-- Distance type -->
-                        <div id="fields-distance" class="goal-type-fields" style="display:none;">
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div id="fields-distance" class="goal-type-fields hidden">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Distancia (km) *</label>
-                                    <input type="number" id="distance-value" min="1" step="0.1" value="{{ $distanceValue }}"
-                                        style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                                    <label class="form-label">Distancia (km) *</label>
+                                    <input type="number" id="distance-value" min="1" step="0.1" value="{{ $distanceValue }}" class="form-input">
                                 </div>
                                 <div>
-                                    <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Período *</label>
-                                    <select id="distance-period" style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                                    <label class="form-label">Período *</label>
+                                    <select id="distance-period" class="form-select">
                                         <option value="week" {{ $distancePeriod == 'week' ? 'selected' : '' }}>Por semana</option>
                                         <option value="month" {{ $distancePeriod == 'month' ? 'selected' : '' }}>Por mes</option>
                                     </select>
                                 </div>
                             </div>
-                            <small style="font-size:.75rem;color:var(--text-muted);">Ej: 50 km por semana</small>
+                            <small class="text-xs text-text-muted block mt-1">Ej: 50 km por semana</small>
                         </div>
 
                         <!-- Pace type -->
-                        <div id="fields-pace" class="goal-type-fields" style="display:none;">
-                            <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Pace objetivo (min/km) *</label>
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div id="fields-pace" class="goal-type-fields hidden">
+                            <label class="form-label">Pace objetivo (min/km) *</label>
+                            <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label style="display:block;font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Minutos</label>
-                                    <input type="number" id="pace-minutes" min="3" max="15" value="{{ $paceMinutes }}"
-                                        style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                                    <label class="text-xs text-text-muted block mb-1">Minutos</label>
+                                    <input type="number" id="pace-minutes" min="3" max="15" value="{{ $paceMinutes }}" class="form-input text-center">
                                 </div>
                                 <div>
-                                    <label style="display:block;font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Segundos</label>
-                                    <input type="number" id="pace-seconds" min="0" max="59" value="{{ $paceSeconds }}"
-                                        style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                                    <label class="text-xs text-text-muted block mb-1">Segundos</label>
+                                    <input type="number" id="pace-seconds" min="0" max="59" value="{{ $paceSeconds }}" class="form-input text-center">
                                 </div>
                             </div>
-                            <small style="font-size:.75rem;color:var(--text-muted);">Ej: 5m 0s = pace de 5:00/km</small>
+                            <small class="text-xs text-text-muted block mt-1">Ej: 5m 0s = pace de 5:00/km</small>
                         </div>
 
                         <!-- Frequency type -->
-                        <div id="fields-frequency" class="goal-type-fields" style="display:none;">
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div id="fields-frequency" class="goal-type-fields hidden">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Sesiones *</label>
-                                    <input type="number" id="frequency-sessions" min="1" max="30" value="{{ $frequencySessions }}"
-                                        style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                                    <label class="form-label">Sesiones *</label>
+                                    <input type="number" id="frequency-sessions" min="1" max="30" value="{{ $frequencySessions }}" class="form-input">
                                 </div>
                                 <div>
-                                    <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Período *</label>
-                                    <select id="frequency-period" style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                                    <label class="form-label">Período *</label>
+                                    <select id="frequency-period" class="form-select">
                                         <option value="week" {{ $frequencyPeriod == 'week' ? 'selected' : '' }}>Por semana</option>
                                         <option value="month" {{ $frequencyPeriod == 'month' ? 'selected' : '' }}>Por mes</option>
                                     </select>
                                 </div>
                             </div>
-                            <small style="font-size:.75rem;color:var(--text-muted);">Ej: 4 sesiones por semana</small>
+                            <small class="text-xs text-text-muted block mt-1">Ej: 4 sesiones por semana</small>
                         </div>
                     </div>
 
                     <!-- Hidden field que contiene el JSON -->
                     <input type="hidden" name="target_value" id="target_value_json" value="{{ old('target_value', json_encode($goal->target_value)) }}">
                     @error('target_value')
-                        <span style="color:#ff6b6b;font-size:.8rem;">{{ $message }}</span>
+                        <span class="text-xs text-accent-primary">{{ $message }}</span>
                     @enderror
 
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <!-- Fecha inicio -->
                         <div>
-                            <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Fecha inicio</label>
-                            <input type="date" name="start_date" value="{{ old('start_date', $goal->start_date?->format('Y-m-d')) }}"
-                                style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                            <label class="form-label">Fecha inicio</label>
+                            <input type="date" name="start_date" value="{{ old('start_date', $goal->start_date?->format('Y-m-d')) }}" class="form-input">
                         </div>
 
                         <!-- Fecha límite -->
                         <div>
-                            <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Fecha límite</label>
-                            <input type="date" name="target_date" value="{{ old('target_date', $goal->target_date?->format('Y-m-d')) }}"
-                                style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                            <label class="form-label">Fecha límite</label>
+                            <input type="date" name="target_date" value="{{ old('target_date', $goal->target_date?->format('Y-m-d')) }}" class="form-input">
                         </div>
                     </div>
 
                     <!-- Carrera asociada -->
                     @if($upcomingRaces->count() > 0)
                         <div>
-                            <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Carrera asociada</label>
-                            <select name="race_id" style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);">
+                            <label class="form-label">Carrera asociada</label>
+                            <select name="race_id" class="form-select">
                                 <option value="">Ninguna</option>
                                 @foreach($upcomingRaces as $race)
                                     <option value="{{ $race->id }}" {{ old('race_id', $goal->race_id) == $race->id ? 'selected' : '' }}>
@@ -200,13 +190,12 @@
 
                     <!-- Descripción -->
                     <div>
-                        <label style="display:block;font-size:.85rem;margin-bottom:.4rem;">Descripción</label>
-                        <textarea name="description" rows="3"
-                            style="width:100%;padding:.6rem;background:rgba(5,8,20,.9);border:1px solid var(--border-subtle);border-radius:.6rem;color:var(--text-main);resize:vertical;">{{ old('description', $goal->description) }}</textarea>
+                        <label class="form-label">Descripción</label>
+                        <textarea name="description" rows="3" class="form-input resize-y">{{ old('description', $goal->description) }}</textarea>
                     </div>
 
                     <!-- Submit -->
-                    <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">
+                    <button type="submit" class="btn-primary w-full justify-center min-h-touch">
                         Actualizar Objetivo
                     </button>
                 </div>
@@ -226,13 +215,13 @@
 
                 // Ocultar todos los campos
                 allFieldSets.forEach(fieldset => {
-                    fieldset.style.display = 'none';
+                    fieldset.classList.add('hidden');
                 });
 
                 // Mostrar solo el conjunto de campos del tipo seleccionado
                 const activeFieldset = document.getElementById(`fields-${selectedType}`);
                 if (activeFieldset) {
-                    activeFieldset.style.display = 'block';
+                    activeFieldset.classList.remove('hidden');
                 }
 
                 // Actualizar el JSON
