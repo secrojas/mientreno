@@ -9,187 +9,177 @@
 
 <x-app-layout title="Reporte Semanal">
     {{-- Header con navegación --}}
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-            <div style="display:flex;align-items:center;gap:1rem;">
-                <a href="{{ route('reports.weekly.period', [$period['prev_year'], $period['prev_week']]) }}"
-                   style="padding:.5rem 1rem;border-radius:.5rem;background:rgba(30,41,59,.7);border:1px solid var(--border-subtle);color:var(--text-main);font-size:.9rem;transition:all .2s;display:inline-block;"
-                   onmouseover="this.style.background='rgba(30,41,59,1)'"
-                   onmouseout="this.style.background='rgba(30,41,59,.7)'">
-                    ← Anterior
-                </a>
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
+        <!-- Navegación período -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+            <a href="{{ route('reports.weekly.period', [$period['prev_year'], $period['prev_week']]) }}"
+               class="btn-ghost min-h-touch w-full sm:w-auto justify-center">
+                ← Anterior
+            </a>
 
-                <div style="text-align:center;">
-                    <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.75rem;font-weight:700;margin:0;">
-                        {{ $period['label'] }}
-                    </h1>
-                    <p style="color:var(--text-muted);font-size:.9rem;margin:.25rem 0 0;">
-                        {{ $period['start_date']->format('d/m') }} - {{ $period['end_date']->format('d/m/Y') }}
-                    </p>
-                </div>
-
-                @if(!$period['is_current_week'])
-                    <a href="{{ route('reports.weekly.period', [$period['next_year'], $period['next_week']]) }}"
-                       style="padding:.5rem 1rem;border-radius:.5rem;background:rgba(30,41,59,.7);border:1px solid var(--border-subtle);color:var(--text-main);font-size:.9rem;transition:all .2s;display:inline-block;"
-                       onmouseover="this.style.background='rgba(30,41,59,1)'"
-                       onmouseout="this.style.background='rgba(30,41,59,.7)'">
-                        Siguiente →
-                    </a>
-                @endif
+            <div class="text-center flex-1 sm:flex-initial">
+                <h1 class="font-display text-responsive-2xl">
+                    {{ $period['label'] }}
+                </h1>
+                <p class="text-text-muted text-sm mt-1">
+                    {{ $period['start_date']->format('d/m') }} - {{ $period['end_date']->format('d/m/Y') }}
+                </p>
             </div>
 
-            <div style="display:flex;gap:.75rem;">
-                <a href="{{ route('reports.monthly') }}"
-                   style="padding:.5rem 1rem;border-radius:.5rem;background:rgba(30,41,59,.7);border:1px solid var(--border-subtle);color:var(--text-main);font-size:.9rem;transition:all .2s;display:inline-block;"
-                   onmouseover="this.style.background='rgba(30,41,59,1)'"
-                   onmouseout="this.style.background='rgba(30,41,59,.7)'">
-                    📅 Ver Mes
+            @if(!$period['is_current_week'])
+                <a href="{{ route('reports.weekly.period', [$period['next_year'], $period['next_week']]) }}"
+                   class="btn-ghost min-h-touch w-full sm:w-auto justify-center">
+                    Siguiente →
                 </a>
-                <button onclick="shareWeeklyReport({{ $period['year'] }}, {{ $period['week'] }})"
-                   style="padding:.5rem 1rem;border-radius:.5rem;background:linear-gradient(135deg, #FF3B5C, #d92d47);border:1px solid #FF3B5C;color:#fff;font-size:.9rem;font-weight:600;transition:all .2s;cursor:pointer;"
-                   onmouseover="this.style.background='linear-gradient(135deg, #d92d47, #FF3B5C)'"
-                   onmouseout="this.style.background='linear-gradient(135deg, #FF3B5C, #d92d47)'">
-                    🔗 Compartir
-                </button>
-                <a href="{{ route('reports.weekly.pdf', [$period['year'], $period['week']]) }}"
-                   target="_blank"
-                   style="padding:.5rem 1rem;border-radius:.5rem;background:linear-gradient(135deg, #2DE38E, #1ea568);border:1px solid #2DE38E;color:#05060A;font-size:.9rem;font-weight:600;transition:all .2s;display:inline-block;"
-                   onmouseover="this.style.background='linear-gradient(135deg, #1ea568, #2DE38E)'"
-                   onmouseout="this.style.background='linear-gradient(135deg, #2DE38E, #1ea568)'">
-                    📥 Exportar PDF
-                </a>
-            </div>
+            @endif
         </div>
 
-        {{-- Resumen General - Métricas principales --}}
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem;">
-            <x-metric-card
-                label="Kilómetros"
-                :value="number_format($summary['total_distance'], 2)"
-                subtitle="km totales"
-                accent="#2DE38E"
-            />
-            <x-metric-card
-                label="Tiempo"
-                :value="$summary['formatted_duration']"
-                subtitle="en movimiento"
-                accent="#60A5FA"
-            />
-            <x-metric-card
-                label="Sesiones"
-                :value="$summary['total_sessions']"
-                subtitle="entrenamientos"
-                accent="#F59E0B"
-            />
-            <x-metric-card
-                label="Pace Promedio"
-                :value="$summary['formatted_pace']"
-                subtitle="min/km"
-                accent="#FF3B5C"
-            />
-        </div>
-
-        {{-- Comparativa con período anterior --}}
-        @if($comparison['distance']['previous'] > 0)
-            <x-report-card title="Comparativa con Semana Anterior">
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
-                    <x-metric-comparison
-                        label="Distancia"
-                        :current="$summary['total_distance']"
-                        :previous="$comparison['distance']['previous']"
-                        :diff="$comparison['distance']"
-                        unit=" km"
-                    />
-                    <x-metric-comparison
-                        label="Sesiones"
-                        :current="$summary['total_sessions']"
-                        :previous="$comparison['sessions']['previous']"
-                        :diff="$comparison['sessions']"
-                    />
-                    <x-metric-comparison
-                        label="Tiempo"
-                        :current="$summary['formatted_duration']"
-                        :previous="$comparison['duration']['formatted_diff']"
-                        :diff="$comparison['duration']"
-                    />
-                    <x-metric-comparison
-                        label="Pace Promedio"
-                        :current="$summary['formatted_pace']"
-                        :previous="$comparison['pace']['formatted_previous'] ?? '–'"
-                        :diff="$comparison['pace']"
-                        unit="/km"
-                        :invertTrend="true"
-                    />
-                </div>
-            </x-report-card>
-        @endif
-
-        {{-- Distribución por Tipo --}}
-        @if(!empty($distribution))
-            <x-report-card title="Distribución por Tipo de Entrenamiento">
-                <div style="display:grid;gap:1rem;">
-                    @foreach($distribution as $type => $data)
-                        @php
-                            $typeLabels = [
-                                'easy_run' => 'Fondo Suave',
-                                'intervals' => 'Intervalos',
-                                'tempo' => 'Tempo',
-                                'long_run' => 'Tirada Larga',
-                                'recovery' => 'Recuperación',
-                                'race' => 'Carrera',
-                                'training_run' => 'Entrenamiento General',
-                            ];
-                            $label = $typeLabels[$type] ?? $type;
-                        @endphp
-                        <div style="display:flex;align-items:center;gap:1rem;">
-                            <div style="flex:1;min-width:120px;">
-                                <div style="font-size:.9rem;font-weight:500;margin-bottom:.25rem;">{{ $label }}</div>
-                                <div style="font-size:.8rem;color:var(--text-muted);">
-                                    {{ $data['count'] }} {{ $data['count'] === 1 ? 'sesión' : 'sesiones' }}
-                                    • {{ number_format($data['distance'], 2) }} km
-                                </div>
-                            </div>
-                            <div style="flex:2;display:flex;align-items:center;gap:.5rem;">
-                                <div style="flex:1;height:8px;background:rgba(30,41,59,.5);border-radius:4px;overflow:hidden;">
-                                    <div style="height:100%;background:linear-gradient(90deg,#2DE38E,#60A5FA);width:{{ $data['percentage'] }}%;transition:width .3s;"></div>
-                                </div>
-                                <div style="min-width:50px;text-align:right;font-size:.85rem;font-weight:600;color:var(--accent-secondary);">
-                                    {{ $data['percentage'] }}%
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </x-report-card>
-        @endif
-
-        {{-- Insights --}}
-        @if(!empty($insights))
-            <x-report-card title="Insights de la Semana">
-                <div style="display:grid;gap:.75rem;">
-                    @foreach($insights as $insight)
-                        <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem;border-radius:.5rem;background:rgba(30,41,59,.3);">
-                            <span style="font-size:1.5rem;">{{ $insight['icon'] }}</span>
-                            <span style="font-size:.95rem;">{{ $insight['message'] }}</span>
-                        </div>
-                    @endforeach
-                </div>
-            </x-report-card>
-        @endif
-
-        {{-- Detalle de Entrenamientos --}}
-        <x-report-card title="Detalle de Entrenamientos" subtitle="{{ $workouts->count() }} {{ $workouts->count() === 1 ? 'sesión registrada' : 'sesiones registradas' }}">
-            <x-workout-table :workouts="$workouts" :showActions="true" />
-        </x-report-card>
-
-        {{-- Botón volver al dashboard --}}
-        <div style="text-align:center;margin-top:2rem;">
-            <a href="{{ route('dashboard') }}"
-               style="display:inline-block;padding:.75rem 1.5rem;border-radius:.5rem;background:rgba(30,41,59,.7);border:1px solid var(--border-subtle);color:var(--text-main);font-size:.9rem;transition:all .2s;"
-               onmouseover="this.style.background='rgba(30,41,59,1)'"
-               onmouseout="this.style.background='rgba(30,41,59,.7)'">
-                ← Volver al Dashboard
+        <!-- Botones de acción -->
+        <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+            <a href="{{ route('reports.monthly') }}" class="btn-secondary justify-center min-h-touch">
+                📅 Ver Mes
+            </a>
+            <button onclick="shareWeeklyReport({{ $period['year'] }}, {{ $period['week'] }})"
+                    class="btn px-4 py-2.5 rounded-btn text-sm bg-gradient-to-br from-accent-primary to-accent-pink
+                           text-bg-card shadow-lg hover:shadow-xl transition-all duration-200 justify-center min-h-touch">
+                🔗 Compartir
+            </button>
+            <a href="{{ route('reports.weekly.pdf', [$period['year'], $period['week']]) }}"
+               target="_blank"
+               class="btn px-4 py-2.5 rounded-btn text-sm bg-gradient-to-br from-accent-secondary to-[#1ea568]
+                      text-bg-card shadow-lg hover:shadow-xl transition-all duration-200 justify-center min-h-touch">
+                📥 Exportar PDF
             </a>
         </div>
+    </div>
+
+    {{-- Métricas principales --}}
+    <div class="grid-responsive-4 gap-4 mb-6">
+        <x-metric-card
+            label="Kilómetros"
+            :value="number_format($summary['total_distance'], 2)"
+            subtitle="km totales"
+        />
+        <x-metric-card
+            label="Tiempo"
+            :value="$summary['formatted_duration']"
+            subtitle="en movimiento"
+        />
+        <x-metric-card
+            label="Sesiones"
+            :value="$summary['total_sessions']"
+            subtitle="entrenamientos"
+        />
+        <x-metric-card
+            label="Pace Promedio"
+            :value="$summary['formatted_pace']"
+            subtitle="min/km"
+            accent="primary"
+        />
+    </div>
+
+    {{-- Comparativa con período anterior --}}
+    @if($comparison['distance']['previous'] > 0)
+        <x-card title="Comparativa con Semana Anterior" class="mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <x-metric-comparison
+                    label="Distancia"
+                    :current="$summary['total_distance']"
+                    :previous="$comparison['distance']['previous']"
+                    :diff="$comparison['distance']"
+                    unit=" km"
+                />
+                <x-metric-comparison
+                    label="Sesiones"
+                    :current="$summary['total_sessions']"
+                    :previous="$comparison['sessions']['previous']"
+                    :diff="$comparison['sessions']"
+                />
+                <x-metric-comparison
+                    label="Tiempo"
+                    :current="$summary['formatted_duration']"
+                    :previous="$comparison['duration']['formatted_diff']"
+                    :diff="$comparison['duration']"
+                />
+                <x-metric-comparison
+                    label="Pace Promedio"
+                    :current="$summary['formatted_pace']"
+                    :previous="$comparison['pace']['formatted_previous'] ?? '–'"
+                    :diff="$comparison['pace']"
+                    unit="/km"
+                    :invertTrend="true"
+                />
+            </div>
+        </x-card>
+    @endif
+
+    {{-- Distribución por Tipo --}}
+    @if(!empty($distribution))
+        <x-card title="Distribución por Tipo de Entrenamiento" class="mb-6">
+            <div class="grid gap-4">
+                @foreach($distribution as $type => $data)
+                    @php
+                        $typeLabels = [
+                            'easy_run' => 'Fondo Suave',
+                            'intervals' => 'Intervalos',
+                            'tempo' => 'Tempo',
+                            'long_run' => 'Tirada Larga',
+                            'recovery' => 'Recuperación',
+                            'race' => 'Carrera',
+                            'training_run' => 'Entrenamiento General',
+                        ];
+                        $label = $typeLabels[$type] ?? $type;
+                    @endphp
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-medium mb-1">{{ $label }}</div>
+                            <div class="text-xs text-text-muted">
+                                {{ $data['count'] }} {{ $data['count'] === 1 ? 'sesión' : 'sesiones' }}
+                                • {{ number_format($data['distance'], 2) }} km
+                            </div>
+                        </div>
+                        <div class="flex-[2] flex items-center gap-2">
+                            <div class="flex-1 h-2 bg-border-subtle rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-accent-secondary to-blue-500 transition-all duration-300"
+                                     style="width: {{ $data['percentage'] }}%"></div>
+                            </div>
+                            <div class="min-w-[50px] text-right text-sm font-semibold text-accent-secondary">
+                                {{ $data['percentage'] }}%
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </x-card>
+    @endif
+
+    {{-- Insights --}}
+    @if(!empty($insights))
+        <x-card title="Insights de la Semana" class="mb-6">
+            <div class="grid gap-3">
+                @foreach($insights as $insight)
+                    <div class="flex items-center gap-3 p-3 rounded-btn bg-border-subtle/30">
+                        <span class="text-2xl flex-shrink-0">{{ $insight['icon'] }}</span>
+                        <span class="text-sm">{{ $insight['message'] }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </x-card>
+    @endif
+
+    {{-- Detalle de Entrenamientos --}}
+    <x-card title="Detalle de Entrenamientos"
+            :subtitle="$workouts->count() . ' ' . ($workouts->count() === 1 ? 'sesión registrada' : 'sesiones registradas')"
+            class="mb-6">
+        <x-workout-table :workouts="$workouts" :showActions="true" />
+    </x-card>
+
+    {{-- Botón volver --}}
+    <div class="text-center mt-8">
+        <a href="{{ route('dashboard') }}" class="btn-ghost inline-flex">
+            ← Volver al Dashboard
+        </a>
+    </div>
 
     {{-- Script para compartir reporte --}}
     <script>
@@ -209,7 +199,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Crear modal para mostrar el link
                     showShareModal(data.url, data.expires_at);
                 } else {
                     alert('Error al generar el link compartible');
@@ -228,29 +217,29 @@
         function showShareModal(url, expiresAt) {
             // Crear overlay
             const overlay = document.createElement('div');
-            overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;';
+            overlay.className = 'fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-4';
 
             // Crear modal
             const modal = document.createElement('div');
-            modal.style.cssText = 'background:#0B0C12;border:1px solid #FF3B5C;border-radius:1rem;padding:2rem;max-width:500px;width:90%;box-shadow:0 20px 60px rgba(255,59,92,0.3);';
+            modal.className = 'bg-bg-card border border-accent-primary rounded-card p-6 sm:p-8 max-w-lg w-full shadow-2xl shadow-accent-primary/20';
 
             modal.innerHTML = `
-                <div style="text-align:center;">
-                    <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;margin-bottom:1rem;color:#FF3B5C;">🔗 Link Compartible Generado</h3>
-                    <p style="color:#9CA3AF;margin-bottom:1.5rem;font-size:0.9rem;">
-                        Este link expira el <strong>${expiresAt}</strong>
+                <div class="text-center">
+                    <h3 class="font-display text-responsive-xl mb-4 text-accent-primary">🔗 Link Compartible Generado</h3>
+                    <p class="text-text-muted mb-6 text-sm">
+                        Este link expira el <strong class="text-text-main">${expiresAt}</strong>
                     </p>
-                    <div style="background:rgba(30,41,59,.5);padding:1rem;border-radius:0.5rem;margin-bottom:1.5rem;word-break:break-all;">
+                    <div class="bg-border-subtle/50 p-4 rounded-btn mb-6 break-all">
                         <input type="text" id="shareUrl" value="${url}" readonly
-                               style="width:100%;background:transparent;border:none;color:#2DE38E;font-size:0.85rem;text-align:center;outline:none;">
+                               class="w-full bg-transparent border-none text-accent-secondary text-sm text-center outline-none select-all">
                     </div>
-                    <div style="display:flex;gap:0.75rem;justify-content:center;">
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
                         <button onclick="copyShareUrl()"
-                                style="padding:0.75rem 1.5rem;border-radius:0.5rem;background:linear-gradient(135deg, #2DE38E, #1ea568);border:none;color:#05060A;font-weight:600;cursor:pointer;">
+                                class="btn-secondary flex-1 sm:flex-initial justify-center py-3">
                             📋 Copiar Link
                         </button>
                         <button onclick="closeShareModal()"
-                                style="padding:0.75rem 1.5rem;border-radius:0.5rem;background:rgba(30,41,59,.7);border:1px solid var(--border-subtle);color:#F9FAFB;cursor:pointer;">
+                                class="btn-ghost flex-1 sm:flex-initial justify-center py-3">
                             Cerrar
                         </button>
                     </div>
@@ -279,11 +268,11 @@
             const button = event.target;
             const originalText = button.innerHTML;
             button.innerHTML = '✓ Copiado!';
-            button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            button.classList.add('!bg-green-500/20', '!border-green-500', '!text-green-400');
 
             setTimeout(() => {
                 button.innerHTML = originalText;
-                button.style.background = 'linear-gradient(135deg, #2DE38E, #1ea568)';
+                button.classList.remove('!bg-green-500/20', '!border-green-500', '!text-green-400');
             }, 2000);
         }
 
