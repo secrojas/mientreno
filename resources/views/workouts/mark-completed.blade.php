@@ -1,34 +1,27 @@
 <x-app-layout>
-    <div style="max-width:720px;">
-        <div style="margin-bottom:1.5rem;">
-            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
-                <a href="{{ route('workouts.index') }}" style="color:var(--text-muted);display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+    <div class="max-w-3xl">
+        <div class="mb-6">
+            <div class="flex items-center gap-2 mb-2">
+                <a href="{{ route('workouts.index') }}" class="text-text-muted hover:text-text-main inline-flex items-center gap-1.5 text-sm transition-colors">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
                         <path d="M19 12H5M12 19l-7-7 7-7"/>
                     </svg>
                     Volver
                 </a>
             </div>
-            <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.6rem;margin-bottom:.3rem;">
+            <h1 class="font-display text-responsive-2xl mb-1">
                 Marcar como Completado
             </h1>
-            <p style="font-size:.9rem;color:var(--text-muted);">
+            <p class="text-responsive-sm text-text-muted">
                 {{ $workout->date->format('d/m/Y') }} · {{ $workout->type_label }} · Planificado: {{ $workout->distance }}km
             </p>
         </div>
 
-        <form method="POST" action="{{ route('workouts.mark-completed', $workout) }}" style="
-            background:rgba(15,23,42,.9);
-            border-radius:1rem;
-            padding:1.5rem;
-            border:1px solid var(--border-subtle);
-            display:grid;
-            gap:1.25rem;
-        ">
+        <form method="POST" action="{{ route('workouts.mark-completed', $workout) }}" class="card p-responsive grid gap-5">
             @csrf
 
             @if ($errors->any())
-                <div style="padding:.75rem;background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.3);border-radius:.6rem;font-size:.85rem;color:#ff6b6b;">
+                <div class="px-4 py-3 bg-accent-primary/10 border border-accent-primary/30 rounded-btn text-sm text-red-400">
                     @foreach ($errors->all() as $error)
                         <div>{{ $error }}</div>
                     @endforeach
@@ -36,73 +29,47 @@
             @endif
 
             <!-- Info del entrenamiento planificado -->
-            <div style="padding:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:.6rem;font-size:.85rem;">
-                <div style="margin-bottom:.35rem;font-weight:500;">Entrenamiento Planificado:</div>
-                <div style="color:var(--text-muted);">
+            <div class="px-4 py-3 bg-blue-500/10 border border-blue-500/30 rounded-btn text-sm">
+                <div class="mb-1.5 font-medium">Entrenamiento Planificado:</div>
+                <div class="text-text-muted">
                     <strong>{{ $workout->date->format('d/m/Y') }}</strong> - {{ $workout->type_label }} - {{ $workout->distance }}km
                 </div>
             </div>
 
             <!-- Distancia Real y Duración -->
-            <div style="display:grid;grid-template-columns:1fr 2fr;gap:.75rem;">
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4">
                 <div>
-                    <label for="distance" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">Distancia Real (km) *</label>
-                    <input
-                        id="distance"
-                        name="distance"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="999"
-                        required
-                        value="{{ old('distance', $workout->distance) }}"
-                        placeholder="10.5"
-                        style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;"
-                    >
+                    <label for="distance" class="form-label">Distancia Real (km) *</label>
+                    <input id="distance" name="distance" type="number"
+                           step="0.01" min="0" max="999" required
+                           value="{{ old('distance', $workout->distance) }}" placeholder="10.5"
+                           class="form-input">
                     @error('distance')
-                        <span style="font-size:.75rem;color:var(--accent-primary);">{{ $message }}</span>
+                        <span class="text-xs text-accent-primary">{{ $message }}</span>
                     @enderror
-                    <small id="distance-diff" style="font-size:.75rem;display:block;margin-top:.35rem;"></small>
+                    <small id="distance-diff" class="text-xs block mt-1"></small>
                 </div>
 
                 <div>
-                    <label style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">Duración *</label>
-                    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;">
+                    <label class="form-label">Duración *</label>
+                    <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <input
-                                id="hours"
-                                type="number"
-                                min="0"
-                                max="23"
-                                value="{{ old('hours', 0) }}"
-                                placeholder="HH"
-                                style="width:100%;padding:.6rem .5rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;text-align:center;"
-                            >
-                            <div style="font-size:.7rem;color:var(--text-muted);text-align:center;margin-top:.2rem;">horas</div>
+                            <input id="hours" type="number" min="0" max="23"
+                                   value="{{ old('hours', 0) }}" placeholder="HH"
+                                   class="form-input text-center">
+                            <div class="text-xs text-text-muted text-center mt-1">horas</div>
                         </div>
                         <div>
-                            <input
-                                id="minutes"
-                                type="number"
-                                min="0"
-                                max="59"
-                                value="{{ old('minutes', 0) }}"
-                                placeholder="MM"
-                                style="width:100%;padding:.6rem .5rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;text-align:center;"
-                            >
-                            <div style="font-size:.7rem;color:var(--text-muted);text-align:center;margin-top:.2rem;">minutos</div>
+                            <input id="minutes" type="number" min="0" max="59"
+                                   value="{{ old('minutes', 0) }}" placeholder="MM"
+                                   class="form-input text-center">
+                            <div class="text-xs text-text-muted text-center mt-1">minutos</div>
                         </div>
                         <div>
-                            <input
-                                id="seconds"
-                                type="number"
-                                min="0"
-                                max="59"
-                                value="{{ old('seconds', 0) }}"
-                                placeholder="SS"
-                                style="width:100%;padding:.6rem .5rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;text-align:center;"
-                            >
-                            <div style="font-size:.7rem;color:var(--text-muted);text-align:center;margin-top:.2rem;">segundos</div>
+                            <input id="seconds" type="number" min="0" max="59"
+                                   value="{{ old('seconds', 0) }}" placeholder="SS"
+                                   class="form-input text-center">
+                            <div class="text-xs text-text-muted text-center mt-1">segundos</div>
                         </div>
                     </div>
                     <input type="hidden" id="duration" name="duration" value="{{ old('duration', 0) }}">
@@ -110,65 +77,40 @@
             </div>
 
             <!-- FC y Desnivel -->
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label for="avg_heart_rate" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">FC Promedio (bpm)</label>
-                    <input
-                        id="avg_heart_rate"
-                        name="avg_heart_rate"
-                        type="number"
-                        min="40"
-                        max="250"
-                        value="{{ old('avg_heart_rate') }}"
-                        placeholder="Opcional"
-                        style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;"
-                    >
+                    <label for="avg_heart_rate" class="form-label">FC Promedio (bpm)</label>
+                    <input id="avg_heart_rate" name="avg_heart_rate" type="number"
+                           min="40" max="250" value="{{ old('avg_heart_rate') }}"
+                           placeholder="Opcional" class="form-input">
                 </div>
 
                 <div>
-                    <label for="elevation_gain" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">Desnivel + (m)</label>
-                    <input
-                        id="elevation_gain"
-                        name="elevation_gain"
-                        type="number"
-                        min="0"
-                        value="{{ old('elevation_gain') }}"
-                        placeholder="Opcional"
-                        style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;"
-                    >
+                    <label for="elevation_gain" class="form-label">Desnivel + (m)</label>
+                    <input id="elevation_gain" name="elevation_gain" type="number"
+                           min="0" value="{{ old('elevation_gain') }}"
+                           placeholder="Opcional" class="form-input">
                 </div>
             </div>
 
             <!-- Dificultad -->
             <div>
-                <label for="difficulty" style="display:block;font-size:.8rem;margin-bottom:.5rem;font-weight:500;">Dificultad Percibida *</label>
-                <div style="display:flex;gap:.5rem;align-items:center;">
+                <label for="difficulty" class="form-label mb-2">Dificultad Percibida *</label>
+                <div class="flex gap-2">
                     @for($i = 1; $i <= 5; $i++)
-                        <label style="flex:1;cursor:pointer;">
-                            <input
-                                type="radio"
-                                name="difficulty"
-                                value="{{ $i }}"
-                                required
-                                {{ old('difficulty', 3) == $i ? 'checked' : '' }}
-                                style="display:none;"
-                                class="difficulty-radio"
-                            >
-                            <div class="difficulty-option" data-value="{{ $i }}" style="
-                                padding:.6rem;
-                                border-radius:.6rem;
-                                border:1px solid #1F2937;
-                                background:#050814;
-                                text-align:center;
-                                font-size:.85rem;
-                                transition:all .15s ease-out;
-                            ">
+                        <label class="flex-1 cursor-pointer min-h-touch">
+                            <input type="radio" name="difficulty" value="{{ $i }}" required
+                                   {{ old('difficulty', 3) == $i ? 'checked' : '' }}
+                                   class="difficulty-radio hidden">
+                            <div class="difficulty-option px-3 py-2.5 rounded-btn border border-border-subtle bg-bg-sidebar
+                                        text-center text-sm transition-all hover:bg-border-subtle"
+                                 data-value="{{ $i }}">
                                 {{ $i }}
                             </div>
                         </label>
                     @endfor
                 </div>
-                <div style="font-size:.75rem;color:var(--text-muted);margin-top:.35rem;display:flex;justify-content:space-between;">
+                <div class="text-xs text-text-muted mt-2 flex justify-between">
                     <span>1 = Muy fácil</span>
                     <span>5 = Muy difícil</span>
                 </div>
@@ -176,22 +118,18 @@
 
             <!-- Notas -->
             <div>
-                <label for="notes" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">Notas</label>
-                <textarea
-                    id="notes"
-                    name="notes"
-                    rows="4"
-                    placeholder="¿Cómo te sentiste? ¿Hubo algo distinto al plan?"
-                    style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;font-family:inherit;resize:vertical;"
-                >{{ old('notes') }}</textarea>
+                <label for="notes" class="form-label">Notas</label>
+                <textarea id="notes" name="notes" rows="4"
+                          placeholder="¿Cómo te sentiste? ¿Hubo algo distinto al plan?"
+                          class="form-input resize-y">{{ old('notes') }}</textarea>
             </div>
 
             <!-- Botones -->
-            <div style="display:flex;gap:.75rem;margin-top:.5rem;">
-                <button type="submit" class="btn-primary" style="flex:1;justify-content:center;padding:.7rem;">
+            <div class="flex flex-col sm:flex-row gap-3 mt-2">
+                <button type="submit" class="btn-primary flex-1 justify-center py-3">
                     Marcar como Completado
                 </button>
-                <a href="{{ route('workouts.index') }}" class="btn-ghost" style="padding:.7rem 1.2rem;">
+                <a href="{{ route('workouts.index') }}" class="btn-ghost py-3 justify-center">
                     Cancelar
                 </a>
             </div>
@@ -223,13 +161,16 @@
 
             if (diff === 0 || actualDistance === 0) {
                 distanceDiff.textContent = '';
-                distanceDiff.style.color = 'var(--text-muted)';
+                distanceDiff.classList.remove('text-green-500', 'text-yellow-500');
+                distanceDiff.classList.add('text-text-muted');
             } else if (diff > 0) {
                 distanceDiff.textContent = `+${diff.toFixed(2)}km más que lo planificado`;
-                distanceDiff.style.color = '#22c55e';
+                distanceDiff.classList.remove('text-text-muted', 'text-yellow-500');
+                distanceDiff.classList.add('text-green-500');
             } else {
                 distanceDiff.textContent = `${diff.toFixed(2)}km menos que lo planificado`;
-                distanceDiff.style.color = '#f59e0b';
+                distanceDiff.classList.remove('text-text-muted', 'text-green-500');
+                distanceDiff.classList.add('text-yellow-500');
             }
         }
 
@@ -241,17 +182,14 @@
             const input = option.parentElement.querySelector('input');
 
             if (input.checked) {
-                option.style.borderColor = 'var(--accent-primary)';
-                option.style.background = 'rgba(255,59,92,.1)';
+                option.classList.add('!border-accent-primary', '!bg-accent-primary/10');
             }
 
             option.addEventListener('click', () => {
                 document.querySelectorAll('.difficulty-option').forEach(opt => {
-                    opt.style.borderColor = '#1F2937';
-                    opt.style.background = '#050814';
+                    opt.classList.remove('!border-accent-primary', '!bg-accent-primary/10');
                 });
-                option.style.borderColor = 'var(--accent-primary)';
-                option.style.background = 'rgba(255,59,92,.1)';
+                option.classList.add('!border-accent-primary', '!bg-accent-primary/10');
             });
         });
 
