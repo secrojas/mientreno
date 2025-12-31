@@ -203,6 +203,22 @@ echo ">> Composer install"
 cd "$APP_DEST"
 /home/srojasw1/bin/composer install --no-dev --optimize-autoloader --no-interaction
 
+echo ">> Verificar assets compilados"
+# IMPORTANTE: npm no está disponible en este hosting
+# Los assets DEBEN compilarse localmente ANTES de hacer push:
+#   1. Ejecutar en local: npm run build
+#   2. Verificar que public/build/ contiene los archivos
+#   3. Hacer commit (están versionados gracias a .gitignore líneas 36-38)
+#   4. Push y deploy
+# El directorio public/build se copia automáticamente en el paso de deploy PUBLIC
+
+if [ ! -d "$REPO/public/build" ] || [ ! -f "$REPO/public/build/manifest.json" ]; then
+  echo "❌ ERROR: Assets no compilados. Ejecutá 'npm run build' localmente antes de hacer push."
+  exit 1
+fi
+
+echo "✅ Assets encontrados: $(ls -1 $REPO/public/build/assets/ | wc -l) archivos"
+
 echo ">> Optimizaciones Laravel"
 /opt/cpanel/ea-php84/root/usr/bin/php artisan config:cache
 /opt/cpanel/ea-php84/root/usr/bin/php artisan route:cache
@@ -216,6 +232,7 @@ echo "✅ Deploy completado"
 
 **Notas importantes:**
 - **No usa npm en producción**: Los assets (CSS/JS) se compilan localmente con `npm run build` antes de hacer push
+- **Validación de assets**: El script verifica que `public/build/manifest.json` exista, y falla si no encuentra los assets compilados
 - **Rutas absolutas**: Usa rutas absolutas para `composer` y `php` porque el webhook no tiene el PATH configurado
 - **Variables de entorno**: Exporta `HOME` y `COMPOSER_HOME` para que composer funcione vía webhook
 
@@ -508,6 +525,13 @@ git push origin main
 ```
 
 Luego Ctrl+Shift+R en el navegador (hard refresh).
+
+**Nota:** Desde la actualización del script (Dic 2025), si olvidás compilar los assets, el deploy **fallará automáticamente** con:
+```
+❌ ERROR: Assets no compilados. Ejecutá 'npm run build' localmente antes de hacer push.
+```
+
+Esto **previene el error 500** por assets faltantes que experimentaste anteriormente.
 
 ### Imágenes/Avatares desaparecieron
 

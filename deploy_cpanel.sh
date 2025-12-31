@@ -56,11 +56,21 @@ echo ">> Composer install"
 cd "$APP_DEST"
 /home/srojasw1/bin/composer install --no-dev --optimize-autoloader --no-interaction
 
-echo ">> Build assets (npm)"
-# Nota: npm no está disponible en este hosting
-# Los assets deben compilarse localmente antes de hacer push
-# Ejecutar en local: npm run build
-# El directorio public/build se copia automáticamente en el paso anterior
+echo ">> Verificar assets compilados"
+# IMPORTANTE: npm no está disponible en este hosting
+# Los assets DEBEN compilarse localmente ANTES de hacer push:
+#   1. Ejecutar en local: npm run build
+#   2. Verificar que public/build/ contiene los archivos
+#   3. Hacer commit (están versionados gracias a .gitignore líneas 36-38)
+#   4. Push y deploy
+# El directorio public/build se copia automáticamente en el paso de deploy PUBLIC
+
+if [ ! -d "$REPO/public/build" ] || [ ! -f "$REPO/public/build/manifest.json" ]; then
+  echo "❌ ERROR: Assets no compilados. Ejecutá 'npm run build' localmente antes de hacer push."
+  exit 1
+fi
+
+echo "✅ Assets encontrados: $(ls -1 $REPO/public/build/assets/ | wc -l) archivos"
 
 echo ">> Optimizaciones Laravel"
 /opt/cpanel/ea-php84/root/usr/bin/php artisan config:cache

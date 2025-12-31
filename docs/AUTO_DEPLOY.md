@@ -354,6 +354,7 @@ bash /home/srojasw1/deploy_mientreno.sh
 - **"composer: command not found"** → El script debe usar ruta absoluta: `/home/srojasw1/bin/composer`
 - **"php: command not found"** → Usar ruta absoluta: `/opt/cpanel/ea-php84/root/usr/bin/php`
 - **"HOME environment variable must be set"** → El script debe exportar `HOME` y `COMPOSER_HOME`
+- **"ERROR: Assets no compilados"** → Olvidaste ejecutar `npm run build` antes de hacer push (ver solución abajo)
 
 ### CSS/JS no se actualizan después del deploy
 
@@ -369,6 +370,13 @@ git push origin main
 ```
 
 **Importante:** El servidor de producción NO ejecuta `npm run build`. Los assets deben venir compilados desde tu PC local.
+
+**Nota:** Desde la actualización del script, si olvidás compilar los assets, el deploy **fallará automáticamente** con el error:
+```
+❌ ERROR: Assets no compilados. Ejecutá 'npm run build' localmente antes de hacer push.
+```
+
+Esto previene que el sitio quede en error 500 por assets faltantes.
 
 ### "script_exists": false en /deploy/ping
 
