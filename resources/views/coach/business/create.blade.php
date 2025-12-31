@@ -1,19 +1,17 @@
 <x-app-layout>
-    <header style="display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.5rem;">
-        <div style="display:flex;flex-direction:column;gap:.2rem;">
-            <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.6rem;">Crear Mi Negocio</h1>
-            <p style="font-size:.9rem;color:var(--text-muted);">Configurá tu negocio de coaching para empezar a gestionar alumnos.</p>
-        </div>
+    <header class="flex flex-col gap-1 mb-6">
+        <h1 class="font-display text-responsive-2xl">Crear Mi Negocio</h1>
+        <p class="text-responsive-sm text-text-muted">Configurá tu negocio de coaching para empezar a gestionar alumnos.</p>
     </header>
 
     <x-card>
-        <form method="POST" action="{{ route('coach.business.store') }}" style="display:grid;gap:1.5rem;">
+        <form method="POST" action="{{ route('coach.business.store') }}" class="grid gap-6">
             @csrf
 
             <!-- Nombre del negocio -->
             <div>
-                <label for="name" style="display:block;font-size:.85rem;font-weight:500;margin-bottom:.4rem;">
-                    Nombre del negocio <span style="color:var(--accent-primary);">*</span>
+                <label for="name" class="form-label">
+                    Nombre del negocio <span class="text-accent-primary">*</span>
                 </label>
                 <input
                     type="text"
@@ -22,21 +20,19 @@
                     value="{{ old('name') }}"
                     required
                     placeholder="Ej: Running Team Palermo"
-                    style="width:100%;padding:.65rem .85rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);color:var(--text-main);font-size:.9rem;"
-                    onfocus="this.style.borderColor='var(--accent-secondary)'"
-                    onblur="this.style.borderColor='rgba(31,41,55,.7)'"
+                    class="form-input"
                 >
                 @error('name')
-                    <span style="font-size:.75rem;color:var(--accent-primary);margin-top:.25rem;display:block;">{{ $message }}</span>
+                    <span class="text-xs text-accent-primary mt-1 block">{{ $message }}</span>
                 @enderror
-                <span style="font-size:.75rem;color:var(--text-muted);margin-top:.25rem;display:block;">
+                <span class="text-xs text-text-muted mt-1 block">
                     Este nombre aparecerá en la URL y será visible para tus alumnos.
                 </span>
             </div>
 
             <!-- Descripción -->
             <div>
-                <label for="description" style="display:block;font-size:.85rem;font-weight:500;margin-bottom:.4rem;">
+                <label for="description" class="form-label">
                     Descripción
                 </label>
                 <textarea
@@ -44,27 +40,23 @@
                     id="description"
                     rows="3"
                     placeholder="Describe tu negocio de coaching..."
-                    style="width:100%;padding:.65rem .85rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);color:var(--text-main);font-size:.9rem;resize:vertical;"
-                    onfocus="this.style.borderColor='var(--accent-secondary)'"
-                    onblur="this.style.borderColor='rgba(31,41,55,.7)'"
+                    class="form-input resize-y"
                 >{{ old('description') }}</textarea>
                 @error('description')
-                    <span style="font-size:.75rem;color:var(--accent-primary);margin-top:.25rem;display:block;">{{ $message }}</span>
-                @enderror>
+                    <span class="text-xs text-accent-primary mt-1 block">{{ $message }}</span>
+                @enderror
             </div>
 
             <!-- Nivel objetivo -->
             <div>
-                <label for="level" style="display:block;font-size:.85rem;font-weight:500;margin-bottom:.4rem;">
-                    Nivel objetivo <span style="color:var(--accent-primary);">*</span>
+                <label for="level" class="form-label">
+                    Nivel objetivo <span class="text-accent-primary">*</span>
                 </label>
                 <select
                     name="level"
                     id="level"
                     required
-                    style="width:100%;padding:.65rem .85rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);color:var(--text-main);font-size:.9rem;"
-                    onfocus="this.style.borderColor='var(--accent-secondary)'"
-                    onblur="this.style.borderColor='rgba(31,41,55,.7)'"
+                    class="form-select"
                 >
                     <option value="">Seleccionar nivel</option>
                     <option value="beginner" {{ old('level') === 'beginner' ? 'selected' : '' }}>Principiante</option>
@@ -72,22 +64,22 @@
                     <option value="advanced" {{ old('level') === 'advanced' ? 'selected' : '' }}>Avanzado</option>
                 </select>
                 @error('level')
-                    <span style="font-size:.75rem;color:var(--accent-primary);margin-top:.25rem;display:block;">{{ $message }}</span>
+                    <span class="text-xs text-accent-primary mt-1 block">{{ $message }}</span>
                 @enderror
-                <span style="font-size:.75rem;color:var(--text-muted);margin-top:.25rem;display:block;">
+                <span class="text-xs text-text-muted mt-1 block">
                     Nivel de experiencia al que apuntás con tus entrenamientos.
                 </span>
             </div>
 
             <!-- Horarios (opcional por ahora) -->
             <div>
-                <label style="display:block;font-size:.85rem;font-weight:500;margin-bottom:.4rem;">
+                <label class="form-label">
                     Horarios de entrenamientos
                 </label>
-                <div id="schedule-container" style="display:grid;gap:.75rem;">
+                <div id="schedule-container" class="grid gap-3">
                     <!-- Los horarios se pueden agregar dinámicamente en una versión futura -->
-                    <div style="padding:1rem;border-radius:.6rem;background:rgba(5,8,20,.5);border:1px dashed rgba(31,41,55,.7);text-align:center;">
-                        <p style="font-size:.85rem;color:var(--text-muted);">
+                    <div class="p-4 rounded-btn bg-bg-main/50 border border-dashed border-border-subtle text-center">
+                        <p class="text-sm text-text-muted">
                             La configuración de horarios estará disponible después de crear el negocio.
                         </p>
                     </div>
@@ -95,23 +87,13 @@
             </div>
 
             <!-- Botones -->
-            <div style="display:flex;gap:.75rem;margin-top:1rem;">
+            <div class="flex gap-3 mt-4">
                 <button
                     type="submit"
-                    style="padding:.65rem 1.5rem;border-radius:.6rem;background:var(--accent-secondary);color:#050814;font-size:.9rem;font-weight:500;border:none;cursor:pointer;"
-                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 12px rgba(45,227,142,.3)'"
-                    onmouseout="this.style.transform='';this.style.boxShadow=''"
-                >
+                    class="btn-primary min-h-touch">
                     Crear Negocio
                 </button>
             </div>
         </form>
     </x-card>
-
-    <style>
-        select option {
-            background: #0B0C12;
-            color: var(--text-main);
-        }
-    </style>
 </x-app-layout>

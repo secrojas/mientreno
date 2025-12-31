@@ -1,20 +1,18 @@
 <x-app-layout>
-    <header style="display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.5rem;">
-        <div style="display:flex;flex-direction:column;gap:.2rem;">
-            <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.6rem;">Editar Negocio</h1>
-            <p style="font-size:.9rem;color:var(--text-muted);">Actualizar información de {{ $business->name }}</p>
-        </div>
+    <header class="flex flex-col gap-1 mb-6">
+        <h1 class="font-display text-responsive-2xl">Editar Negocio</h1>
+        <p class="text-responsive-sm text-text-muted">Actualizar información de {{ $business->name }}</p>
     </header>
 
     <x-card>
-        <form method="POST" action="{{ businessRoute('coach.business.update') }}" style="display:grid;gap:1.5rem;">
+        <form method="POST" action="{{ businessRoute('coach.business.update') }}" class="grid gap-6">
             @csrf
             @method('PUT')
 
             <!-- Nombre del negocio -->
             <div>
-                <label for="name" style="display:block;font-size:.85rem;font-weight:500;margin-bottom:.4rem;">
-                    Nombre del negocio <span style="color:var(--accent-primary);">*</span>
+                <label for="name" class="form-label">
+                    Nombre del negocio <span class="text-accent-primary">*</span>
                 </label>
                 <input
                     type="text"
@@ -23,18 +21,16 @@
                     value="{{ old('name', $business->name) }}"
                     required
                     placeholder="Ej: Running Team Palermo"
-                    style="width:100%;padding:.65rem .85rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);color:var(--text-main);font-size:.9rem;"
-                    onfocus="this.style.borderColor='var(--accent-secondary)'"
-                    onblur="this.style.borderColor='rgba(31,41,55,.7)'"
+                    class="form-input"
                 >
                 @error('name')
-                    <span style="font-size:.75rem;color:var(--accent-primary);margin-top:.25rem;display:block;">{{ $message }}</span>
+                    <span class="text-xs text-accent-primary mt-1 block">{{ $message }}</span>
                 @enderror
             </div>
 
             <!-- Slug (solo lectura) -->
             <div>
-                <label for="slug" style="display:block;font-size:.85rem;font-weight:500;margin-bottom:.4rem;">
+                <label for="slug" class="form-label">
                     URL (Slug)
                 </label>
                 <input
@@ -42,16 +38,16 @@
                     id="slug"
                     value="{{ $business->slug }}"
                     disabled
-                    style="width:100%;padding:.65rem .85rem;border-radius:.6rem;background:rgba(5,8,20,.5);border:1px solid rgba(31,41,55,.7);color:var(--text-muted);font-size:.9rem;font-family:monospace;"
+                    class="form-input opacity-60 cursor-not-allowed font-mono"
                 >
-                <span style="font-size:.75rem;color:var(--text-muted);margin-top:.25rem;display:block;">
+                <span class="text-xs text-text-muted mt-1 block">
                     El slug no puede ser modificado después de la creación.
                 </span>
             </div>
 
             <!-- Descripción -->
             <div>
-                <label for="description" style="display:block;font-size:.85rem;font-weight:500;margin-bottom:.4rem;">
+                <label for="description" class="form-label">
                     Descripción
                 </label>
                 <textarea
@@ -59,90 +55,75 @@
                     id="description"
                     rows="3"
                     placeholder="Describe tu negocio de coaching..."
-                    style="width:100%;padding:.65rem .85rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);color:var(--text-main);font-size:.9rem;resize:vertical;"
-                    onfocus="this.style.borderColor='var(--accent-secondary)'"
-                    onblur="this.style.borderColor='rgba(31,41,55,.7)'"
+                    class="form-input resize-y"
                 >{{ old('description', $business->description) }}</textarea>
                 @error('description')
-                    <span style="font-size:.75rem;color:var(--accent-primary);margin-top:.25rem;display:block;">{{ $message }}</span>
+                    <span class="text-xs text-accent-primary mt-1 block">{{ $message }}</span>
                 @enderror
             </div>
 
             <!-- Nivel objetivo -->
             <div>
-                <label for="level" style="display:block;font-size:.85rem;font-weight:500;margin-bottom:.4rem;">
-                    Nivel objetivo <span style="color:var(--accent-primary);">*</span>
+                <label for="level" class="form-label">
+                    Nivel objetivo <span class="text-accent-primary">*</span>
                 </label>
                 <select
                     name="level"
                     id="level"
                     required
-                    style="width:100%;padding:.65rem .85rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);color:var(--text-main);font-size:.9rem;"
-                    onfocus="this.style.borderColor='var(--accent-secondary)'"
-                    onblur="this.style.borderColor='rgba(31,41,55,.7)'"
+                    class="form-select"
                 >
                     <option value="beginner" {{ old('level', $business->level) === 'beginner' ? 'selected' : '' }}>Principiante</option>
                     <option value="intermediate" {{ old('level', $business->level) === 'intermediate' ? 'selected' : '' }}>Intermedio</option>
                     <option value="advanced" {{ old('level', $business->level) === 'advanced' ? 'selected' : '' }}>Avanzado</option>
                 </select>
                 @error('level')
-                    <span style="font-size:.75rem;color:var(--accent-primary);margin-top:.25rem;display:block;">{{ $message }}</span>
+                    <span class="text-xs text-accent-primary mt-1 block">{{ $message }}</span>
                 @enderror
             </div>
 
             <!-- Estado activo/inactivo -->
             <div>
-                <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">
+                <label class="flex items-center gap-2 cursor-pointer">
                     <input
                         type="checkbox"
                         name="is_active"
                         value="1"
                         {{ old('is_active', $business->is_active) ? 'checked' : '' }}
-                        style="width:18px;height:18px;cursor:pointer;"
+                        class="w-5 h-5 cursor-pointer min-w-touch min-h-touch"
                     >
-                    <span style="font-size:.85rem;font-weight:500;">Negocio activo</span>
+                    <span class="text-responsive-sm font-medium">Negocio activo</span>
                 </label>
-                <span style="font-size:.75rem;color:var(--text-muted);margin-top:.25rem;display:block;margin-left:1.6rem;">
+                <span class="text-xs text-text-muted mt-1 block ml-7">
                     Los negocios inactivos no pueden recibir nuevos alumnos.
                 </span>
             </div>
 
             <!-- Horarios (placeholder) -->
             <div>
-                <label style="display:block;font-size:.85rem;font-weight:500;margin-bottom:.4rem;">
+                <label class="form-label">
                     Horarios de entrenamientos
                 </label>
-                <div style="padding:1rem;border-radius:.6rem;background:rgba(5,8,20,.5);border:1px dashed rgba(31,41,55,.7);text-align:center;">
-                    <p style="font-size:.85rem;color:var(--text-muted);">
+                <div class="p-4 rounded-btn bg-bg-main/50 border border-dashed border-border-subtle text-center">
+                    <p class="text-sm text-text-muted">
                         La configuración de horarios estará disponible en la próxima versión.
                     </p>
                 </div>
             </div>
 
             <!-- Botones -->
-            <div style="display:flex;gap:.75rem;margin-top:1rem;">
+            <div class="flex flex-col sm:flex-row gap-3 mt-4">
                 <button
                     type="submit"
-                    style="padding:.65rem 1.5rem;border-radius:.6rem;background:var(--accent-secondary);color:#050814;font-size:.9rem;font-weight:500;border:none;cursor:pointer;"
-                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 12px rgba(45,227,142,.3)'"
-                    onmouseout="this.style.transform='';this.style.boxShadow=''"
-                >
+                    class="btn-primary min-h-touch w-full sm:w-auto justify-center">
                     Guardar Cambios
                 </button>
                 <a
                     href="{{ businessRoute('coach.business.show') }}"
-                    style="padding:.65rem 1.5rem;border-radius:.6rem;background:rgba(31,41,55,.5);color:var(--text-main);font-size:.9rem;border:1px solid rgba(31,41,55,.7);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;"
-                >
+                    class="btn-ghost min-h-touch w-full sm:w-auto justify-center">
                     Cancelar
                 </a>
             </div>
         </form>
     </x-card>
-
-    <style>
-        select option {
-            background: #0B0C12;
-            color: var(--text-main);
-        }
-    </style>
 </x-app-layout>

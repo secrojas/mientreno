@@ -1,33 +1,33 @@
 <x-app-layout>
-    <div style="margin-bottom:1.5rem;">
-        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
-            <a href="{{ businessRoute('coach.groups.index') }}" style="color:var(--text-muted);display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;text-decoration:none;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+    <div class="mb-6">
+        <div class="flex items-center gap-2 mb-2">
+            <a href="{{ businessRoute('coach.groups.index') }}" class="text-text-muted inline-flex items-center gap-1.5 text-sm hover:text-text-main transition-colors">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
                 Volver a Grupos
             </a>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-start gap-4">
             <div>
-                <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.6rem;margin-bottom:.5rem;">
+                <h1 class="font-display text-responsive-2xl mb-2">
                     {{ $group->name }}
                 </h1>
-                <div style="display:flex;align-items:center;gap:.75rem;">
-                    <span style="display:inline-block;padding:.3rem .7rem;border-radius:999px;font-size:.8rem;font-weight:600;
-                        {{ $group->level === 'beginner' ? 'background:rgba(45,227,142,.1);color:#2DE38E;' : '' }}
-                        {{ $group->level === 'intermediate' ? 'background:rgba(96,165,250,.1);color:#60A5FA;' : '' }}
-                        {{ $group->level === 'advanced' ? 'background:rgba(255,59,92,.1);color:#FF3B5C;' : '' }}
+                <div class="flex items-center gap-3 flex-wrap">
+                    <span class="inline-block px-3 py-1.5 rounded-full text-sm font-semibold
+                        {{ $group->level === 'beginner' ? 'bg-accent-secondary/10 text-accent-secondary' : '' }}
+                        {{ $group->level === 'intermediate' ? 'bg-blue-400/10 text-blue-400' : '' }}
+                        {{ $group->level === 'advanced' ? 'bg-accent-primary/10 text-accent-primary' : '' }}
                     ">
                         {{ $group->level_label }}
                     </span>
                     @if(!$group->is_active)
-                        <span style="padding:.3rem .7rem;font-size:.8rem;background:rgba(31,41,55,.8);color:var(--text-muted);border-radius:999px;">Inactivo</span>
+                        <span class="px-3 py-1.5 text-sm bg-border-subtle text-text-muted rounded-full">Inactivo</span>
                     @endif
                 </div>
             </div>
-            <a href="{{ businessRoute('coach.groups.edit', ['group' => $group]) }}" style="padding:.6rem 1rem;background:rgba(96,165,250,.1);color:#60A5FA;border-radius:.6rem;font-weight:500;font-size:.85rem;text-decoration:none;border:1px solid rgba(96,165,250,.2);display:inline-flex;align-items:center;gap:.4rem;">
-                <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="{{ businessRoute('coach.groups.edit', ['group' => $group]) }}" class="px-4 py-2.5 bg-blue-400/10 text-blue-400 rounded-card font-medium text-sm border border-blue-400/20 hover:bg-blue-400/20 transition-colors inline-flex items-center gap-2 min-h-touch w-full sm:w-auto justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                 </svg>
                 Editar
@@ -36,46 +36,46 @@
     </div>
 
     @if(session('success'))
-        <div style="padding:.75rem 1rem;background:rgba(45,227,142,.1);border:1px solid rgba(45,227,142,.3);border-radius:.6rem;font-size:.85rem;color:var(--accent-secondary);margin-bottom:1rem;">
+        <div class="px-4 py-3 bg-accent-secondary/10 border border-accent-secondary/30 rounded-card text-sm text-accent-secondary mb-4">
             {{ session('success') }}
         </div>
     @endif
 
     @if(session('error'))
-        <div style="padding:.75rem 1rem;background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.3);border-radius:.6rem;font-size:.85rem;color:#ff6b6b;margin-bottom:1rem;">
+        <div class="px-4 py-3 bg-accent-primary/10 border border-accent-primary/30 rounded-card text-sm text-red-400 mb-4">
             {{ session('error') }}
         </div>
     @endif
 
     <!-- Estadísticas -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;">
-        <div style="background:rgba(15,23,42,.95);border-radius:.9rem;padding:1rem;border:1px solid var(--border-subtle);">
-            <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem;">Total Miembros</div>
-            <div style="font-size:1.8rem;font-weight:700;font-family:'Space Grotesk',monospace;">{{ $group->members->count() }}</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-bg-card rounded-card p-4 border border-border-subtle">
+            <div class="text-sm text-text-muted mb-1">Total Miembros</div>
+            <div class="text-3xl font-bold font-display">{{ $group->members->count() }}</div>
             @if($group->max_members)
-                <div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem;">de {{ $group->max_members }} máximo</div>
+                <div class="text-xs text-text-muted mt-1">de {{ $group->max_members }} máximo</div>
             @endif
         </div>
 
-        <div style="background:rgba(15,23,42,.95);border-radius:.9rem;padding:1rem;border:1px solid var(--border-subtle);">
-            <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem;">Miembros Activos</div>
-            <div style="font-size:1.8rem;font-weight:700;color:var(--accent-secondary);font-family:'Space Grotesk',monospace;">{{ $group->activeMembers->count() }}</div>
+        <div class="bg-bg-card rounded-card p-4 border border-border-subtle">
+            <div class="text-sm text-text-muted mb-1">Miembros Activos</div>
+            <div class="text-3xl font-bold text-accent-secondary font-display">{{ $group->activeMembers->count() }}</div>
         </div>
 
-        <div style="background:rgba(15,23,42,.95);border-radius:.9rem;padding:1rem;border:1px solid var(--border-subtle);">
-            <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem;">Entrenamientos</div>
-            <div style="font-size:1.8rem;font-weight:700;font-family:'Space Grotesk',monospace;">{{ $groupWorkouts }}</div>
+        <div class="bg-bg-card rounded-card p-4 border border-border-subtle">
+            <div class="text-sm text-text-muted mb-1">Entrenamientos</div>
+            <div class="text-3xl font-bold font-display">{{ $groupWorkouts }}</div>
         </div>
 
-        <div style="background:rgba(15,23,42,.95);border-radius:.9rem;padding:1rem;border:1px solid var(--border-subtle);">
-            <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem;">Kilómetros Totales</div>
-            <div style="font-size:1.8rem;font-weight:700;font-family:'Space Grotesk',monospace;">{{ number_format($totalDistance, 1) }}</div>
+        <div class="bg-bg-card rounded-card p-4 border border-border-subtle">
+            <div class="text-sm text-text-muted mb-1">Kilómetros Totales</div>
+            <div class="text-3xl font-bold font-display">{{ number_format($totalDistance, 1) }}</div>
         </div>
     </div>
 
     @if($group->description)
-        <x-card title="Descripción" style="margin-bottom:1.5rem;">
-            <p style="color:var(--text-muted);line-height:1.6;font-size:.9rem;">{{ $group->description }}</p>
+        <x-card title="Descripción" class="mb-6">
+            <p class="text-text-muted leading-relaxed text-responsive-sm">{{ $group->description }}</p>
         </x-card>
     @endif
 
@@ -83,8 +83,8 @@
     <x-card title="Miembros del Grupo ({{ $group->members->count() }})">
         <x-slot name="headerAction">
             @if(!$group->isFull() && $availableStudents->isNotEmpty())
-                <button onclick="document.getElementById('addMemberModal').style.display='flex'" style="padding:.5rem .9rem;background:linear-gradient(135deg,var(--accent-primary),#FF4FA3);color:#0B0C12;border:none;border-radius:.6rem;font-weight:500;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;">
-                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button onclick="document.getElementById('addMemberModal').style.display='flex'" class="px-3.5 py-2 bg-gradient-to-br from-accent-primary to-pink-500 text-bg-main border-none rounded-card font-medium text-sm cursor-pointer inline-flex items-center gap-2 hover:opacity-90 transition-opacity min-h-touch">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                     Agregar Alumno
@@ -93,32 +93,32 @@
         </x-slot>
 
         @if($group->members->isEmpty())
-            <div style="text-align:center;padding:2rem;">
-                <div style="width:64px;height:64px;background:rgba(5,8,20,.9);border-radius:50%;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;">
-                    <svg style="width:32px;height:32px;color:var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="text-center py-8">
+                <div class="w-16 h-16 bg-bg-main rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                     </svg>
                 </div>
-                <p style="color:var(--text-muted);font-size:.9rem;">No hay miembros en este grupo aún</p>
+                <p class="text-text-muted text-responsive-sm">No hay miembros en este grupo aún</p>
             </div>
         @else
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.75rem;">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 @foreach($group->members as $member)
-                    <div style="padding:.9rem;border-radius:.7rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.5);display:flex;align-items:center;justify-content:space-between;">
-                        <div style="display:flex;align-items:center;gap:.75rem;">
-                            <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--accent-primary),#FF4FA3);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#0B0C12;font-weight:700;font-size:1rem;">
+                    <div class="p-3.5 rounded-card bg-bg-main border border-border-subtle/50 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-accent-primary to-pink-500 rounded-full flex items-center justify-center text-bg-main font-bold text-base">
                                 {{ strtoupper(substr($member->name, 0, 1)) }}
                             </div>
                             <div>
-                                <div style="font-weight:600;font-size:.9rem;">{{ $member->name }}</div>
-                                <div style="color:var(--text-muted);font-size:.75rem;">{{ $member->email }}</div>
+                                <div class="font-semibold text-responsive-sm">{{ $member->name }}</div>
+                                <div class="text-text-muted text-xs">{{ $member->email }}</div>
                             </div>
                         </div>
-                        <form method="POST" action="{{ businessRoute('coach.groups.removeMember', ['group' => $group, 'user' => $member]) }}" onsubmit="return confirm('¿Remover a {{ $member->name }} del grupo?')" style="margin:0;">
+                        <form method="POST" action="{{ businessRoute('coach.groups.removeMember', ['group' => $group, 'user' => $member]) }}" onsubmit="return confirm('¿Remover a {{ $member->name }} del grupo?')" class="m-0">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" style="padding:.4rem;background:transparent;border:none;color:var(--text-muted);cursor:pointer;transition:color .15s ease-out;border-radius:.4rem;">
-                                <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button type="submit" class="p-2 bg-transparent border-none text-text-muted cursor-pointer hover:text-accent-primary transition-colors rounded-md min-h-touch min-w-touch">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                             </button>
@@ -130,26 +130,26 @@
     </x-card>
 
     <!-- Modal para agregar miembro -->
-    <div id="addMemberModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center;z-index:1000;" onclick="if(event.target === this) this.style.display='none'">
-        <div style="background:rgba(15,23,42,.98);border-radius:1rem;padding:1.5rem;max-width:480px;width:90%;border:1px solid rgba(31,41,55,.7);">
-            <h3 style="font-size:1.3rem;font-weight:600;margin-bottom:1rem;">Agregar Alumno al Grupo</h3>
+    <div id="addMemberModal" class="hidden fixed inset-0 bg-black/80 items-center justify-center z-50" onclick="if(event.target === this) this.style.display='none'">
+        <div class="bg-bg-card rounded-card p-6 max-w-lg w-11/12 border border-border-subtle">
+            <h3 class="text-xl font-semibold mb-4">Agregar Alumno al Grupo</h3>
 
             @if($group->isFull())
-                <p style="color:var(--text-muted);font-size:.9rem;">El grupo ha alcanzado su límite de {{ $group->max_members }} miembros.</p>
+                <p class="text-text-muted text-responsive-sm">El grupo ha alcanzado su límite de {{ $group->max_members }} miembros.</p>
             @elseif($availableStudents->isEmpty())
-                <p style="color:var(--text-muted);font-size:.9rem;">No hay alumnos disponibles. Todos los alumnos de tu negocio ya están en este grupo.</p>
+                <p class="text-text-muted text-responsive-sm">No hay alumnos disponibles. Todos los alumnos de tu negocio ya están en este grupo.</p>
             @else
                 <form method="POST" action="{{ businessRoute('coach.groups.addMember', ['group' => $group]) }}">
                     @csrf
-                    <div style="margin-bottom:1.25rem;">
-                        <label for="user_id" style="display:block;font-size:.8rem;margin-bottom:.25rem;font-weight:500;">
+                    <div class="mb-5">
+                        <label for="user_id" class="form-label">
                             Selecciona un alumno
                         </label>
                         <select
                             name="user_id"
                             id="user_id"
                             required
-                            style="width:100%;padding:.6rem .75rem;border-radius:.6rem;border:1px solid #1F2937;background:#050814;color:var(--text-main);font-size:.9rem;"
+                            class="form-select"
                         >
                             <option value="">Selecciona...</option>
                             @foreach($availableStudents as $student)
@@ -158,17 +158,17 @@
                         </select>
                     </div>
 
-                    <div style="display:flex;gap:.75rem;">
+                    <div class="flex flex-col sm:flex-row gap-3">
                         <button
                             type="submit"
-                            style="flex:1;padding:.7rem 1.2rem;background:linear-gradient(135deg,var(--accent-primary),#FF4FA3);color:#0B0C12;border:none;border-radius:.6rem;font-weight:600;font-size:.9rem;cursor:pointer;"
+                            class="btn-primary flex-1 min-h-touch justify-center"
                         >
                             Agregar
                         </button>
                         <button
                             type="button"
                             onclick="document.getElementById('addMemberModal').style.display='none'"
-                            style="padding:.7rem 1.2rem;background:rgba(5,8,20,.9);color:var(--text-main);border:1px solid rgba(31,41,55,.7);border-radius:.6rem;font-weight:500;font-size:.9rem;cursor:pointer;"
+                            class="btn-ghost min-h-touch justify-center"
                         >
                             Cancelar
                         </button>
