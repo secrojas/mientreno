@@ -21,8 +21,9 @@ class ReportService
      */
     public function getWeeklyReport(User $user, ?int $year = null, ?int $week = null): array
     {
-        $year = $year ?? now()->year;
-        $week = $week ?? now()->week;
+        // Usar isoWeekYear e isoWeek para manejar correctamente las semanas al final/inicio del año
+        $year = $year ?? now()->isoWeekYear;
+        $week = $week ?? now()->isoWeek;
 
         $cacheKey = "report_weekly_user_{$user->id}_year_{$year}_week_{$week}";
         $cacheTTL = now()->addMinutes(15);
@@ -48,29 +49,23 @@ class ReportService
             ->orderBy('date', 'asc')
             ->get();
 
-        // Calcular semana anterior para comparativa
-        $prevWeek = $week - 1;
-        $prevYear = $year;
-        if ($prevWeek < 1) {
-            $prevWeek = Carbon::now()->setISODate($year - 1, 52)->week;
-            $prevYear = $year - 1;
-        }
+        // Calcular semana anterior para comparativa (usando ISO 8601)
+        $currentPeriod = Carbon::now()->setISODate($year, $week);
+        $prevPeriod = $currentPeriod->copy()->subWeek();
+        $prevWeek = $prevPeriod->isoWeek;
+        $prevYear = $prevPeriod->isoWeekYear;
 
-        $prevStartDate = Carbon::now()->setISODate($prevYear, $prevWeek)->startOfWeek();
-        $prevEndDate = $prevStartDate->copy()->endOfWeek();
+        $prevStartDate = $prevPeriod->copy()->startOfWeek();
+        $prevEndDate = $prevPeriod->copy()->endOfWeek();
 
         $prevWorkouts = $user->workouts()
             ->whereBetween('date', [$prevStartDate, $prevEndDate])
             ->get();
 
-        // Semana siguiente (para navegación)
-        $nextWeek = $week + 1;
-        $nextYear = $year;
-        $lastWeekOfYear = Carbon::now()->setISODate($year, 52)->week;
-        if ($nextWeek > $lastWeekOfYear) {
-            $nextWeek = 1;
-            $nextYear = $year + 1;
-        }
+        // Semana siguiente (para navegación usando ISO 8601)
+        $nextPeriod = $currentPeriod->copy()->addWeek();
+        $nextWeek = $nextPeriod->isoWeek;
+        $nextYear = $nextPeriod->isoWeekYear;
 
         return [
             'period' => [
@@ -84,7 +79,7 @@ class ReportService
                 'prev_week' => $prevWeek,
                 'next_year' => $nextYear,
                 'next_week' => $nextWeek,
-                'is_current_week' => $year === now()->year && $week === now()->week,
+                'is_current_week' => $year === now()->isoWeekYear && $week === now()->isoWeek,
             ],
             'summary' => $this->calculateSummary($workouts),
             'distribution' => $this->getWorkoutDistribution($workouts),
@@ -160,7 +155,7 @@ class ReportService
                 'month' => $month,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
-                'label' => ucfirst($monthName) . " {$year}",
+                'label' => ucfirst($monthName)." {$year}",
                 'prev_year' => $prevYear,
                 'prev_month' => $prevMonth,
                 'next_year' => $nextYear,
@@ -223,6 +218,7 @@ class ReportService
 
         $distribution = $completedWorkouts->groupBy('type')->map(function ($group) use ($totalDistance) {
             $distance = $group->sum('distance');
+
             return [
                 'count' => $group->count(),
                 'distance' => round($distance, 2),
@@ -290,7 +286,7 @@ class ReportService
      */
     protected function calculatePaceDiff($currentPace, $previousPace): array
     {
-        if (!$currentPace || !$previousPace) {
+        if (! $currentPace || ! $previousPace) {
             return [
                 'current' => $currentPace,
                 'previous' => $previousPace,
@@ -343,7 +339,7 @@ class ReportService
         if ($bestWorkout) {
             $insights[] = [
                 'icon' => '🏆',
-                'message' => "Tu mejor entrenamiento: {$bestWorkout->distance} km el " .
+                'message' => "Tu mejor entrenamiento: {$bestWorkout->distance} km el ".
                             $bestWorkout->date->format('d/m'),
             ];
         }
@@ -362,15 +358,15 @@ class ReportService
         if ($fastestWorkout) {
             $insights[] = [
                 'icon' => '⚡',
-                'message' => "Tu mejor pace: " . $fastestWorkout->formattedPace .
-                            " /km el " . $fastestWorkout->date->format('d/m'),
+                'message' => 'Tu mejor pace: '.$fastestWorkout->formattedPace.
+                            ' /km el '.$fastestWorkout->date->format('d/m'),
             ];
         }
 
         // Insight 4: Tipo de entrenamiento más frecuente
         $typeDistribution = $completedWorkouts->groupBy('type');
         if ($typeDistribution->count() > 1) {
-            $mostFrequent = $typeDistribution->sortByDesc(fn($group) => $group->count())->first();
+            $mostFrequent = $typeDistribution->sortByDesc(fn ($group) => $group->count())->first();
             if ($mostFrequent && $mostFrequent->count() >= 2) {
                 $typeLabel = $mostFrequent->first()->typeLabel;
                 $insights[] = [
@@ -385,7 +381,7 @@ class ReportService
         if ($longestDuration && $longestDuration->duration >= 3600) { // >= 1 hora
             $insights[] = [
                 'icon' => '⏱️',
-                'message' => "Tu sesión más larga: " . $longestDuration->formattedDuration,
+                'message' => 'Tu sesión más larga: '.$longestDuration->formattedDuration,
             ];
         }
 
@@ -398,7 +394,7 @@ class ReportService
     protected function calculatePeriodStreak(Collection $workouts): int
     {
         $dates = $workouts->pluck('date')
-            ->map(fn($date) => $date->format('Y-m-d'))
+            ->map(fn ($date) => $date->format('Y-m-d'))
             ->unique()
             ->sort()
             ->values();

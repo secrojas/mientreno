@@ -12,7 +12,7 @@ class WorkoutObserver
      */
     public function created(Workout $workout): void
     {
-        $this->clearDashboardCache($workout->user_id);
+        $this->clearDashboardCache($workout->user_id, $workout);
     }
 
     /**
@@ -20,7 +20,7 @@ class WorkoutObserver
      */
     public function updated(Workout $workout): void
     {
-        $this->clearDashboardCache($workout->user_id);
+        $this->clearDashboardCache($workout->user_id, $workout);
     }
 
     /**
@@ -28,7 +28,7 @@ class WorkoutObserver
      */
     public function deleted(Workout $workout): void
     {
-        $this->clearDashboardCache($workout->user_id);
+        $this->clearDashboardCache($workout->user_id, $workout);
     }
 
     /**
@@ -36,7 +36,7 @@ class WorkoutObserver
      */
     public function restored(Workout $workout): void
     {
-        $this->clearDashboardCache($workout->user_id);
+        $this->clearDashboardCache($workout->user_id, $workout);
     }
 
     /**
@@ -44,16 +44,17 @@ class WorkoutObserver
      */
     public function forceDeleted(Workout $workout): void
     {
-        $this->clearDashboardCache($workout->user_id);
+        $this->clearDashboardCache($workout->user_id, $workout);
     }
 
     /**
      * Clear dashboard cache for the user
      */
-    protected function clearDashboardCache(int $userId): void
+    protected function clearDashboardCache(int $userId, ?Workout $workout = null): void
     {
-        $currentWeek = now()->weekOfYear();
-        $currentYear = now()->year;
+        // Usar isoWeek e isoWeekYear para consistencia con ISO 8601
+        $currentWeek = now()->isoWeek;
+        $currentYear = now()->isoWeekYear;
         $currentMonth = now()->month;
 
         // Clear dashboard cache
@@ -83,5 +84,16 @@ class WorkoutObserver
             $prevMonthYear = $currentYear - 1;
         }
         Cache::forget("report_monthly_user_{$userId}_year_{$prevMonthYear}_month_{$prevMonth}");
+
+        // Clear cache for the specific workout date (if provided)
+        if ($workout && $workout->date) {
+            $workoutYear = $workout->date->isoWeekYear;
+            $workoutWeek = $workout->date->isoWeek;
+            $workoutMonth = $workout->date->month;
+
+            Cache::forget("dashboard_data_user_{$userId}_week_{$workoutWeek}");
+            Cache::forget("report_weekly_user_{$userId}_year_{$workoutYear}_week_{$workoutWeek}");
+            Cache::forget("report_monthly_user_{$userId}_year_{$workoutYear}_month_{$workoutMonth}");
+        }
     }
 }
