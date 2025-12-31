@@ -72,6 +72,13 @@ fi
 
 echo "✅ Assets encontrados: $(ls -1 $REPO/public/build/assets/ | wc -l) archivos"
 
+echo ">> Copiar assets compilados a APP/public/build"
+# Laravel busca los assets en APP_DEST/public/build/, no solo en PUBLIC_DEST
+mkdir -p "$APP_DEST/public"
+rm -rf "$APP_DEST/public/build"
+cp -a "$REPO/public/build" "$APP_DEST/public/"
+echo "✅ Assets copiados a $APP_DEST/public/build/"
+
 echo ">> Optimizaciones Laravel"
 /opt/cpanel/ea-php84/root/usr/bin/php artisan config:cache
 /opt/cpanel/ea-php84/root/usr/bin/php artisan route:cache

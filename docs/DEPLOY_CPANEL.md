@@ -219,6 +219,13 @@ fi
 
 echo "✅ Assets encontrados: $(ls -1 $REPO/public/build/assets/ | wc -l) archivos"
 
+echo ">> Copiar assets compilados a APP/public/build"
+# Laravel busca los assets en APP_DEST/public/build/, no solo en PUBLIC_DEST
+mkdir -p "$APP_DEST/public"
+rm -rf "$APP_DEST/public/build"
+cp -a "$REPO/public/build" "$APP_DEST/public/"
+echo "✅ Assets copiados a $APP_DEST/public/build/"
+
 echo ">> Optimizaciones Laravel"
 /opt/cpanel/ea-php84/root/usr/bin/php artisan config:cache
 /opt/cpanel/ea-php84/root/usr/bin/php artisan route:cache
@@ -233,6 +240,9 @@ echo "✅ Deploy completado"
 **Notas importantes:**
 - **No usa npm en producción**: Los assets (CSS/JS) se compilan localmente con `npm run build` antes de hacer push
 - **Validación de assets**: El script verifica que `public/build/manifest.json` exista, y falla si no encuentra los assets compilados
+- **Doble copia de assets**: Los assets se copian a **dos destinos**:
+  1. `PUBLIC_DEST/build/` - Docroot público accesible por web
+  2. `APP_DEST/public/build/` - Laravel app (donde busca Vite los manifests)
 - **Rutas absolutas**: Usa rutas absolutas para `composer` y `php` porque el webhook no tiene el PATH configurado
 - **Variables de entorno**: Exporta `HOME` y `COMPOSER_HOME` para que composer funcione vía webhook
 

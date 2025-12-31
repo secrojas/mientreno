@@ -284,6 +284,8 @@ Script bash que:
 - Copia archivos de Laravel a producción (sin tocar `.env`, `storage`, `index.php`)
 - Instala dependencias de Composer con rutas absolutas
 - **NO ejecuta npm** (los assets se compilan localmente)
+- Verifica que los assets compilados existan (falla si no)
+- **Copia assets a dos destinos**: `PUBLIC_DEST/build/` y `APP_DEST/public/build/`
 - Cachea configuración, rutas y vistas de Laravel
 - Ajusta permisos de `storage` y `bootstrap/cache`
 
@@ -291,6 +293,7 @@ Script bash que:
 - Usa rutas absolutas para `composer` y `php` (compatibilidad con webhook)
 - Exporta variables de entorno `HOME` y `COMPOSER_HOME`
 - No requiere npm en producción (assets vienen compilados desde local)
+- Los assets se copian a **dos ubicaciones** porque Laravel/Vite busca manifests en `app/public/build/`
 
 ## Troubleshooting
 
