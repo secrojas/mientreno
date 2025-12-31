@@ -5,29 +5,36 @@
 ])
 
 @php
-    $baseStyle = 'display:inline-flex;align-items:center;gap:.35rem;font-weight:500;transition:all .15s ease-out;cursor:pointer;border:none;';
-
-    // Variantes
-    $variantStyles = [
-        'primary' => 'background:var(--accent-primary);color:white;border:1px solid var(--accent-primary);',
-        'secondary' => 'background:transparent;color:var(--accent-secondary);border:1px solid var(--accent-secondary);',
-        'ghost' => 'background:rgba(249,250,251,.05);color:var(--text-main);border:1px solid var(--border-subtle);',
-        'danger' => 'background:rgba(239,68,68,.15);color:#EF4444;border:1px solid #DC2626;',
+    $variantClasses = [
+        'primary' => 'btn-primary',
+        'secondary' => 'btn-secondary',
+        'ghost' => 'btn-ghost',
+        'danger' => 'btn px-3 py-2 rounded-btn text-sm bg-red-500/15 text-red-500 border border-red-600 hover:bg-red-500/25',
     ];
 
-    // Tamaños
-    $sizeStyles = [
-        'sm' => 'padding:.35rem .7rem;font-size:.8rem;border-radius:.6rem;',
-        'md' => 'padding:.45rem .9rem;font-size:.85rem;border-radius:.7rem;',
-        'lg' => 'padding:.6rem 1.2rem;font-size:.9rem;border-radius:.8rem;',
+    $sizeClasses = [
+        'sm' => 'px-3 py-1.5 text-xs',
+        'md' => 'px-4 py-2.5 text-sm',
+        'lg' => 'px-5 py-3 text-base',
     ];
 
-    $style = $baseStyle . ($variantStyles[$variant] ?? $variantStyles['primary']) . ($sizeStyles[$size] ?? $sizeStyles['md']);
+    $iconSizes = [
+        'sm' => 'w-3.5 h-3.5',
+        'md' => 'w-4 h-4',
+        'lg' => 'w-[18px] h-[18px]',
+    ];
+
+    $baseClass = $variantClasses[$variant] ?? $variantClasses['primary'];
+
+    // Si no es un variant predefinido (primary, secondary, ghost), aplicar tamaño
+    if (!in_array($variant, ['primary', 'secondary', 'ghost'])) {
+        $baseClass .= ' ' . ($sizeClasses[$size] ?? $sizeClasses['md']);
+    }
 @endphp
 
-<button {{ $attributes->merge(['type' => 'button', 'style' => $style]) }}>
+<button {{ $attributes->merge(['type' => 'button', 'class' => $baseClass]) }}>
     @if($icon)
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:{{ $size === 'sm' ? '14px' : ($size === 'lg' ? '18px' : '16px') }};height:{{ $size === 'sm' ? '14px' : ($size === 'lg' ? '18px' : '16px') }};">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="{{ $iconSizes[$size] ?? $iconSizes['md'] }}">
             {!! $icon !!}
         </svg>
     @endif

@@ -1,3 +1,229 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        /* CSS vars para compatibility temporal durante transición */
+        --bg-main: #05060A;
+        --bg-card: #0B0C12;
+        --bg-sidebar: #050814;
+        --border-subtle: #111827;
+        --text-main: #F9FAFB;
+        --text-muted: #9CA3AF;
+        --accent-primary: #FF3B5C;
+        --accent-secondary: #2DE38E;
+    }
+
+    * {
+        @apply box-border;
+    }
+
+    body {
+        @apply bg-bg-main text-text-main font-sans antialiased;
+        background: radial-gradient(circle at top, #111827 0%, #05060A 45%, #020308 100%);
+        min-height: 100vh;
+    }
+
+    a {
+        @apply text-inherit no-underline;
+    }
+}
+
+@layer components {
+    /* ===========================
+       BOTONES
+       =========================== */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2
+               font-medium transition-all duration-150 ease-out cursor-pointer
+               min-h-touch border-0;
+    }
+
+    .btn-primary {
+        @apply btn px-4 py-2.5 rounded-full text-sm
+               bg-gradient-to-br from-accent-primary to-accent-pink
+               text-bg-card shadow-lg shadow-[#FF3B5C59]
+               hover:shadow-xl hover:shadow-[#FF3B5C73] hover:-translate-y-0.5;
+    }
+
+    .btn-secondary {
+        @apply btn px-4 py-2.5 rounded-btn text-sm
+               bg-transparent text-accent-secondary border border-accent-secondary
+               hover:bg-accent-secondary hover:bg-opacity-10;
+    }
+
+    .btn-ghost {
+        @apply btn px-4 py-2.5 rounded-btn text-sm
+               bg-transparent text-text-muted border border-transparent
+               hover:bg-border-subtle hover:text-text-main;
+    }
+
+    /* ===========================
+       CARDS
+       =========================== */
+    .card {
+        @apply p-4 rounded-card bg-border-subtle bg-opacity-95 border border-border-subtle;
+    }
+
+    .card-header {
+        @apply flex justify-between items-center gap-2 mb-3;
+    }
+
+    .card-title {
+        @apply text-base font-medium;
+    }
+
+    .card-subtitle {
+        @apply text-sm text-text-muted;
+    }
+
+    /* ===========================
+       METRIC CARDS
+       =========================== */
+    .metric-card {
+        @apply card;
+    }
+
+    .metric-label {
+        @apply text-xs text-text-muted mb-1;
+    }
+
+    .metric-value {
+        @apply text-2xl font-semibold font-mono;
+    }
+
+    .metric-subtitle {
+        @apply text-xs text-accent-secondary mt-1;
+    }
+
+    /* ===========================
+       FORMS
+       =========================== */
+    .form-label {
+        @apply block text-sm text-text-muted mb-1;
+    }
+
+    .form-input {
+        @apply w-full px-3 py-2.5 rounded-btn
+               bg-bg-sidebar border border-border-subtle
+               text-text-main text-sm
+               focus:outline-none focus:border-accent-primary;
+    }
+
+    .form-select {
+        @apply form-input;
+    }
+
+    /* ===========================
+       BADGES
+       =========================== */
+    .badge {
+        @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full
+               text-xs uppercase tracking-wider
+               bg-border-subtle bg-opacity-90 border border-text-muted border-opacity-45;
+    }
+
+    /* ===========================
+       SIDEBAR
+       =========================== */
+    .sidebar-link {
+        @apply flex items-center gap-2.5 px-2.5 py-2 rounded-btn
+               text-sm text-text-muted cursor-pointer
+               transition-all duration-150
+               hover:bg-border-subtle hover:bg-opacity-95 hover:text-text-main hover:-translate-y-0.5;
+    }
+
+    .sidebar-link.active {
+        @apply bg-accent-primary bg-opacity-20 text-text-main border border-accent-primary border-opacity-50;
+    }
+}
+
+@layer utilities {
+    /* ===========================
+       TYPOGRAPHY RESPONSIVE
+       =========================== */
+    .text-responsive-xs {
+        @apply text-xs sm:text-sm;
+    }
+
+    .text-responsive-sm {
+        @apply text-sm sm:text-base;
+    }
+
+    .text-responsive-base {
+        @apply text-base sm:text-lg;
+    }
+
+    .text-responsive-lg {
+        @apply text-lg sm:text-xl;
+    }
+
+    .text-responsive-xl {
+        @apply text-xl sm:text-2xl;
+    }
+
+    .text-responsive-2xl {
+        @apply text-2xl sm:text-3xl;
+    }
+
+    /* ===========================
+       PADDING RESPONSIVE
+       =========================== */
+    .p-responsive {
+        @apply p-4 sm:p-5 lg:p-6;
+    }
+
+    .px-responsive {
+        @apply px-4 sm:px-5 lg:px-6;
+    }
+
+    .py-responsive {
+        @apply py-4 sm:py-5 lg:py-6;
+    }
+
+    /* ===========================
+       GAP RESPONSIVE
+       =========================== */
+    .gap-responsive {
+        @apply gap-3 sm:gap-4 lg:gap-5;
+    }
+
+    /* ===========================
+       GRID RESPONSIVE HELPERS
+       =========================== */
+    .grid-responsive-1 {
+        @apply grid grid-cols-1;
+    }
+
+    .grid-responsive-2 {
+        @apply grid grid-cols-1 sm:grid-cols-2;
+    }
+
+    .grid-responsive-3 {
+        @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+    }
+
+    .grid-responsive-4 {
+        @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+    }
+
+    /* ===========================
+       HIDE/SHOW UTILITIES
+       =========================== */
+    .hide-mobile {
+        @apply hidden md:block;
+    }
+
+    .hide-desktop {
+        @apply block md:hidden;
+    }
+
+    .show-mobile-flex {
+        @apply flex md:hidden;
+    }
+
+    .show-desktop-flex {
+        @apply hidden md:flex;
+    }
+}

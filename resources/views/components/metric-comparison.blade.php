@@ -13,28 +13,28 @@
     $diffValue = $diff['diff'] ?? 0;
 
     // Determinar color según tendencia
-    $trendColor = 'var(--text-muted)'; // stable
+    $trendColor = 'text-text-muted'; // stable
     $trendIcon = '➡️';
 
     if ($trend === 'up') {
-        $trendColor = $invertTrend ? 'var(--danger)' : 'var(--success)';
+        $trendColor = $invertTrend ? 'text-red-500' : 'text-accent-secondary';
         $trendIcon = '↗️';
     } elseif ($trend === 'down') {
-        $trendColor = $invertTrend ? 'var(--success)' : 'var(--danger)';
+        $trendColor = $invertTrend ? 'text-accent-secondary' : 'text-red-500';
         $trendIcon = '↘️';
     }
 @endphp
 
-<div {{ $attributes->merge(['style' => 'padding:1rem;border-radius:.6rem;background:rgba(30,41,59,.5);border:1px solid var(--border-subtle);']) }}>
-    <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.5rem;">{{ $label }}</div>
+<div {{ $attributes->merge(['class' => 'p-4 rounded-btn bg-bg-card/50 border border-border-subtle']) }}>
+    <div class="text-sm text-text-muted mb-2">{{ $label }}</div>
 
-    <div style="display:flex;align-items:baseline;gap:.75rem;margin-bottom:.5rem;">
-        <div style="font-size:1.5rem;font-weight:600;color:var(--text-primary);">
+    <div class="flex flex-col xs:flex-row xs:items-baseline gap-2 xs:gap-3 mb-2">
+        <div class="text-2xl font-semibold text-text-main">
             {{ $current }}{{ $unit }}
         </div>
 
         @if($previous > 0)
-            <div style="font-size:.9rem;color:{{ $trendColor }};display:flex;align-items:center;gap:.25rem;">
+            <div class="text-sm {{ $trendColor }} flex items-center gap-1">
                 <span>{{ $trendIcon }}</span>
                 <span>
                     @if($diffValue > 0)+@endif{{ $diffValue }}{{ $unit }}
@@ -47,7 +47,7 @@
     </div>
 
     @if($previous > 0)
-        <div style="font-size:.75rem;color:var(--text-muted);">
+        <div class="text-xs text-text-muted">
             Anterior: {{ $previous }}{{ $unit }}
         </div>
     @endif

@@ -1,14 +1,15 @@
 <x-app-layout>
-    <header style="display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.5rem;">
-        <div style="display:flex;flex-direction:column;gap:.2rem;">
-            <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.6rem;">Dashboard Coach</h1>
-            <p style="font-size:.9rem;color:var(--text-muted);">Gestión y seguimiento de tus alumnos.</p>
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div class="flex flex-col gap-1">
+            <h1 class="font-display text-responsive-2xl">Dashboard Coach</h1>
+            <p class="text-responsive-sm text-text-muted">Gestión y seguimiento de tus alumnos.</p>
         </div>
 
         @if(!isset($hasNoBusiness))
-        <div style="display:flex;align-items:center;gap:.5rem;">
-            <a href="#" class="btn-primary" style="border-radius:999px;padding:.45rem .9rem;font-size:.8rem;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+        <div class="w-full sm:w-auto">
+            <a href="#" class="btn-primary w-full sm:w-auto justify-center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
                     <path d="M12 5v14M5 12h14"/>
                 </svg>
                 Invitar alumno
@@ -18,21 +19,21 @@
     </header>
 
     @if(isset($hasNoBusiness) && $hasNoBusiness)
-        <!-- Sin business -->
+        <!-- No Business State -->
         <x-card title="Bienvenido a MiEntreno Coach" subtitle="Configurá tu negocio para empezar">
-            <div style="text-align:center;padding:2rem 1rem;">
-                <div style="margin-bottom:1.5rem;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:64px;height:64px;margin:0 auto;color:var(--accent-secondary);">
+            <div class="text-center py-8 px-4">
+                <div class="mb-6">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-16 h-16 mx-auto text-accent-secondary">
                         <rect x="3" y="10" width="9" height="5" rx="1.5"></rect>
                         <path d="M12 12h3.5a3.5 3.5 0 1 1-2.47 6"></path>
                         <circle cx="17.5" cy="10" r="1.2"></circle>
                     </svg>
                 </div>
-                <p style="font-size:.95rem;color:var(--text-muted);margin-bottom:1.5rem;max-width:500px;margin-left:auto;margin-right:auto;">
+                <p class="text-responsive-sm text-text-muted mb-6 max-w-lg mx-auto">
                     Para empezar a gestionar tus alumnos y grupos de entrenamiento, primero necesitás crear tu negocio.
                 </p>
-                <a href="{{ route('coach.business.create') }}" style="display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.2rem;border-radius:999px;font-size:.9rem;background:var(--accent-secondary);color:#050814;font-weight:500;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
+                <a href="{{ route('coach.business.create') }}" class="btn-primary inline-flex">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
                         <path d="M12 5v14M5 12h14"/>
                     </svg>
                     Crear mi negocio
@@ -40,8 +41,8 @@
             </div>
         </x-card>
     @else
-        <!-- METRIC CARDS -->
-        <section style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;margin-bottom:1.5rem;">
+        <!-- Metric Cards -->
+        <section class="grid-responsive-4 gap-4 mb-6">
             <x-metric-card
                 label="Total Alumnos"
                 :value="$totalStudents"
@@ -69,16 +70,16 @@
             />
         </section>
 
-        <!-- CONTENT -->
-        <section style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr);gap:1.5rem;">
-            <!-- Actividad Reciente -->
+        <!-- Main Content -->
+        <section class="grid grid-cols-1 lg:grid-cols-[2fr_1.2fr] gap-6">
+            <!-- Recent Activity -->
             <x-card title="Actividad Reciente" subtitle="Últimos entrenamientos de tus alumnos">
                 <x-slot:headerAction>
-                    <a href="#" style="font-size:.8rem;color:var(--accent-secondary);">Ver todos</a>
+                    <a href="#" class="text-sm text-accent-secondary hover:text-accent-secondary/80 transition-colors">Ver todos</a>
                 </x-slot:headerAction>
 
                 @if($recentActivity->count() > 0)
-                    <div style="display:grid;gap:.5rem;">
+                    <div class="grid gap-2">
                         @foreach($recentActivity as $activity)
                             @php
                                 $workout = (object) (array) $activity;
@@ -87,91 +88,76 @@
                                 $avgSeconds = $pace ? $pace % 60 : 0;
                                 $formattedPace = $pace ? $avgMinutes . ':' . str_pad($avgSeconds, 2, '0', STR_PAD_LEFT) : '-';
                             @endphp
-                            <div style="
-                                display:grid;
-                                grid-template-columns:100px 1fr 80px 80px;
-                                gap:.75rem;
-                                padding:.75rem;
-                                border-radius:.7rem;
-                                background:rgba(5,8,20,.9);
-                                border:1px solid rgba(31,41,55,.7);
-                                align-items:center;
-                            ">
-                                <div style="font-family:'Space Grotesk',monospace;font-size:.75rem;color:var(--text-muted);">
+                            <div class="grid grid-cols-[100px_1fr_80px_80px] gap-3 p-3 rounded-btn
+                                        bg-bg-sidebar border border-border-subtle items-center">
+                                <div class="font-mono text-xs text-text-muted">
                                     {{ \Carbon\Carbon::parse($workout->date)->format('d/m H:i') }}
                                 </div>
-                                <div>
-                                    <div style="font-size:.85rem;font-weight:500;color:var(--accent-secondary);">{{ $workout->student_name }}</div>
-                                    <div style="font-size:.75rem;color:var(--text-muted);margin-top:.15rem;">
+                                <div class="min-w-0">
+                                    <div class="text-sm font-medium text-accent-secondary truncate">{{ $workout->student_name }}</div>
+                                    <div class="text-xs text-text-muted mt-0.5 truncate">
                                         {{ ucfirst($workout->type ?? 'running') }}
                                     </div>
                                 </div>
-                                <div style="font-family:'Space Grotesk',monospace;font-size:.8rem;">
+                                <div class="font-mono text-sm">
                                     <strong>{{ $workout->distance }}</strong> km
                                 </div>
-                                <div style="font-family:'Space Grotesk',monospace;font-size:.8rem;color:var(--accent-secondary);">
+                                <div class="font-mono text-sm text-accent-secondary">
                                     {{ $formattedPace }}
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <div style="font-size:.85rem;color:var(--text-muted);text-align:center;padding:2rem 1rem;">
+                    <div class="text-center py-8 px-4 text-text-muted text-sm">
                         No hay actividad reciente de tus alumnos.
                     </div>
                 @endif
             </x-card>
 
-            <!-- Panel derecho -->
-            <div style="display:flex;flex-direction:column;gap:1.5rem;">
-                <!-- Top Alumnos -->
+            <!-- Right Panel -->
+            <div class="flex flex-col gap-6">
+                <!-- Top Students -->
                 <x-card title="Top Alumnos" subtitle="Más kilómetros esta semana">
                     @if($topStudents->count() > 0)
-                        <div style="display:grid;gap:.75rem;">
+                        <div class="grid gap-3">
                             @foreach($topStudents as $index => $item)
-                                <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid {{ $index === 0 ? 'rgba(45,227,142,.3)' : 'rgba(31,41,55,.7)' }};">
-                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;">
-                                        <div style="display:flex;align-items:center;gap:.5rem;">
-                                            <span style="
-                                                width:24px;
-                                                height:24px;
-                                                border-radius:999px;
-                                                background:{{ $index === 0 ? 'var(--accent-secondary)' : 'rgba(31,41,55,.7)' }};
-                                                color:{{ $index === 0 ? '#050814' : 'var(--text-muted)' }};
-                                                display:inline-flex;
-                                                align-items:center;
-                                                justify-content:center;
-                                                font-size:.75rem;
-                                                font-weight:600;
-                                            ">#{{ $index + 1 }}</span>
-                                            <span style="font-size:.85rem;font-weight:500;">{{ $item['student']->name }}</span>
+                                <div class="p-3 rounded-btn bg-bg-sidebar border
+                                            {{ $index === 0 ? 'border-accent-secondary/30' : 'border-border-subtle' }}">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold
+                                                        {{ $index === 0 ? 'bg-accent-secondary text-bg-card' : 'bg-border-subtle text-text-muted' }}">
+                                                #{{ $index + 1 }}
+                                            </span>
+                                            <span class="text-sm font-medium">{{ $item['student']->name }}</span>
                                         </div>
                                     </div>
-                                    <div style="font-size:.8rem;color:var(--text-muted);">
-                                        <strong style="color:var(--accent-secondary);font-family:'Space Grotesk',monospace;">{{ number_format($item['distance'], 1) }} km</strong>
+                                    <div class="text-sm text-text-muted">
+                                        <strong class="text-accent-secondary font-mono">{{ number_format($item['distance'], 1) }} km</strong>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
                     @else
-                        <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                        <div class="text-center py-6 text-text-muted text-sm">
                             No hay datos de alumnos esta semana.
                         </div>
                     @endif
                 </x-card>
 
-                <!-- Alumnos Inactivos -->
+                <!-- Inactive Students -->
                 @if($inactiveStudents->count() > 0)
                 <x-card title="Alumnos Inactivos" subtitle="Sin entrenamientos 2+ semanas">
-                    <div style="display:grid;gap:.5rem;">
+                    <div class="grid gap-2">
                         @foreach($inactiveStudents as $student)
                             @php
                                 $lastWorkout = $student->workouts()->latest('date')->first();
                                 $daysInactive = $lastWorkout ? now()->diffInDays($lastWorkout->date) : null;
                             @endphp
-                            <div style="padding:.6rem;border-radius:.5rem;background:rgba(5,8,20,.9);border:1px solid rgba(234,179,8,.3);">
-                                <div style="font-size:.85rem;font-weight:500;">{{ $student->name }}</div>
-                                <div style="font-size:.7rem;color:rgba(234,179,8,.9);margin-top:.2rem;">
+                            <div class="p-2.5 rounded bg-bg-sidebar border border-yellow-500/30">
+                                <div class="text-sm font-medium">{{ $student->name }}</div>
+                                <div class="text-xs text-yellow-400 mt-1">
                                     @if($daysInactive)
                                         {{ $daysInactive }} días sin entrenar
                                     @else
@@ -187,33 +173,41 @@
                 <!-- Training Groups -->
                 <x-card title="Grupos de Entrenamiento ({{ $trainingGroups->count() }})">
                     <x-slot name="headerAction">
-                        <a href="{{ businessRoute('coach.groups.index') }}" style="color:var(--accent-primary);font-size:.85rem;text-decoration:none;font-weight:500;">
+                        <a href="{{ businessRoute('coach.groups.index') }}"
+                           class="text-sm text-accent-primary hover:text-accent-primary/80 font-medium transition-colors">
                             Ver todos →
                         </a>
                     </x-slot>
 
                     @if($trainingGroups->isEmpty())
-                        <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                        <div class="text-center py-6 text-text-muted text-sm">
                             No has creado grupos de entrenamiento aún.
                             <br>
-                            <a href="{{ businessRoute('coach.groups.create') }}" style="color:var(--accent-primary);margin-top:.5rem;display:inline-block;font-weight:500;">Crear primer grupo</a>
+                            <a href="{{ businessRoute('coach.groups.create') }}"
+                               class="text-accent-primary hover:text-accent-primary/80 font-medium mt-2 inline-block">
+                                Crear primer grupo
+                            </a>
                         </div>
                     @else
-                        <div style="display:flex;flex-direction:column;gap:.75rem;">
+                        <div class="flex flex-col gap-3">
                             @foreach($trainingGroups as $group)
-                                <a href="{{ businessRoute('coach.groups.show', ['group' => $group]) }}" style="padding:.75rem;border-radius:.5rem;background:rgba(5,8,20,.9);border:1px solid rgba(255,59,92,.15);text-decoration:none;display:flex;justify-content:space-between;align-items:center;transition:all .2s;">
+                                <a href="{{ businessRoute('coach.groups.show', ['group' => $group]) }}"
+                                   class="p-3 rounded bg-bg-sidebar border border-accent-primary/15
+                                          flex justify-between items-center
+                                          hover:border-accent-primary/30 transition-all duration-200">
                                     <div>
-                                        <div style="font-size:.9rem;font-weight:600;color:#fff;margin-bottom:.25rem;">{{ $group->name }}</div>
-                                        <div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--text-muted);">
-                                            <span style="display:inline-block;padding:.2rem .5rem;border-radius:9999px;font-weight:600;
-                                                {{ $group->level === 'beginner' ? 'background:rgba(45,227,142,.1);color:#2DE38E;' : '' }}
-                                                {{ $group->level === 'intermediate' ? 'background:rgba(96,165,250,.1);color:#60A5FA;' : '' }}
-                                                {{ $group->level === 'advanced' ? 'background:rgba(255,59,92,.1);color:#FF3B5C;' : '' }}
-                                            ">{{ $group->level_label }}</span>
+                                        <div class="text-sm font-semibold text-text-main mb-1">{{ $group->name }}</div>
+                                        <div class="flex items-center gap-2 text-xs text-text-muted">
+                                            <span class="inline-block px-2 py-0.5 rounded-full font-semibold
+                                                {{ $group->level === 'beginner' ? 'bg-accent-secondary/10 text-accent-secondary' : '' }}
+                                                {{ $group->level === 'intermediate' ? 'bg-blue-500/10 text-blue-400' : '' }}
+                                                {{ $group->level === 'advanced' ? 'bg-accent-primary/10 text-accent-primary' : '' }}">
+                                                {{ $group->level_label }}
+                                            </span>
                                             <span>{{ $group->members_count }} miembro{{ $group->members_count !== 1 ? 's' : '' }}</span>
                                         </div>
                                     </div>
-                                    <svg style="width:1.25rem;height:1.25rem;color:var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                     </svg>
                                 </a>
@@ -224,28 +218,4 @@
             </div>
         </section>
     @endif
-
-    <style>
-        @media (max-width: 1024px) {
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            header > div:last-child {
-                width: 100%;
-            }
-            section:first-of-type {
-                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            }
-            section:last-of-type {
-                grid-template-columns: minmax(0, 1fr) !important;
-            }
-        }
-
-        @media (max-width: 600px) {
-            section:first-of-type {
-                grid-template-columns: minmax(0, 1fr) !important;
-            }
-        }
-    </style>
 </x-app-layout>

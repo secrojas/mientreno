@@ -6,16 +6,16 @@
 ])
 
 @php
-    $accentColor = $accent === 'primary' ? 'var(--accent-primary)' : 'var(--accent-secondary)';
+    $accentClass = $accent === 'primary' ? 'text-accent-primary' : 'text-accent-secondary';
 @endphp
 
-<div {{ $attributes->merge(['style' => 'padding:1rem;border-radius:.9rem;background:rgba(15,23,42,.95);border:1px solid var(--border-subtle);']) }}>
-    <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">{{ $label }}</div>
-    <div style="font-size:1.4rem;font-weight:600;font-family:'Space Grotesk',monospace;">
+<div {{ $attributes->merge(['class' => 'metric-card']) }}>
+    <div class="metric-label">{{ $label }}</div>
+    <div class="metric-value">
         {{ $value }}
     </div>
     @if($subtitle)
-        <div style="font-size:.78rem;color:{{ $accentColor }};margin-top:.2rem;">
+        <div class="metric-subtitle {{ $accentClass }}">
             {{ $subtitle }}
         </div>
     @endif

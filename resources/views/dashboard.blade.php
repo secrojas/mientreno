@@ -1,12 +1,13 @@
 <x-app-layout>
-    <header style="display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.5rem;">
-        <div style="display:flex;flex-direction:column;gap:.2rem;">
-            <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.6rem;">Dashboard</h1>
-            <p style="font-size:.9rem;color:var(--text-muted);">Resumen de tus entrenamientos y actividad reciente.</p>
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div class="flex flex-col gap-1">
+            <h1 class="font-display text-responsive-2xl">Dashboard</h1>
+            <p class="text-responsive-sm text-text-muted">Resumen de tus entrenamientos y actividad reciente.</p>
         </div>
-        <div style="display:flex;align-items:center;gap:.5rem;">
-            <a href="{{ route('workouts.create') }}" class="btn-primary" style="border-radius:999px;padding:.45rem .9rem;font-size:.8rem;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+        <div class="w-full sm:w-auto">
+            <a href="{{ route('workouts.create') }}" class="btn-primary w-full sm:w-auto justify-center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
                     <path d="M12 5v14M5 12h14"/>
                 </svg>
                 Nuevo entreno
@@ -14,8 +15,8 @@
         </div>
     </header>
 
-    <!-- METRIC CARDS -->
-    <section style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;margin-bottom:1.5rem;">
+    <!-- Metric Cards -->
+    <section class="grid-responsive-4 gap-4 mb-6">
         @php
             $hours = floor($weekStats['total_duration'] / 3600);
             $minutes = floor(($weekStats['total_duration'] % 3600) / 60);
@@ -32,7 +33,7 @@
         <x-metric-card
             label="Tiempo total"
             :value="($hours > 0 ? $hours . 'h ' : '') . $minutes . 'm'"
-            :subtitle="'Semana ' . now()->weekOfYear"
+            :subtitle="'Semana ' . now()->isoWeek"
         />
 
         <x-metric-card
@@ -49,54 +50,60 @@
         />
     </section>
 
-    <!-- CONTENT -->
-    <section style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr);gap:1.5rem;">
-        <!-- Entrenamientos -->
+    <!-- Main Content -->
+    <section class="grid grid-cols-1 lg:grid-cols-[2fr_1.2fr] gap-6">
+        <!-- Recent Workouts -->
         <x-card title="Entrenamientos recientes" subtitle="Tus últimas 5 sesiones.">
             <x-slot:headerAction>
-                <a href="{{ route('workouts.index') }}" style="font-size:.8rem;color:var(--accent-secondary);">Ver todos</a>
+                <a href="{{ route('workouts.index') }}" class="text-sm text-accent-secondary hover:text-accent-secondary/80 transition-colors">Ver todos</a>
             </x-slot:headerAction>
 
             @if($recentWorkouts->count() > 0)
-                <div style="display:grid;gap:.5rem;">
+                <!-- Desktop: Table view -->
+                <div class="hidden md:grid gap-2">
                     @foreach($recentWorkouts as $workout)
-                        <a href="{{ route('workouts.edit', $workout) }}" style="
-                            display:grid;
-                            grid-template-columns:80px 1fr 80px 80px;
-                            gap:.75rem;
-                            padding:.75rem;
-                            border-radius:.7rem;
-                            background:rgba(5,8,20,.9);
-                            border:1px solid rgba(31,41,55,.7);
-                            align-items:center;
-                            transition:all .15s ease-out;
-                        " onmouseover="this.style.background='rgba(5,8,20,.7)';this.style.borderColor='rgba(255,59,92,.3)';" onmouseout="this.style.background='rgba(5,8,20,.9)';this.style.borderColor='rgba(31,41,55,.7)';">
-                            <div style="font-family:'Space Grotesk',monospace;font-size:.8rem;color:var(--text-muted);">
+                        <a href="{{ route('workouts.edit', $workout) }}"
+                           class="grid grid-cols-[80px_1fr_80px_80px] gap-3 p-3 rounded-btn
+                                  bg-bg-sidebar border border-border-subtle
+                                  hover:bg-bg-sidebar/70 hover:border-accent-primary/30
+                                  transition-all duration-150 items-center">
+                            <div class="font-mono text-sm text-text-muted">
                                 {{ $workout->date->format('d/m') }}
                             </div>
-                            <div>
-                                <div style="font-size:.85rem;font-weight:500;">{{ $workout->type_label }}</div>
+                            <div class="min-w-0">
+                                <div class="text-sm font-medium truncate">{{ $workout->type_label }}</div>
                                 @if($workout->notes)
-                                    <div style="font-size:.75rem;color:var(--text-muted);margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                    <div class="text-xs text-text-muted mt-0.5 truncate">
                                         {{ Str::limit($workout->notes, 40) }}
                                     </div>
                                 @endif
                             </div>
-                            <div style="font-family:'Space Grotesk',monospace;font-size:.8rem;">
+                            <div class="font-mono text-sm">
                                 <strong>{{ $workout->distance }}</strong> km
                             </div>
-                            <div style="font-family:'Space Grotesk',monospace;font-size:.8rem;color:var(--accent-secondary);">
+                            <div class="font-mono text-sm text-accent-secondary">
                                 {{ $workout->formatted_pace }}
                             </div>
                         </a>
                     @endforeach
                 </div>
+
+                <!-- Mobile: Card view -->
+                <div class="md:hidden space-y-3">
+                    @foreach($recentWorkouts as $workout)
+                        <x-workout-card
+                            :workout="$workout"
+                            :editUrl="route('workouts.edit', $workout)"
+                            :deleteUrl="route('workouts.destroy', $workout)"
+                        />
+                    @endforeach
+                </div>
             @else
-                <div style="font-size:.85rem;color:var(--text-muted);text-align:center;padding:2rem 1rem;">
-                    No hay entrenamientos cargados todavía.<br>
-                    <br>
-                    <a href="{{ route('workouts.create') }}" style="display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .8rem;border-radius:999px;font-size:.8rem;border:1px solid var(--accent-secondary);color:var(--accent-secondary);background:rgba(45,227,142,.05);">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+                <div class="text-center py-8 px-4 text-text-muted text-sm">
+                    No hay entrenamientos cargados todavía.
+                    <br><br>
+                    <a href="{{ route('workouts.create') }}" class="btn-secondary inline-flex">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
                             <path d="M12 5v14M5 12h14"/>
                         </svg>
                         Crear primer entreno
@@ -105,116 +112,119 @@
             @endif
         </x-card>
 
-        <!-- Panel derecho -->
-        <div style="display:flex;flex-direction:column;gap:1.5rem;">
-            <!-- Objetivos Activos -->
+        <!-- Right Panel -->
+        <div class="flex flex-col gap-6">
+            <!-- Active Goals -->
             <x-card title="Objetivos Activos" :subtitle="$activeGoals->count() . ' objetivo(s)'">
                 <x-slot:headerAction>
-                    <a href="{{ route('goals.index') }}" style="font-size:.8rem;color:var(--accent-secondary);">Ver todos</a>
+                    <a href="{{ route('goals.index') }}" class="text-sm text-accent-secondary hover:text-accent-secondary/80 transition-colors">Ver todos</a>
                 </x-slot:headerAction>
 
                 @if($activeGoals->count() > 0)
-                    <div style="display:grid;gap:.75rem;">
+                    <div class="grid gap-3">
                         @foreach($activeGoals as $goal)
-                            <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(45,227,142,.3);">
-                                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.4rem;">
-                                    <span style="padding:.12rem .4rem;border-radius:.3rem;background:rgba(45,227,142,.1);border:1px solid rgba(45,227,142,.3);font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;">
+                            <div class="p-3 rounded-btn bg-bg-sidebar border border-accent-secondary/30">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="px-2 py-1 rounded text-[10px] uppercase tracking-wider
+                                                 bg-accent-secondary/10 border border-accent-secondary/30 text-accent-secondary">
                                         {{ $goal->type_label }}
                                     </span>
                                     @if($goal->target_date && $goal->days_until !== null)
-                                        <span style="font-size:.7rem;color:var(--text-muted);">
+                                        <span class="text-xs text-text-muted">
                                             {{ $goal->days_until >= 0 ? $goal->days_until . ' días' : 'Vencido' }}
                                         </span>
                                     @endif
                                 </div>
-                                <div style="font-size:.85rem;font-weight:500;margin-bottom:.3rem;">{{ $goal->title }}</div>
-                                <div style="font-size:.75rem;color:var(--text-muted);">{{ $goal->getTargetDescription() }}</div>
+                                <div class="text-sm font-medium mb-1">{{ $goal->title }}</div>
+                                <div class="text-xs text-text-muted">{{ $goal->getTargetDescription() }}</div>
                                 @if($goal->progress_percentage > 0)
-                                    <div style="margin-top:.5rem;">
-                                        <div style="width:100%;height:3px;background:rgba(15,23,42,.9);border-radius:999px;overflow:hidden;">
-                                            <div style="width:{{ $goal->progress_percentage }}%;height:100%;background:var(--accent-secondary);"></div>
+                                    <div class="mt-2">
+                                        <div class="w-full h-1 bg-border-subtle rounded-full overflow-hidden">
+                                            <div class="h-full bg-accent-secondary transition-all duration-300"
+                                                 style="width: {{ $goal->progress_percentage }}%"></div>
                                         </div>
-                                        <div style="font-size:.7rem;color:var(--text-muted);margin-top:.25rem;">{{ $goal->progress_percentage }}%</div>
+                                        <div class="text-xs text-text-muted mt-1">{{ $goal->progress_percentage }}%</div>
                                     </div>
                                 @endif
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                    <div class="text-center py-6 text-text-muted text-sm">
                         No hay objetivos activos.
                         <br>
-                        <a href="{{ route('goals.create') }}" style="color:var(--accent-secondary);margin-top:.5rem;display:inline-block;">Crear objetivo</a>
+                        <a href="{{ route('goals.create') }}" class="text-accent-secondary hover:text-accent-secondary/80 mt-2 inline-block">Crear objetivo</a>
                     </div>
                 @endif
             </x-card>
 
-            <!-- Cumplimiento Semanal -->
-            <x-card title="Cumplimiento Semanal" subtitle="Semana {{ now()->weekOfYear }}">
+            <!-- Weekly Completion -->
+            <x-card title="Cumplimiento Semanal" :subtitle="'Semana ' . now()->isoWeek">
                 <x-slot:headerAction>
-                    <a href="{{ route('workouts.index', ['status' => 'planned']) }}" style="font-size:.8rem;color:var(--accent-secondary);">Ver planificados</a>
+                    <a href="{{ route('workouts.index', ['status' => 'planned']) }}" class="text-sm text-accent-secondary hover:text-accent-secondary/80 transition-colors">Ver planificados</a>
                 </x-slot:headerAction>
 
                 @if($weeklyCompletion['total'] > 0)
-                    <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);">
-                        <!-- Porcentaje grande -->
-                        <div style="text-align:center;margin-bottom:1rem;">
-                            <div style="font-size:2.5rem;font-weight:700;font-family:'Space Grotesk',monospace;color:var(--accent-secondary);">
+                    <div class="p-3 rounded-btn bg-bg-sidebar border border-border-subtle">
+                        <!-- Big percentage -->
+                        <div class="text-center mb-4">
+                            <div class="text-5xl font-bold font-mono text-accent-secondary">
                                 {{ $weeklyCompletion['percentage'] }}%
                             </div>
-                            <div style="font-size:.75rem;color:var(--text-muted);margin-top:.25rem;">
+                            <div class="text-xs text-text-muted mt-1">
                                 {{ $weeklyCompletion['completed'] }} de {{ $weeklyCompletion['total'] }} entrenamientos completados
                             </div>
                         </div>
 
-                        <!-- Barra de progreso -->
-                        <div style="width:100%;height:6px;background:rgba(15,23,42,.9);border-radius:999px;overflow:hidden;margin-bottom:1rem;">
-                            <div style="width:{{ $weeklyCompletion['percentage'] }}%;height:100%;background:var(--accent-secondary);transition:width 0.3s ease;"></div>
+                        <!-- Progress bar -->
+                        <div class="w-full h-1.5 bg-border-subtle rounded-full overflow-hidden mb-4">
+                            <div class="h-full bg-accent-secondary transition-all duration-300"
+                                 style="width: {{ $weeklyCompletion['percentage'] }}%"></div>
                         </div>
 
                         <!-- Breakdown -->
-                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;font-size:.75rem;">
-                            <div style="text-align:center;padding:.5rem;border-radius:.4rem;background:rgba(45,227,142,.05);border:1px solid rgba(45,227,142,.2);">
-                                <div style="font-weight:600;font-size:1.1rem;color:#2de38e;">{{ $weeklyCompletion['completed'] }}</div>
-                                <div style="color:var(--text-muted);margin-top:.15rem;">Completados</div>
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div class="text-center p-2 rounded bg-accent-secondary/5 border border-accent-secondary/20">
+                                <div class="font-semibold text-lg text-accent-secondary">{{ $weeklyCompletion['completed'] }}</div>
+                                <div class="text-text-muted mt-0.5">Completados</div>
                             </div>
-                            <div style="text-align:center;padding:.5rem;border-radius:.4rem;background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.2);">
-                                <div style="font-weight:600;font-size:1.1rem;color:#60a5fa;">{{ $weeklyCompletion['planned'] }}</div>
-                                <div style="color:var(--text-muted);margin-top:.15rem;">Planificados</div>
+                            <div class="text-center p-2 rounded bg-blue-500/5 border border-blue-500/20">
+                                <div class="font-semibold text-lg text-blue-400">{{ $weeklyCompletion['planned'] }}</div>
+                                <div class="text-text-muted mt-0.5">Planificados</div>
                             </div>
-                            <div style="text-align:center;padding:.5rem;border-radius:.4rem;background:rgba(234,179,8,.05);border:1px solid rgba(234,179,8,.2);">
-                                <div style="font-weight:600;font-size:1.1rem;color:#facc15;">{{ $weeklyCompletion['skipped'] }}</div>
-                                <div style="color:var(--text-muted);margin-top:.15rem;">Saltados</div>
+                            <div class="text-center p-2 rounded bg-yellow-500/5 border border-yellow-500/20">
+                                <div class="font-semibold text-lg text-yellow-400">{{ $weeklyCompletion['skipped'] }}</div>
+                                <div class="text-text-muted mt-0.5">Saltados</div>
                             </div>
                         </div>
 
                         @if($weeklyCompletion['planned'] > 0)
-                            <div style="margin-top:.75rem;padding:.5rem;border-radius:.4rem;background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.2);text-align:center;">
-                                <div style="font-size:.75rem;color:#60a5fa;">
+                            <div class="mt-3 p-2 rounded bg-blue-500/5 border border-blue-500/20 text-center">
+                                <div class="text-xs text-blue-400">
                                     ¡Tenés {{ $weeklyCompletion['planned'] }} {{ $weeklyCompletion['planned'] === 1 ? 'entrenamiento planificado' : 'entrenamientos planificados' }} pendientes!
                                 </div>
                             </div>
                         @endif
                     </div>
                 @else
-                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                    <div class="text-center py-6 text-text-muted text-sm">
                         No hay entrenamientos esta semana.
                         <br>
-                        <a href="{{ route('workouts.create') }}" style="color:var(--accent-secondary);margin-top:.5rem;display:inline-block;">Planificar entrenamientos</a>
+                        <a href="{{ route('workouts.create') }}" class="text-accent-secondary hover:text-accent-secondary/80 mt-2 inline-block">Planificar entrenamientos</a>
                     </div>
                 @endif
             </x-card>
 
-            <!-- Resumen -->
+            <!-- Summary -->
             <x-card title="Resumen" subtitle="Estadísticas generales">
-                <div style="display:grid;gap:.75rem;">
-                    <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);">
-                        <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Total entrenamientos</div>
-                        <div style="font-size:1.2rem;font-weight:600;">{{ auth()->user()->workouts()->count() }}</div>
+                <div class="grid gap-3">
+                    <div class="p-3 rounded-btn bg-bg-sidebar border border-border-subtle">
+                        <div class="text-xs text-text-muted mb-1">Total entrenamientos</div>
+                        <div class="text-xl font-semibold">{{ auth()->user()->workouts()->count() }}</div>
                     </div>
-                    <div style="padding:.75rem;border-radius:.6rem;background:rgba(5,8,20,.9);border:1px solid rgba(31,41,55,.7);">
-                        <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">Total kilómetros</div>
-                        <div style="font-size:1.2rem;font-weight:600;font-family:'Space Grotesk',monospace;">
+                    <div class="p-3 rounded-btn bg-bg-sidebar border border-border-subtle">
+                        <div class="text-xs text-text-muted mb-1">Total kilómetros</div>
+                        <div class="text-xl font-semibold font-mono">
                             {{ number_format(auth()->user()->workouts()->sum('distance'), 1) }} km
                         </div>
                     </div>
@@ -222,28 +232,4 @@
             </x-card>
         </div>
     </section>
-
-    <style>
-        @media (max-width: 1024px) {
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            header > div:last-child {
-                width: 100%;
-            }
-            section:first-of-type {
-                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            }
-            section:last-of-type {
-                grid-template-columns: minmax(0, 1fr) !important;
-            }
-        }
-
-        @media (max-width: 600px) {
-            section:first-of-type {
-                grid-template-columns: minmax(0, 1fr) !important;
-            }
-        }
-    </style>
 </x-app-layout>

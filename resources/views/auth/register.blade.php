@@ -1,29 +1,23 @@
 <x-guest-layout>
-    <section style="max-width:520px;width:100%;margin:0 auto;">
-        <div style="text-align:center;margin-bottom:1.75rem;">
-            <div class="badge" style="margin-bottom:.75rem;display:inline-flex;">
+    <section class="max-w-xl w-full mx-auto">
+        <div class="text-center mb-7">
+            <div class="badge mb-3 inline-flex">
                 <span>{{ isset($businessName) ? 'Unirse a ' . $businessName : 'Nuevo en MiEntreno' }}</span>
             </div>
-            <h1 style="font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.7rem;margin-bottom:.4rem;">
+            <h1 class="font-display text-responsive-2xl mb-2">
                 Crear cuenta
             </h1>
-            <p style="font-size:.9rem;color:var(--text-muted);">
+            <p class="text-responsive-sm text-text-muted">
                 @if(isset($businessName))
-                    Te estás registrando en <strong>{{ $businessName }}</strong>
+                    Te estás registrando en <strong class="text-text-main">{{ $businessName }}</strong>
                 @else
                     Empezá a registrar tus kilómetros y seguí tus objetivos.
                 @endif
             </p>
         </div>
 
-        <form method="POST" action="{{ route('register') }}" style="
-            background:rgba(15,23,42,.9);
-            border-radius:1rem;
-            padding:1.5rem;
-            border:1px solid var(--border-subtle);
-            display:grid;
-            gap:1rem;
-        ">
+        <form method="POST" action="{{ route('register') }}"
+              class="card p-6 grid gap-4">
             @csrf
 
             @if(isset($invitationToken))
@@ -31,49 +25,34 @@
             @endif
 
             @if ($errors->any())
-                <div style="padding:.75rem;background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.3);border-radius:.6rem;font-size:.85rem;color:#ff6b6b;">
+                <div class="px-3 py-3 bg-accent-primary bg-opacity-10 border border-accent-primary border-opacity-30
+                            rounded-btn text-sm text-[#ff6b6b]">
                     @foreach ($errors->all() as $error)
                         <div>{{ $error }}</div>
                     @endforeach
                 </div>
             @endif
 
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label for="name" style="display:block;font-size:.8rem;margin-bottom:.25rem;">Nombre</label>
+                    <label for="name" class="form-label">Nombre</label>
                     <input
                         id="name"
                         name="name"
                         type="text"
                         required
                         value="{{ old('name') }}"
-                        style="
-                            width:100%;
-                            padding:.6rem .75rem;
-                            border-radius:.6rem;
-                            border:1px solid #1F2937;
-                            background:#050814;
-                            color:var(--text-main);
-                            font-size:.9rem;
-                        "
+                        class="form-input"
                     >
                 </div>
 
                 <div>
-                    <label for="role" style="display:block;font-size:.8rem;margin-bottom:.25rem;">Tipo de usuario</label>
+                    <label for="role" class="form-label">Tipo de usuario</label>
                     <select
                         id="role"
                         name="role"
                         required
-                        style="
-                            width:100%;
-                            padding:.6rem .75rem;
-                            border-radius:.6rem;
-                            border:1px solid #1F2937;
-                            background:#050814;
-                            color:var(--text-main);
-                            font-size:.9rem;
-                        "
+                        class="form-select"
                     >
                         <option value="runner" {{ old('role') === 'runner' ? 'selected' : '' }}>Runner / Alumno</option>
                         <option value="coach" {{ old('role') === 'coach' ? 'selected' : '' }}>Entrenador</option>
@@ -82,72 +61,50 @@
             </div>
 
             <div>
-                <label for="email" style="display:block;font-size:.8rem;margin-bottom:.25rem;">Email</label>
+                <label for="email" class="form-label">Email</label>
                 <input
                     id="email"
                     name="email"
                     type="email"
                     required
                     value="{{ old('email') }}"
-                    style="
-                        width:100%;
-                        padding:.6rem .75rem;
-                        border-radius:.6rem;
-                        border:1px solid #1F2937;
-                        background:#050814;
-                        color:var(--text-main);
-                        font-size:.9rem;
-                    "
+                    class="form-input"
                 >
             </div>
 
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label for="password" style="display:block;font-size:.8rem;margin-bottom:.25rem;">Password</label>
+                    <label for="password" class="form-label">Password</label>
                     <input
                         id="password"
                         name="password"
                         type="password"
                         required
-                        style="
-                            width:100%;
-                            padding:.6rem .75rem;
-                            border-radius:.6rem;
-                            border:1px solid #1F2937;
-                            background:#050814;
-                            color:var(--text-main);
-                            font-size:.9rem;
-                        "
+                        class="form-input"
                     >
                 </div>
                 <div>
-                    <label for="password_confirmation" style="display:block;font-size:.8rem;margin-bottom:.25rem;">Repetir password</label>
+                    <label for="password_confirmation" class="form-label">Repetir password</label>
                     <input
                         id="password_confirmation"
                         name="password_confirmation"
                         type="password"
                         required
-                        style="
-                            width:100%;
-                            padding:.6rem .75rem;
-                            border-radius:.6rem;
-                            border:1px solid #1F2937;
-                            background:#050814;
-                            color:var(--text-main);
-                            font-size:.9rem;
-                        "
+                        class="form-input"
                     >
                 </div>
             </div>
 
-            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">
+            <button type="submit" class="btn-primary w-full justify-center">
                 Crear cuenta
             </button>
         </form>
 
-        <p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);text-align:center;">
+        <p class="mt-4 text-responsive-xs text-text-muted text-center">
             ¿Ya tenés cuenta?
-            <a href="{{ route('login') }}" style="color:var(--accent-primary);">Iniciar sesión</a>
+            <a href="{{ route('login') }}" class="text-accent-primary hover:text-accent-primary/80 transition-colors">
+                Iniciar sesión
+            </a>
         </p>
     </section>
 </x-guest-layout>
