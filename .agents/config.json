@@ -1,0 +1,508 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "MiEntreno",
+    "type": "laravel-app",
+    "stack": ["Laravel 12", "PHP 8.2", "Blade", "Tailwind CSS 3", "MySQL", "PHPUnit"]
+  },
+  "orchestrator": {
+    "name": "OrchestatorAgent",
+    "role": "Coordina y decide qué agentes activar según complejidad",
+    "plan_file": ".agents/PLAN.md",
+    "session_log": "docs/SESSION_LOG.md",
+    "decision_rules": {
+      "trivial": "Single agent (typos, small fixes, documentation)",
+      "moderate": "2-3 specialized agents in parallel (CRUD, feature modules)",
+      "complex": "Full multi-agent system (complete sprints, system-wide changes)"
+    }
+  },
+  "agents": {
+    "architecture": {
+      "id": "arch",
+      "name": "ArchitectureAgent",
+      "role": "Software Architect",
+      "emoji": "🏗️",
+      "description": "Diseña estructura de datos, relaciones y decisiones arquitectónicas",
+      "knowledge_base": [
+        "docs/ARCHITECTURE.md",
+        "docs/PLAN_DESARROLLO_2025.md",
+        "docs/README.md"
+      ],
+      "responsibilities": [
+        "Diseñar nuevas entidades y tablas",
+        "Definir relaciones entre modelos",
+        "Asegurar coherencia con arquitectura existente",
+        "Validar multi-tenancy en nuevas features",
+        "Actualizar ARCHITECTURE.md cuando sea necesario",
+        "Decidir estructura de campos JSON",
+        "Planificar migraciones complejas"
+      ],
+      "conventions": [
+        "Multi-tenancy: Todas las entidades bajo business_id",
+        "Roles: runner, coach, admin",
+        "JSON fields para datos flexibles (settings, schedule, metadata)",
+        "Timestamps automáticos en todas las tablas",
+        "Soft deletes donde aplique (usuarios, entrenamientos)",
+        "Indices en: business_id, user_id, foreign keys, date fields"
+      ],
+      "trigger_keywords": [
+        "diseñar",
+        "arquitectura",
+        "modelo",
+        "entidad",
+        "relaciones",
+        "tabla",
+        "migración",
+        "estructura"
+      ],
+      "output_format": "Design document en PLAN.md con diagrama de relaciones"
+    },
+    "backend": {
+      "id": "back",
+      "name": "BackendAgent",
+      "role": "Laravel Backend Developer",
+      "emoji": "⚙️",
+      "description": "Implementa lógica de servidor con Laravel",
+      "knowledge_base": [
+        "CLAUDE.md",
+        "app/Models/*.php",
+        "app/Services/*.php",
+        "app/Http/Controllers/**/*.php",
+        "app/Policies/*.php"
+      ],
+      "responsibilities": [
+        "Crear migraciones con php artisan make:migration",
+        "Implementar modelos Eloquent con relaciones",
+        "Crear controllers siguiendo patrón CRUD",
+        "Implementar Form Requests para validación",
+        "Crear Services para lógica de negocio compleja",
+        "Implementar Policies para autorización",
+        "Configurar rutas en web.php (duales: con/sin business)",
+        "Aplicar middleware correcto (business.context, auth, coach)",
+        "Usar eager loading para prevenir N+1"
+      ],
+      "conventions": [
+        "Form Requests en app/Http/Requests/ (nunca validación inline)",
+        "Services en app/Services/ para lógica compleja",
+        "Policies en app/Policies/ para autorización",
+        "Usar Model::query() en vez de DB::",
+        "Relaciones con type hints (public function user(): BelongsTo)",
+        "Scopes útiles (thisWeek, forUser, active)",
+        "Accessors para campos calculados (formatted_*, label)",
+        "Casts en método casts() del modelo",
+        "Constructor property promotion en PHP 8",
+        "Explicit return types en todos los métodos"
+      ],
+      "patterns": {
+        "crud_controller": [
+          "index() - lista paginada con filtros",
+          "create() - formulario",
+          "store(StoreRequest) - validación y creación",
+          "show($id) - detalle",
+          "edit($id) - formulario edición",
+          "update(UpdateRequest, $id) - validación y actualización",
+          "destroy($id) - eliminación"
+        ],
+        "service_pattern": [
+          "Métodos públicos con return types",
+          "Inyección de dependencias en constructor",
+          "Métodos privados para lógica interna",
+          "Retornar arrays/collections, no responses"
+        ]
+      },
+      "trigger_keywords": [
+        "controller",
+        "modelo",
+        "migration",
+        "service",
+        "policy",
+        "ruta",
+        "endpoint",
+        "CRUD",
+        "backend",
+        "API"
+      ],
+      "tools": [
+        "php artisan make:model",
+        "php artisan make:controller",
+        "php artisan make:migration",
+        "php artisan make:request",
+        "php artisan make:policy",
+        "vendor/bin/pint --dirty"
+      ],
+      "output_format": "Código PHP formateado con Pint"
+    },
+    "frontend": {
+      "id": "front",
+      "name": "FrontendAgent",
+      "role": "Blade & Tailwind Frontend Developer",
+      "emoji": "🎨",
+      "description": "Crea interfaces con Blade y Tailwind CSS",
+      "knowledge_base": [
+        "resources/views/components/*.blade.php",
+        "resources/views/layouts/app.blade.php",
+        "resources/views/workouts/*.blade.php",
+        "resources/views/coach/*.blade.php",
+        "Tailwind CSS v3 conventions"
+      ],
+      "responsibilities": [
+        "Crear vistas Blade para CRUD",
+        "Usar componentes existentes (x-card, x-metric-card, x-button)",
+        "Aplicar Tailwind CSS siguiendo convenciones",
+        "Implementar formularios con validación client-side",
+        "Crear estados vacíos (empty states)",
+        "Diseño responsive mobile-first",
+        "Implementar dark mode si aplica",
+        "JavaScript vanilla para interactividad (Alpine.js opcional)"
+      ],
+      "conventions": [
+        "Usar componentes Blade reutilizables SIEMPRE que sea posible",
+        "Tailwind: gap para spacing (NUNCA margins en listas)",
+        "Colores: primary (blue), success (green), danger (red), warning (yellow)",
+        "Botones: usar x-button con variants (primary, secondary, ghost, danger)",
+        "Cards: usar x-card o x-metric-card con props title/subtitle",
+        "Formularios: labels descriptivos, placeholders útiles, error messages",
+        "Estados vacíos: siempre incluir cuando lista puede estar vacía",
+        "Responsive: móvil primero, breakpoints (sm, md, lg, xl)",
+        "Dark mode: usar dark: prefix si otras vistas lo usan"
+      ],
+      "components_available": {
+        "x-card": {
+          "props": ["title", "subtitle", "headerAction"],
+          "usage": "Cards genéricos con header y contenido"
+        },
+        "x-metric-card": {
+          "props": ["title", "value", "subtitle", "accent"],
+          "usage": "Métricas del dashboard con número destacado"
+        },
+        "x-button": {
+          "props": ["variant", "size", "type", "href"],
+          "variants": ["primary", "secondary", "ghost", "danger"],
+          "sizes": ["sm", "md", "lg"]
+        }
+      },
+      "view_structure": {
+        "index": "Lista con filtros, paginación, botón crear, empty state",
+        "create": "Formulario con todos los campos, botón submit/cancel",
+        "edit": "Formulario pre-cargado, botón actualizar/cancelar/eliminar",
+        "show": "Detalle con datos formateados, botones de acción"
+      },
+      "trigger_keywords": [
+        "vista",
+        "blade",
+        "formulario",
+        "componente",
+        "tailwind",
+        "UI",
+        "diseño",
+        "frontend",
+        "interfaz"
+      ],
+      "tools": [
+        "npm run build",
+        "npm run dev",
+        "Tailwind IntelliSense"
+      ],
+      "output_format": "Archivos .blade.php con Tailwind CSS v3"
+    },
+    "testing": {
+      "id": "test",
+      "name": "TestingAgent",
+      "role": "PHPUnit Testing Specialist",
+      "emoji": "🧪",
+      "description": "Asegura calidad con tests comprehensivos",
+      "knowledge_base": [
+        "tests/Feature/*.php",
+        "tests/Unit/*.php",
+        "database/factories/*.php",
+        "database/seeders/*.php"
+      ],
+      "responsibilities": [
+        "Crear feature tests para controllers",
+        "Crear unit tests para services y models",
+        "Mantener factories actualizadas",
+        "Validar policies y autorización",
+        "Tests de multi-tenancy (business_id isolation)",
+        "Tests de ownership (solo dueño puede editar)",
+        "Ejecutar suite de tests y reportar",
+        "Actualizar seeders con datos realistas"
+      ],
+      "conventions": [
+        "PHPUnit (NUNCA Pest)",
+        "Feature tests: php artisan make:test --phpunit FeatureTest",
+        "Unit tests: php artisan make:test --phpunit --unit UnitTest",
+        "Usar factories para crear modelos (nunca crear manualmente)",
+        "Test naming: test_can_do_action_description()",
+        "Arrange-Act-Assert pattern",
+        "RefreshDatabase trait en todos los tests de DB",
+        "ActingAs() para autenticación en tests",
+        "AssertStatus, assertSee, assertDatabaseHas"
+      ],
+      "test_types": {
+        "feature_controller": [
+          "test_index_displays_list_of_resources()",
+          "test_create_displays_form()",
+          "test_store_creates_new_resource()",
+          "test_edit_displays_form_with_data()",
+          "test_update_modifies_resource()",
+          "test_destroy_deletes_resource()",
+          "test_unauthorized_user_cannot_access()",
+          "test_user_cannot_modify_others_resources()"
+        ],
+        "unit_service": [
+          "test_calculation_returns_correct_result()",
+          "test_method_handles_edge_cases()",
+          "test_method_throws_exception_when_invalid()"
+        ],
+        "unit_model": [
+          "test_relationships_are_defined()",
+          "test_scopes_filter_correctly()",
+          "test_accessors_format_correctly()"
+        ]
+      },
+      "trigger_keywords": [
+        "test",
+        "testing",
+        "validar",
+        "probar",
+        "coverage",
+        "factory",
+        "seeder"
+      ],
+      "tools": [
+        "php artisan test",
+        "php artisan test --filter=TestName",
+        "php artisan make:test",
+        "php artisan make:factory"
+      ],
+      "output_format": "Tests PHPUnit con coverage report"
+    },
+    "documentation": {
+      "id": "docs",
+      "name": "DocumentationAgent",
+      "role": "Technical Documentation Writer",
+      "emoji": "📝",
+      "description": "Mantiene documentación sincronizada con el código",
+      "knowledge_base": [
+        "docs/*.md",
+        "README.md",
+        "CLAUDE.md"
+      ],
+      "responsibilities": [
+        "Actualizar PROJECT_STATUS.md después de features",
+        "Mantener ROADMAP.md con progreso de sprints",
+        "Escribir SESSION_LOG.md al final de sesiones",
+        "Actualizar ARCHITECTURE.md si cambia diseño",
+        "Crear documentación de nuevas features complejas",
+        "Mantener README.md actualizado",
+        "Documentar decisiones técnicas importantes",
+        "Escribir mensajes de commit descriptivos en español"
+      ],
+      "conventions": [
+        "Español para toda la documentación",
+        "Markdown con formato consistente",
+        "Secciones con emojis (✅, ❌, ⏳, 🎯, etc.)",
+        "Code blocks con syntax highlighting",
+        "Diagramas ASCII cuando sea útil",
+        "Links internos entre documentos",
+        "Fecha de actualización al final de docs"
+      ],
+      "documents": {
+        "PROJECT_STATUS.md": {
+          "update_when": "Después de completar feature o sprint",
+          "sections": [
+            "Estado Actual (fecha)",
+            "Lo que ya está implementado",
+            "Gaps Identificados",
+            "Próximos pasos"
+          ]
+        },
+        "ROADMAP.md": {
+          "update_when": "Al iniciar/completar sprint",
+          "format": "Checklist con ✅ y ❌"
+        },
+        "SESSION_LOG.md": {
+          "update_when": "Al final de CADA sesión de desarrollo",
+          "template": "Sesión N - Fecha - Qué se hizo - Problemas - Próximos pasos"
+        },
+        "ARCHITECTURE.md": {
+          "update_when": "Cambios en modelo de datos o decisiones arquitectónicas",
+          "sections": ["Modelo de Datos", "Relaciones", "Lógica de Negocio"]
+        }
+      },
+      "commit_message_format": {
+        "pattern": "tipo(scope): descripción en español",
+        "types": ["feat", "fix", "docs", "refactor", "test", "chore"],
+        "examples": [
+          "feat(workouts): agregar filtros por tipo y fecha",
+          "fix(goals): corregir cálculo de progreso automático",
+          "docs: actualizar SESSION_LOG con Sprint 6",
+          "refactor(services): extraer lógica de métricas a MetricsService",
+          "test(attendance): agregar tests de autorización"
+        ]
+      },
+      "trigger_keywords": [
+        "documentar",
+        "actualizar",
+        "docs",
+        "readme",
+        "session log",
+        "commit"
+      ],
+      "output_format": "Documentos Markdown en español con formato consistente"
+    },
+    "devops": {
+      "id": "ops",
+      "name": "DevOpsAgent",
+      "role": "DevOps & Deployment Specialist",
+      "emoji": "🚀",
+      "description": "Gestiona deploy, CI/CD y configuraciones de servidor",
+      "knowledge_base": [
+        "docs/DEPLOY_CPANEL.md",
+        "docs/AUTO_DEPLOY.md",
+        ".github/workflows/*.yml",
+        "deploy.sh"
+      ],
+      "responsibilities": [
+        "Ejecutar deploys a producción",
+        "Validar que assets se copien correctamente",
+        "Configurar GitHub Actions",
+        "Troubleshooting de errores de deploy",
+        "Optimizar builds y procesos",
+        "Configurar variables de entorno",
+        "Monitorear logs de producción",
+        "Backups de base de datos"
+      ],
+      "conventions": [
+        "Validar tests antes de deploy",
+        "Build de assets con npm run build",
+        "Ejecutar migraciones con backup previo",
+        "Limpiar cache después de deploy",
+        "Verificar permisos de storage/",
+        "Logs de deploy en storage/logs/deploy.log"
+      ],
+      "deploy_checklist": [
+        "1. Ejecutar php artisan test",
+        "2. Run npm run build",
+        "3. Commit y push a main",
+        "4. Esperar GitHub Actions",
+        "5. Verificar deploy en producción",
+        "6. Smoke test en URLs principales",
+        "7. Revisar logs de errores"
+      ],
+      "trigger_keywords": [
+        "deploy",
+        "producción",
+        "servidor",
+        "build",
+        "CI/CD",
+        "github actions"
+      ],
+      "tools": [
+        "gh",
+        "ssh",
+        "npm run build",
+        "composer install --no-dev",
+        "php artisan optimize"
+      ],
+      "output_format": "Deploy exitoso con reporte de status"
+    }
+  },
+  "workflows": {
+    "new_feature_complete": {
+      "name": "Feature Nueva Completa (Sprint)",
+      "complexity": "complex",
+      "agents_sequence": [
+        {
+          "phase": "1_investigation",
+          "parallel": true,
+          "agents": ["architecture", "backend", "frontend"],
+          "tasks": [
+            "Arch: Revisar ARCHITECTURE.md y diseñar entidad",
+            "Backend: Verificar modelos relacionados",
+            "Frontend: Revisar componentes disponibles"
+          ]
+        },
+        {
+          "phase": "2_design",
+          "parallel": false,
+          "agents": ["architecture"],
+          "tasks": [
+            "Arch: Crear diseño completo en PLAN.md",
+            "Arch: Esperar aprobación del usuario"
+          ]
+        },
+        {
+          "phase": "3_implementation",
+          "parallel": true,
+          "agents": ["backend", "frontend", "testing"],
+          "tasks": [
+            "Backend: Migrations, models, controllers, policies",
+            "Frontend: Vistas Blade con Tailwind",
+            "Testing: Feature tests, unit tests, factories"
+          ]
+        },
+        {
+          "phase": "4_documentation",
+          "parallel": false,
+          "agents": ["documentation"],
+          "tasks": [
+            "Docs: Actualizar PROJECT_STATUS.md",
+            "Docs: Marcar sprint como completado en ROADMAP.md",
+            "Docs: Escribir entrada en SESSION_LOG.md"
+          ]
+        }
+      ]
+    },
+    "crud_feature": {
+      "name": "Feature CRUD Modular",
+      "complexity": "moderate",
+      "agents_sequence": [
+        {
+          "phase": "design_quick",
+          "parallel": false,
+          "agents": ["architecture"],
+          "tasks": ["Diseño rápido de tabla y relaciones"]
+        },
+        {
+          "phase": "implementation",
+          "parallel": true,
+          "agents": ["backend", "frontend", "testing"],
+          "tasks": [
+            "Backend: CRUD completo",
+            "Frontend: Vistas index, create, edit",
+            "Testing: Feature tests"
+          ]
+        }
+      ]
+    },
+    "bug_fix": {
+      "name": "Bug Fix Simple",
+      "complexity": "trivial",
+      "agents_sequence": [
+        {
+          "phase": "fix",
+          "parallel": false,
+          "agents": ["backend"],
+          "tasks": [
+            "Backend: Identificar causa",
+            "Backend: Corregir código",
+            "Backend: Ejecutar tests relacionados"
+          ]
+        },
+        {
+          "phase": "log",
+          "parallel": false,
+          "agents": ["documentation"],
+          "tasks": ["Docs: Actualizar SESSION_LOG.md con fix"]
+        }
+      ]
+    }
+  },
+  "communication": {
+    "plan_updates": "Cada agente actualiza PLAN.md con su progreso",
+    "handoffs": "Agentes dejan notas para el siguiente agente",
+    "blockers": "Si un agente se bloquea, notifica al orchestrator",
+    "integration": "Orchestrator revisa trabajo antes de integrar"
+  }
+}
