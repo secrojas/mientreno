@@ -1,93 +1,103 @@
 #!/bin/bash
 set -e
 
-# Script de deploy para cPanel
-# Ubicación en servidor: /home/srojasw1/deploy_mientreno.sh
-# Uso: ./deploy_mientreno.sh
-
-# Variables de entorno necesarias
+# ================================
+# CONFIG
+# ================================
 export HOME="/home/srojasw1"
 export COMPOSER_HOME="$HOME/.composer"
 
-REPO="/home/srojasw1/repositories/mientreno"
-APP_DEST="/home/srojasw1/public_html/mientreno/app"
-PUBLIC_DEST="/home/srojasw1/public_html/mientreno/public"
+APP_DIR="/home/srojasw1/public_html/mientreno/app"
+PUBLIC_DIR="/home/srojasw1/public_html/mientreno/public"
+PHP_BIN="/opt/cpanel/ea-php84/root/usr/bin/php"
+COMPOSER_BIN="/home/srojasw1/bin/composer"
 
-echo ">> Pull del repo"
-cd "$REPO"
-git pull origin main
+echo "======================================"
+echo "🚀 Deploy MiEntreno iniciado"
+echo "======================================"
 
-echo ">> Deploy APP (Laravel core)"
-APP_ITEMS=(artisan app bootstrap config database routes resources composer.json composer.lock package.json vite.config.*)
+# ================================
+# 1. UPDATE CODE (CLAVE)
+# ================================
+echo ">> Actualizando código desde Git"
 
-for item in "${APP_ITEMS[@]}"; do
-  matches=($REPO/$item)
-  if [ -e "${matches[0]}" ]; then
-    # borramos solo si existe en destino
-    [ -e "$APP_DEST/$item" ] && rm -rf "$APP_DEST/$item"
-    cp -a ${matches[@]} "$APP_DEST/"
-  fi
-done
+cd "$APP_DIR"
 
-echo ">> Deploy PUBLIC (docroot, sin tocar storage ni index.php)"
-mkdir -p "$PUBLIC_DEST"
+git fetch origin
+git reset --hard origin/main
+git clean -fd
 
-if [ -d "$REPO/public" ]; then
-  for item in "$REPO/public/"*; do
-    name=$(basename "$item")
+echo "✅ Código actualizado"
 
-    # JAMÁS tocar storage (symlink / uploads)
-    if [ "$name" = "storage" ]; then
-      continue
-    fi
+# ================================
+# 2. DEPENDENCIAS PHP
+# ================================
+echo ">> Instalando dependencias PHP"
 
-    # NO tocar index.php (tiene rutas custom para producción)
-    if [ "$name" = "index.php" ]; then
-      continue
-    fi
+$COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction
 
-    # borramos solo lo versionado
-    [ -e "$PUBLIC_DEST/$name" ] && rm -rf "$PUBLIC_DEST/$name"
-    cp -a "$item" "$PUBLIC_DEST/"
-  done
-fi
+echo "✅ Composer OK"
 
-echo ">> Composer install"
-cd "$APP_DEST"
-/home/srojasw1/bin/composer install --no-dev --optimize-autoloader --no-interaction
+# ================================
+# 3. VALIDAR BUILD (VITE)
+# ================================
+echo ">> Verificando assets compilados"
 
-echo ">> Verificar assets compilados"
-# IMPORTANTE: npm no está disponible en este hosting
-# Los assets DEBEN compilarse localmente ANTES de hacer push:
-#   1. Ejecutar en local: npm run build
-#   2. Verificar que public/build/ contiene los archivos
-#   3. Hacer commit (están versionados gracias a .gitignore líneas 36-38)
-#   4. Push y deploy
-# El directorio public/build se copia automáticamente en el paso de deploy PUBLIC
-
-if [ ! -d "$REPO/public/build" ] || [ ! -f "$REPO/public/build/manifest.json" ]; then
-  echo "❌ ERROR: Assets no compilados. Ejecutá 'npm run build' localmente antes de hacer push."
+if [ ! -d "$APP_DIR/public/build" ] || [ ! -f "$APP_DIR/public/build/manifest.json" ]; then
+  echo "❌ ERROR: Faltan assets compilados"
+  echo "👉 Ejecutá 'npm run build' en local y hacé commit"
   exit 1
 fi
 
-echo "✅ Assets encontrados: $(ls -1 $REPO/public/build/assets/ | wc -l) archivos"
+echo "✅ Assets detectados"
 
-echo ">> Copiar assets compilados a APP/public/build"
-# Laravel busca los assets en APP_DEST/public/build/, no solo en PUBLIC_DEST
-mkdir -p "$APP_DEST/public"
-rm -rf "$APP_DEST/public/build"
-cp -a "$REPO/public/build" "$APP_DEST/public/"
-echo "✅ Assets copiados a $APP_DEST/public/build/"
+# ================================
+# 4. SINCRONIZAR PUBLIC (DOCROOT)
+# ================================
+echo ">> Sincronizando carpeta public"
 
-echo ">> Optimizaciones Laravel"
-/opt/cpanel/ea-php84/root/usr/bin/php artisan config:cache
-/opt/cpanel/ea-php84/root/usr/bin/php artisan route:cache
-/opt/cpanel/ea-php84/root/usr/bin/php artisan view:cache
+mkdir -p "$PUBLIC_DIR"
 
-echo ">> Permisos"
-chmod -R 775 storage bootstrap/cache
+rsync -av --delete \
+  --exclude="storage" \
+  --exclude="index.php" \
+  "$APP_DIR/public/" "$PUBLIC_DIR/"
 
-echo "✅ Deploy completado"
+echo "✅ Public sincronizado"
+
+# ================================
+# 5. LIMPIAR Y RECACHEAR LARAVEL
+# ================================
+echo ">> Limpiando caches"
+
+$PHP_BIN artisan optimize:clear
+
+echo ">> Cacheando configuración"
+
+$PHP_BIN artisan config:cache
+$PHP_BIN artisan route:cache
+$PHP_BIN artisan view:cache
+
+echo "✅ Laravel optimizado"
+
+# ================================
+# 6. PERMISOS
+# ================================
+echo ">> Ajustando permisos"
+
+chmod -R 775 "$APP_DIR/storage"
+chmod -R 775 "$APP_DIR/bootstrap/cache"
+
+echo "✅ Permisos OK"
+
+# ================================
+# DONE
+# ================================
 echo ""
-echo "Siguiente paso: Si hay migraciones nuevas, ejecutar:"
-echo "  cd $APP_DEST && /opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force"
+echo "======================================"
+echo "✅ Deploy completado correctamente"
+echo "======================================"
+echo ""
+
+echo "Si hay migraciones pendientes ejecutar:"
+echo "cd $APP_DIR && $PHP_BIN artisan migrate --force"
