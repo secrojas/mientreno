@@ -232,7 +232,7 @@ test(scope): descripción
 
 ## 📝 Licencia
 
-[Por definir]
+[Por definir por el momento, pero probablemente MIT o GPL]
 
 ---
 
