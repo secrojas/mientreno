@@ -58,10 +58,25 @@ echo ">> Sincronizando carpeta public"
 
 mkdir -p "$PUBLIC_DIR"
 
-rsync -av --delete \
-  --exclude="storage" \
-  --exclude="index.php" \
-  "$APP_DIR/public/" "$PUBLIC_DIR/"
+for item in "$APP_DIR/public/"*; do
+  name=$(basename "$item")
+
+  # NO tocar storage
+  if [ "$name" = "storage" ]; then
+    continue
+  fi
+
+  # NO tocar index.php
+  if [ "$name" = "index.php" ]; then
+    continue
+  fi
+
+  # borrar lo existente
+  [ -e "$PUBLIC_DIR/$name" ] && rm -rf "$PUBLIC_DIR/$name"
+
+  # copiar nuevo
+  cp -a "$item" "$PUBLIC_DIR/"
+done
 
 echo "✅ Public sincronizado"
 
