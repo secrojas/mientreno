@@ -14,6 +14,79 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 - Implementar tests para Controllers restantes
 - Agregar índices de base de datos para optimización
 - Implementar Redis para cache distribuido
+- Integración con Strava (OAuth + sync de actividades)
+
+---
+
+## [2026-06-03] - Módulo de Salud Médica 🏥
+
+### ✨ Agregado
+
+**Nuevo módulo `/salud` para gestión de estudios médicos:**
+- Sección accesible desde el sidebar (sección "Cuenta") junto a Mi Perfil
+- Apto médico destacado con badge dinámico: `VIGENTE` / `POR VENCER` (≤30 días) / `VENCIDO`
+- Muestra días restantes o días desde vencimiento automáticamente
+- Resumen de entrenamiento para el cardiólogo: km totales, tiempo total, cantidad de sesiones, fecha de primer entreno (datos históricos completos)
+- Comparativo "este año" en cada métrica del resumen
+- Formulario colapsible (Alpine.js) para subir documentos PDF
+- Lista de documentos con íconos por tipo, badge de tipo, fechas y confirmación de borrado inline
+
+**6 tipos de documentos soportados:**
+- Análisis de Sangre, Ergometría, Electrocardiograma, Ecocardiograma Doppler, Apto Médico, Otro
+
+**Seguridad:**
+- Archivos guardados en disco privado (`local`), nunca en `public`
+- Servidos via controller con verificación de ownership (403 para acceso cruzado)
+
+### 🔧 Archivos Creados
+- `app/Enums/MedicalDocumentType.php` — enum con labels y badge classes
+- `app/Models/MedicalDocument.php` — modelo con `isExpired()`, `isExpiringSoon()`, `daysUntilExpiry`
+- `app/Http/Controllers/MedicalController.php` — index, store, download, destroy
+- `app/Http/Requests/StoreMedicalDocumentRequest.php` — validación PDF max 10MB
+- `database/migrations/2026_06_03_000001_create_medical_documents_table.php`
+- `database/factories/MedicalDocumentFactory.php`
+- `resources/views/medical/index.blade.php`
+- `tests/Feature/MedicalControllerTest.php` — 10 tests, 24 assertions, todos pasan ✅
+
+### 🔧 Archivos Modificados
+- `app/Models/User.php` — relación `medicalDocuments()`
+- `routes/web.php` — rutas `/salud/*` bajo prefix `medical.*`
+- `resources/views/layouts/app.blade.php` — link "Salud Médica" en sidebar
+
+---
+
+## [2026-03-27] - Rediseño Visual de PDFs de Reportes 🎨
+
+### ✨ Agregado / Mejorado
+
+**Rediseño completo de templates PDF (semanal y mensual):**
+- Header dark profesional (`#0A0B0F`) con barra de acento roja y logotipo MI·ENTRENO
+- Hero section con KM total en grande (34pt, verde brillante `#2DE38E`) y badge de tendencia semántico
+- Distribución por tipo con barras de progreso proporcionales coloreadas por tipo
+- Tabla comparativa con header oscuro, filas alternadas y columna de tendencia
+- Insights en grid de 2 columnas para aprovechar espacio (semanal)
+- Página 2 del mensual con mini-header y tabla completa de entrenamientos
+- Fuente `DejaVu Sans` para soporte completo de caracteres Unicode
+
+### 🐛 Bugs Corregidos
+
+**Dificultad mostrando entidades HTML como texto literal:**
+- Causa: `{{ str_repeat('&#9679;', $n) }}` dentro de Blade `{{ }}` escapa el `&`
+- Fix: caracteres UTF-8 directos `{{ str_repeat('●', $n) }}` / `{{ str_repeat('○', $n) }}`
+
+**Flechas de tendencia mostrando texto literal (`&#8593;`):**
+- Causa: mismo problema de escape en ternario PHP dentro de `{{ }}`
+- Fix: `{{ ($cond) ? '↑ Mejora' : '↓ Declive' }}` con UTF-8 directo
+
+**PDF semanal desbordando a página 2:**
+- Fix: reducción de paddings (~40%), KM de 48pt → 34pt, notas truncadas a 120 chars con `mb_strimwidth`
+
+**PDF mensual desbordando a página 3:**
+- Fix: mismas reducciones de spacing, notas truncadas
+
+### 🔧 Archivos Modificados
+- `resources/views/reports/pdf/weekly.blade.php` — rediseño completo
+- `resources/views/reports/pdf/monthly.blade.php` — rediseño completo
 
 ---
 

@@ -6,7 +6,7 @@
 
 ---
 
-## Estado Actual (2025-12-29)
+## Estado Actual (2026-06-03)
 
 ### ✨ FASE 2 COMPLETADA - Races & Goals ✅
 ### ✨ UX IMPROVEMENTS COMPLETADAS ✅
@@ -18,6 +18,7 @@
 ### ✨ SPRINT 4 - CORRECCIONES Y MEJORAS ✅ (2025-12-22)
 ### ✨ SPRINT 5 COMPLETADO - Sistema de Suscripciones ✅ (2025-12-23)
 ### ✨ TESTING & PERFORMANCE SPRINT COMPLETADO ✅ (2025-12-29)
+### ✨ MÓDULO SALUD MÉDICA COMPLETADO ✅ (2026-06-03)
 
 ### Lo que ya está implementado
 
@@ -1914,6 +1915,35 @@ public function boot(): void
 - Implementar Redis para cache distribuido (producción)
 - Monitorear queries lentas con Laravel Telescope
 - Optimizar eager loading en relaciones complejas
+
+---
+
+#### 25. Módulo de Salud Médica 🏥 (2026-06-03)
+
+**Objetivo:** Centralizar estudios médicos y brindar un resumen de entrenamiento para mostrar al cardiólogo.
+
+**Funcionalidades:**
+- Sección `/salud` accesible desde sidebar (sección "Cuenta")
+- Apto médico destacado con estado dinámico (VIGENTE / POR VENCER / VENCIDO)
+- Resumen histórico para el cardiólogo: km totales, tiempo total, sesiones, desde cuándo entrena
+- Subida y gestión de PDFs médicos privados (disco `local`, no público)
+- Confirmación inline de borrado con Alpine.js
+- 6 tipos: Análisis de Sangre, Ergometría, ECG, Ecocardiograma Doppler, Apto Médico, Otro
+
+**Modelos y datos:**
+- `MedicalDocument`: `user_id`, `type` (enum), `title`, `notes`, `file_path`, `original_name`, `issued_at`, `expires_at`
+- Enum `MedicalDocumentType` con `label()` y `badgeClass()`
+- `isExpired()`, `isExpiringSoon()`, `daysUntilExpiry` en el modelo
+
+**Archivos:**
+- `app/Enums/MedicalDocumentType.php`
+- `app/Models/MedicalDocument.php`
+- `app/Http/Controllers/MedicalController.php`
+- `app/Http/Requests/StoreMedicalDocumentRequest.php`
+- `database/migrations/2026_06_03_000001_create_medical_documents_table.php`
+- `database/factories/MedicalDocumentFactory.php`
+- `resources/views/medical/index.blade.php`
+- `tests/Feature/MedicalControllerTest.php` — 10 tests ✅
 
 ---
 

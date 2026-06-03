@@ -54,6 +54,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/monthly/{year}/{month}/share', [\App\Http\Controllers\ReportController::class, 'shareMonthly'])->name('monthly.share');
     });
 
+    // Medical records
+    Route::prefix('salud')->name('medical.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\MedicalController::class, 'index'])->name('index');
+        Route::prefix('documentos')->name('documents.')->group(function () {
+            Route::post('/', [\App\Http\Controllers\MedicalController::class, 'store'])->name('store');
+            Route::get('/{document}/descargar', [\App\Http\Controllers\MedicalController::class, 'download'])->name('download');
+            Route::delete('/{document}', [\App\Http\Controllers\MedicalController::class, 'destroy'])->name('destroy');
+        });
+    });
+
     // Coach routes (sin prefijo business, para creación de business)
     Route::prefix('coach')->name('coach.')->middleware('coach')->group(function () {
         Route::get('/business/create', [\App\Http\Controllers\Coach\BusinessController::class, 'create'])->name('business.create');

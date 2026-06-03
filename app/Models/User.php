@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -70,7 +71,7 @@ class User extends Authenticatable
     public function getAvatarUrlAttribute(): string
     {
         if ($this->avatar) {
-            return asset('storage/' . $this->avatar);
+            return asset('storage/'.$this->avatar);
         }
 
         // Fallback a iniciales
@@ -82,7 +83,7 @@ class User extends Authenticatable
      */
     public function getGenderLabelAttribute(): string
     {
-        return match($this->gender) {
+        return match ($this->gender) {
             'male' => 'Masculino',
             'female' => 'Femenino',
             'other' => 'Otro',
@@ -109,5 +110,10 @@ class User extends Authenticatable
     public function goals()
     {
         return $this->hasMany(Goal::class);
+    }
+
+    public function medicalDocuments(): HasMany
+    {
+        return $this->hasMany(MedicalDocument::class);
     }
 }
