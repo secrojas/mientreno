@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use App\Enums\MedicalDocumentType;
 use App\Http\Requests\StoreMedicalDocumentRequest;
 use App\Models\MedicalDocument;
+use App\Models\ReportShare;
 use App\Services\MetricsService;
+use App\Services\ReportService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,7 +18,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MedicalController extends Controller
 {
-    public function __construct(private MetricsService $metricsService) {}
+    public function __construct(
+        private MetricsService $metricsService,
+        private ReportService $reportService,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -76,5 +83,53 @@ class MedicalController extends Controller
         $document->delete();
 
         return back()->with('status', 'document-deleted');
+    }
+
+    public function report(Request $request): View
+    {
+        $user = $request->user();
+        $report = $this->reportService->getMedicalReport($user);
+        $fitnessCertificate = $user->medicalDocuments()
+            ->where('type', MedicalDocumentType::FitnessCertificate)
+            ->orderByDesc('issued_at')
+            ->first();
+
+        return view('medical.report', compact('report', 'fitnessCertificate'));
+    }
+
+    public function exportReportPDF(Request $request): \Illuminate\Http\Response
+    {
+        $user = $request->user();
+        $report = $this->reportService->getMedicalReport($user);
+        $fitnessCertificate = $user->medicalDocuments()
+            ->where('type', MedicalDocumentType::FitnessCertificate)
+            ->orderByDesc('issued_at')
+            ->first();
+
+        $pdf = Pdf::loadView('medical.pdf.report', compact('report', 'user', 'fitnessCertificate'));
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'reporte-medico-'.now()->format('Y-m-d').'.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    public function shareReport(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $share = ReportShare::createShare(
+            userId: $user->id,
+            reportType: 'medical',
+            year: 0,
+            period: 0,
+            hoursValid: 168,
+        );
+
+        return response()->json([
+            'success' => true,
+            'url' => $share->getShareUrl(),
+            'expires_at' => $share->expires_at->format('d/m/Y H:i'),
+        ]);
     }
 }

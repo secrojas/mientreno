@@ -57,6 +57,9 @@ Route::middleware('auth')->group(function () {
     // Medical records
     Route::prefix('salud')->name('medical.')->group(function () {
         Route::get('/', [\App\Http\Controllers\MedicalController::class, 'index'])->name('index');
+        Route::get('/reporte', [\App\Http\Controllers\MedicalController::class, 'report'])->name('report');
+        Route::get('/reporte/pdf', [\App\Http\Controllers\MedicalController::class, 'exportReportPDF'])->name('report.pdf');
+        Route::post('/reporte/share', [\App\Http\Controllers\MedicalController::class, 'shareReport'])->name('report.share');
         Route::prefix('documentos')->name('documents.')->group(function () {
             Route::post('/', [\App\Http\Controllers\MedicalController::class, 'store'])->name('store');
             Route::get('/{document}/descargar', [\App\Http\Controllers\MedicalController::class, 'download'])->name('download');

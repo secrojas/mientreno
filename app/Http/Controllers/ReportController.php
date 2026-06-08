@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\MedicalDocumentType;
 use App\Models\ReportShare;
 use App\Services\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
@@ -135,7 +135,7 @@ class ReportController extends Controller
     {
         $share = ReportShare::findValidByToken($token);
 
-        if (!$share) {
+        if (! $share) {
             abort(404, 'Este link ha expirado o no existe.');
         }
 
@@ -151,13 +151,23 @@ class ReportController extends Controller
                 $share->year,
                 $share->period
             );
+
             return view('reports.public.weekly', compact('report', 'share'));
+        } elseif ($share->report_type === 'medical') {
+            $report = $this->reportService->getMedicalReport($user);
+            $fitnessCertificate = $user->medicalDocuments()
+                ->where('type', MedicalDocumentType::FitnessCertificate)
+                ->orderByDesc('issued_at')
+                ->first();
+
+            return view('medical.public.report', compact('report', 'share', 'fitnessCertificate'));
         } else {
             $report = $this->reportService->getMonthlyReport(
                 $user,
                 $share->year,
                 $share->period
             );
+
             return view('reports.public.monthly', compact('report', 'share'));
         }
     }

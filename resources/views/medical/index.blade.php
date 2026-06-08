@@ -150,13 +150,24 @@
 
         {{-- Resumen para el Cardiólogo --}}
         <section class="mb-8">
-            <h2 class="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-accent-secondary mb-4">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                </svg>
-                Resumen de Entrenamiento
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-accent-secondary">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    Resumen de Entrenamiento
+                </h2>
                 <span class="flex-1 h-px bg-gradient-to-r from-accent-secondary/30 to-transparent"></span>
-            </h2>
+                <a href="{{ route('medical.report') }}" class="btn-primary text-xs shrink-0">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="12" y1="18" x2="12" y2="12"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
+                    </svg>
+                    Ver Reporte Completo
+                </a>
+            </div>
             <p class="text-xs text-text-muted mb-4">Datos de todos tus entrenamientos completados · Para compartir con tu cardiólogo.</p>
 
             @php

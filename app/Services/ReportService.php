@@ -389,6 +389,84 @@ class ReportService
     }
 
     /**
+     * Obtener reporte médico completo (todos los años)
+     */
+    public function getMedicalReport(User $user): array
+    {
+        $cacheKey = "report_medical_user_{$user->id}";
+
+        return Cache::remember($cacheKey, now()->addMinutes(15), function () use ($user) {
+            return $this->generateMedicalReport($user);
+        });
+    }
+
+    /**
+     * Generar reporte médico
+     */
+    protected function generateMedicalReport(User $user): array
+    {
+        $allWorkouts = $user->workouts()->completed()->orderBy('date', 'asc')->get();
+
+        return [
+            'global_summary' => $this->calculateSummary($allWorkouts),
+            'monthly_breakdown' => $this->getMonthlyBreakdown($allWorkouts),
+            'top_workouts' => $allWorkouts->sortByDesc('distance')->take(10)->values(),
+            'hr_stats' => $this->getHeartRateStats($allWorkouts),
+            'distribution' => $this->getWorkoutDistribution($allWorkouts),
+            'first_workout' => $allWorkouts->first(),
+            'generated_at' => now(),
+        ];
+    }
+
+    /**
+     * Descomponer workouts en tabla mes × año
+     */
+    protected function getMonthlyBreakdown(Collection $workouts): array
+    {
+        return $workouts
+            ->groupBy(fn ($w) => $w->date->format('Y'))
+            ->map(function ($yearWorkouts, $year) {
+                return $yearWorkouts
+                    ->groupBy(fn ($w) => (int) $w->date->format('n'))
+                    ->map(function ($monthWorkouts, $month) use ($year) {
+                        $summary = $this->calculateSummary($monthWorkouts);
+                        $withHR = $monthWorkouts->whereNotNull('avg_heart_rate')->where('avg_heart_rate', '>', 0);
+
+                        return array_merge($summary, [
+                            'year' => (int) $year,
+                            'month' => (int) $month,
+                            'month_name' => ucfirst(Carbon::createFromDate((int) $year, (int) $month, 1)->locale('es')->monthName),
+                            'avg_heart_rate_month' => $withHR->isNotEmpty() ? round($withHR->avg('avg_heart_rate')) : null,
+                        ]);
+                    })
+                    ->sortKeys()
+                    ->values()
+                    ->toArray();
+            })
+            ->sortKeys()
+            ->toArray();
+    }
+
+    /**
+     * Estadísticas de frecuencia cardíaca globales
+     */
+    protected function getHeartRateStats(Collection $workouts): array
+    {
+        $withHR = $workouts->whereNotNull('avg_heart_rate')->where('avg_heart_rate', '>', 0);
+
+        if ($withHR->isEmpty()) {
+            return [];
+        }
+
+        return [
+            'overall_avg' => round($withHR->avg('avg_heart_rate')),
+            'max' => $withHR->max('avg_heart_rate'),
+            'min' => $withHR->min('avg_heart_rate'),
+            'sessions_with_hr' => $withHR->count(),
+        ];
+    }
+
+    /**
      * Calcular racha de días consecutivos dentro de un período
      */
     protected function calculatePeriodStreak(Collection $workouts): int
