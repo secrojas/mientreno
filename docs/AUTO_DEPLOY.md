@@ -195,17 +195,19 @@ cd /home/srojasw1/repositories/mientreno
 git log -1 --oneline
 ```
 
-### Si hay Migraciones Nuevas
+### Migraciones (automáticas desde 2026-09-01)
 
-El auto-deploy **NO ejecuta migraciones automáticamente** por seguridad. Después de un deploy con migraciones, ejecutar manualmente:
+**Actualizado 2026-09-01:** el deploy ahora ejecuta `artisan migrate --force` automáticamente (entre `optimize:clear` y el recacheo final). No hace falta correrlas a mano después de un push normal.
+
+Este cambio se hizo después de que un deploy dejara `/profile` y `/salud` en 500 porque 8 migraciones (algunas de meses atrás) nunca se habían aplicado — el script las dejaba como paso manual y era fácil olvidarse.
+
+Si por algún motivo necesitás verificar o forzar el estado de las migraciones igual:
 
 ```bash
-# Por SSH
-ssh mientreno-prod
-cd /home/srojasw1/public_html/mientreno/app
-/opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force
+# Ver estado (sin aplicar nada)
+ssh mientreno-prod "cd /home/srojasw1/public_html/mientreno/app && /opt/cpanel/ea-php84/root/usr/bin/php artisan migrate:status"
 
-# O en una línea desde tu PC
+# Forzar aplicación manual
 ssh mientreno-prod "cd /home/srojasw1/public_html/mientreno/app && /opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force"
 ```
 
@@ -277,15 +279,28 @@ jobs:
           fi
 ```
 
-### 4. Script de Deploy: `/home/srojasw1/deploy_mientreno.sh`
+### 4. Script de Deploy
 
-Script bash que:
-- Hace `git pull origin main` del repositorio
-- Copia archivos de Laravel a producción (sin tocar `.env`, `storage`, `index.php`)
+**Actualizado 2026-09-01 — ahora son dos archivos, no uno:**
+
+- **`/home/srojasw1/deploy_mientreno.sh`** (fuera del repo, en el home del usuario): es el que el webhook realmente ejecuta. Desde el 2026-09-01 es un **wrapper de una línea** — no editar acá:
+  ```bash
+  #!/bin/bash
+  set -e
+  exec bash /home/srojasw1/public_html/mientreno/app/deploy_cpanel.sh
+  ```
+- **`deploy_cpanel.sh`** (versionado, en la raíz del repo — queda en `$APP_DIR/deploy_cpanel.sh` en producción): acá van todos los cambios al proceso de deploy. Editarlo, commitear y pushear alcanza; el wrapper siempre delega a la versión que esté en `$APP_DIR` en ese momento.
+
+**Por qué el cambio:** antes del 2026-09-01 existían dos copias independientes del script (una versionada, otra no) que había que sincronizar a mano cada vez — se olvidaba, y un fix al script quedaba "muerto" sin efecto real. Ver troubleshooting más abajo.
+
+El script (`deploy_cpanel.sh`) hace, en orden:
+- `git fetch` + `git reset --hard origin/main` directamente en `$APP_DIR` (el propio directorio de la app en producción, no hay un repo separado que copiar)
 - Instala dependencias de Composer con rutas absolutas
 - **NO ejecuta npm** (los assets se compilan localmente)
 - Verifica que los assets compilados existan (falla si no)
-- **Copia assets a dos destinos**: `PUBLIC_DEST/build/` y `APP_DEST/public/build/`
+- Sincroniza `public/` al docroot real (sin tocar `storage` ni `index.php`)
+- `optimize:clear`
+- **`artisan migrate --force`** (automático desde 2026-09-01)
 - Cachea configuración, rutas y vistas de Laravel
 - Ajusta permisos de `storage` y `bootstrap/cache`
 
@@ -293,9 +308,46 @@ Script bash que:
 - Usa rutas absolutas para `composer` y `php` (compatibilidad con webhook)
 - Exporta variables de entorno `HOME` y `COMPOSER_HOME`
 - No requiere npm en producción (assets vienen compilados desde local)
-- Los assets se copian a **dos ubicaciones** porque Laravel/Vite busca manifests en `app/public/build/`
+
+> ⚠️ La sección "Script de Deploy" de `DEPLOY_CPANEL.md` describe una arquitectura anterior con un repo separado en `/home/srojasw1/repositories/mientreno` y copia dual de assets — ya no refleja el script real. Para el contenido exacto y actualizado, revisar `deploy_cpanel.sh` en la raíz del repo directamente.
+
+### 5. Red de seguridad: `deploy_check.sh` (cron, desde 2026-09-01)
+
+El webhook depende de que un request HTTP entrante llegue limpio hasta `DeployController` — y el WAF del hosting a veces lo bloquea (ver troubleshooting). Como respaldo, hay un cron cada 5 minutos en producción:
+
+```
+*/5 * * * * /bin/bash /home/srojasw1/deploy_check.sh >> /home/srojasw1/deploy_check.log 2>&1
+```
+
+`deploy_check.sh` (fuera del repo, en `/home/srojasw1/`) hace `git fetch origin main`, compara `git rev-parse HEAD` contra `origin/main`, y si difieren corre `bash /home/srojasw1/deploy_mientreno.sh`. No depende de ningún request entrante, así que el WAF no tiene forma de bloquearlo. Log en `/home/srojasw1/deploy_check.log`.
+
+En el peor caso (webhook bloqueado), el deploy tarda máximo 5 minutos en vez de quedar colgado indefinidamente sin que nadie lo note.
 
 ## Troubleshooting
+
+### El workflow muestra "success" pero los cambios no llegan a producción
+
+**Descubierto 2026-09-01.** Esta es la causa más engañosa porque GitHub Actions no reporta ningún error.
+
+**Causa:** el WAF del hosting (parece Imunify360) intercepta el POST al webhook con una página de verificación anti-bot antes de que llegue a Laravel. El curl del workflow recibe HTTP 200, pero el `body` es el HTML de esa página ("Please wait while your request is being verified..."), no la respuesta JSON real de `DeployController`. Como el workflow solo chequea el status code, marca el run como exitoso aunque el deploy nunca se haya ejecutado.
+
+**Cómo detectarlo:**
+```bash
+gh run view <run-id> --log | grep -A 5 "HTTP Status"
+# Si el "Response:" es HTML con "verified" o un spinner, es el WAF, no Laravel
+```
+
+**Solución inmediata:** correr el deploy manualmente por SSH (no depende del webhook):
+```bash
+ssh mientreno-prod "bash /home/srojasw1/deploy_mientreno.sh"
+```
+
+**Solución de fondo (ya implementada desde 2026-09-01):** el cron `deploy_check.sh` (ver arriba) agarra el cambio en máximo 5 minutos sin depender del webhook. Si el WAF empieza a bloquear sistemáticamente (no solo intermitente), hay que revisar la config de Imunify360/WAF en el panel de administración del hosting para excluir la ruta `/deploy/webhook` — eso requiere acceso al panel, no solo SSH de usuario.
+
+**Cómo confirmar qué commit está realmente corriendo en el servidor:**
+```bash
+ssh mientreno-prod "cd /home/srojasw1/public_html/mientreno/app && git log --oneline -1"
+```
 
 ### Workflow falla con "Unauthorized" (401)
 
@@ -538,9 +590,10 @@ Posibles mejoras al sistema:
 - [ ] Commit con mensaje descriptivo: `git commit -m "..."`
 
 ### Después de Push
-- [ ] Verificar GitHub Actions (verde ✅)
+- [ ] Verificar GitHub Actions (verde ✅) — pero recordar que "verde" no garantiza que el deploy real haya corrido (ver troubleshooting del WAF)
 - [ ] Verificar app en producción (https://mientreno.srojasweb.dev)
-- [ ] Si hay migraciones, ejecutarlas manualmente
+- [ ] Si dudás de que haya llegado, confirmar el commit real: `ssh mientreno-prod "cd /home/srojasw1/public_html/mientreno/app && git log --oneline -1"`
+- [ ] Las migraciones ya corren automáticas — no hace falta ejecutarlas a mano
 - [ ] Revisar logs por errores: `tail -50 storage/logs/laravel.log`
 - [ ] Probar funcionalidad nueva
 
@@ -598,11 +651,24 @@ grep "Deploy:" /home/srojasw1/public_html/mientreno/app/storage/logs/laravel.log
 ssh mientreno-prod "bash /home/srojasw1/deploy_mientreno.sh"
 
 # ========================================
-# MIGRACIONES (DESPUÉS DE AUTO-DEPLOY)
+# MIGRACIONES (ya automáticas — solo para chequear/forzar)
 # ========================================
 
-# Ejecutar migraciones
+# Ver estado sin aplicar nada
+ssh mientreno-prod "cd /home/srojasw1/public_html/mientreno/app && /opt/cpanel/ea-php84/root/usr/bin/php artisan migrate:status"
+
+# Forzar aplicación manual
 ssh mientreno-prod "cd /home/srojasw1/public_html/mientreno/app && /opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force"
+
+# ========================================
+# CONFIRMAR QUÉ COMMIT ESTÁ REALMENTE EN PROD
+# (útil si el workflow dio "success" pero dudás)
+# ========================================
+
+ssh mientreno-prod "cd /home/srojasw1/public_html/mientreno/app && git log --oneline -1"
+
+# Ver log del cron de respaldo (deploy_check.sh, corre cada 5 min)
+ssh mientreno-prod "tail -30 /home/srojasw1/deploy_check.log"
 ```
 
 ## Soporte

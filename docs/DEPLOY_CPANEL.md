@@ -145,7 +145,9 @@ bash /home/srojasw1/deploy_mientreno.sh
 
 ## Script de Deploy
 
-**Ubicación:** `/home/srojasw1/deploy_mientreno.sh`
+> ⚠️ **Desactualizado desde 2026-09-01.** Lo que sigue en esta sección describe una arquitectura anterior (repo separado en `/home/srojasw1/repositories/mientreno`, copia dual de assets a dos destinos) que ya no coincide con el script real. Desde el 2026-09-01, `/home/srojasw1/deploy_mientreno.sh` es un wrapper de una línea que delega a `deploy_cpanel.sh` (versionado en la raíz de este repo). Para el contenido exacto y actualizado del proceso de deploy — incluida la ejecución automática de migraciones y el cron de respaldo contra bloqueos del WAF — ver **`docs/AUTO_DEPLOY.md`** (secciones "4. Script de Deploy" y "5. Red de seguridad") y el archivo `deploy_cpanel.sh` en la raíz del repo directamente. El contenido de abajo se deja como referencia histórica.
+
+**Ubicación (histórica):** `/home/srojasw1/deploy_mientreno.sh`
 
 El script actualizado (sin npm - los assets se compilan localmente antes del push):
 
@@ -432,17 +434,13 @@ Ver [AUTO_DEPLOY.md](AUTO_DEPLOY.md) para configurar GitHub Actions y el webhook
    - Revisar que el workflow de GitHub Actions pasó (salió verde ✅)
    - Verificar en https://mientreno.srojasweb.dev que los cambios estén aplicados
 
-### Si hay Migraciones Nuevas
+### Migraciones (automáticas desde 2026-09-01)
 
-Después del auto-deploy, ejecutar manualmente:
+El deploy ya ejecuta `artisan migrate --force` automáticamente — no hace falta correrlas a mano después de un push normal. Ver `docs/AUTO_DEPLOY.md` para el detalle de por qué se cambió esto y cómo verificar el estado si hace falta.
 
 ```bash
-# Por SSH
-ssh mientreno-prod
-cd /home/srojasw1/public_html/mientreno/app
-/opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force
-
-# O en una sola línea desde tu PC
+# Solo si necesitás verificar o forzar manualmente
+ssh mientreno-prod "cd /home/srojasw1/public_html/mientreno/app && /opt/cpanel/ea-php84/root/usr/bin/php artisan migrate:status"
 ssh mientreno-prod "cd /home/srojasw1/public_html/mientreno/app && /opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force"
 ```
 
@@ -563,6 +561,8 @@ chmod -R 775 bootstrap/cache
 ```
 
 ### Auto-deploy no funciona
+
+**Primero:** si GitHub Actions dice "success" pero los cambios no aparecen en producción, probablemente NO es un fallo del workflow — es el WAF del hosting interceptando el webhook. Ver "El workflow muestra success pero los cambios no llegan a producción" en `docs/AUTO_DEPLOY.md`. El cron de respaldo (`deploy_check.sh`) debería agarrarlo solo en máximo 5 minutos; si no, correr el deploy a mano: `ssh mientreno-prod "bash /home/srojasw1/deploy_mientreno.sh"`.
 
 1. **Verificar GitHub Actions:**
    - Ve a la pestaña "Actions" en GitHub
@@ -685,15 +685,16 @@ find . -name "*.log" -mtime +30 -delete
 ### Automático (Normal)
 - [ ] Assets compilados: `npm run build`
 - [ ] Código commiteado y pusheado: `git push origin main`
-- [ ] Verificar que GitHub Actions pasó (verde ✅)
+- [ ] Verificar que GitHub Actions pasó (verde ✅) — ojo: "verde" no garantiza que llegó (ver troubleshooting del WAF en `AUTO_DEPLOY.md`)
+- [ ] Si dudás, confirmar el commit real en el servidor: `ssh mientreno-prod "cd /home/srojasw1/public_html/mientreno/app && git log --oneline -1"`
 - [ ] Verificar que la app funcione en el navegador
-- [ ] Si hay migraciones, ejecutarlas manualmente
+- [ ] Las migraciones ya corren automáticas
 - [ ] Revisar logs por errores
 
 ### Manual (Emergencia)
 - [ ] Conectar por SSH o Terminal de cPanel
-- [ ] Ejecutar: `bash /home/srojasw1/deploy_mientreno.sh`
-- [ ] Ejecutar migraciones si hay nuevas
+- [ ] Ejecutar: `bash /home/srojasw1/deploy_mientreno.sh` (wrapper — delega a `deploy_cpanel.sh` del repo)
+- [ ] Las migraciones ya corren automáticas dentro del script
 - [ ] Verificar que la app funcione
 - [ ] Revisar logs por errores
 
@@ -704,11 +705,15 @@ find . -name "*.log" -mtime +30 -delete
 ssh mientreno-prod                    # Conectar por SSH
 
 # DEPLOY
-bash /home/srojasw1/deploy_mientreno.sh  # Deploy manual
+bash /home/srojasw1/deploy_mientreno.sh  # Deploy manual (wrapper -> deploy_cpanel.sh del repo)
 
-# MIGRACIONES
+# MIGRACIONES (ya automáticas en el deploy — esto es solo para forzar/verificar)
 cd /home/srojasw1/public_html/mientreno/app
+/opt/cpanel/ea-php84/root/usr/bin/php artisan migrate:status
 /opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force
+
+# LOG DEL CRON DE RESPALDO (deploy_check.sh, corre cada 5 min)
+tail -30 /home/srojasw1/deploy_check.log
 
 # CACHÉS
 /opt/cpanel/ea-php84/root/usr/bin/php artisan config:cache

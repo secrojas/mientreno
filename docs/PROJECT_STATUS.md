@@ -6,7 +6,7 @@
 
 ---
 
-## Estado Actual (2026-06-03)
+## Estado Actual (2026-09-01)
 
 ### ✨ FASE 2 COMPLETADA - Races & Goals ✅
 ### ✨ UX IMPROVEMENTS COMPLETADAS ✅
@@ -19,6 +19,8 @@
 ### ✨ SPRINT 5 COMPLETADO - Sistema de Suscripciones ✅ (2025-12-23)
 ### ✨ TESTING & PERFORMANCE SPRINT COMPLETADO ✅ (2025-12-29)
 ### ✨ MÓDULO SALUD MÉDICA COMPLETADO ✅ (2026-06-03)
+### ✨ SALUD MÉDICA AMPLIADA — Médicos, Órdenes, Reportes Compartibles ✅ (2026-09-01)
+### ✨ DEPLOY AUTOMÁTICO ROBUSTECIDO — Migraciones + Cron de Respaldo ✅ (2026-09-01)
 
 ### Lo que ya está implementado
 
@@ -1944,6 +1946,62 @@ public function boot(): void
 - `database/factories/MedicalDocumentFactory.php`
 - `resources/views/medical/index.blade.php`
 - `tests/Feature/MedicalControllerTest.php` — 10 tests ✅
+
+---
+
+#### 26. Ampliación del Módulo de Salud Médica (2026-09-01)
+
+**Objetivo:** El módulo original (#25) cubría solo apto médico + subida básica de estudios. Se amplió sustancialmente a pedido del usuario, que necesitaba llevarle una batería de estudios reales a su médico clínico.
+
+**A) Preview en modal y edición de documentos:**
+- "Ver" ahora abre el PDF en un modal (`<iframe>`, `Content-Disposition: inline`) en vez de forzar descarga — ruta `medical.documents.preview`
+- Edición inline por documento con reemplazo opcional del archivo — `UpdateMedicalDocumentRequest` + `MedicalController::update()`
+
+**B) 4 tipos de estudio nuevos** en `MedicalDocumentType`: Placa de Tórax (`chest_xray`), Ecografía Abdominal (`abdominal_ultrasound`), Tomografía Computada (`ct_scan`), Resonancia Magnética (`mri`) — con label, badge de color e ícono propio.
+
+**C) ABM de médicos** (`Doctor`): nombre, especialidad, teléfono, email, consultorio, notas. Vinculable a estudios, órdenes y reportes agrupados vía `doctor_id` nullable.
+
+**D) Obra social en el perfil**: `health_insurance_provider`, `health_insurance_plan`, `health_insurance_member_number` en `users`, editables en `/profile`, visibles en el header de los reportes médicos compartidos.
+> ⚠️ **Nota técnica:** `resources/views/profile/edit.blade.php` NO usa el partial de Breeze `profile/partials/update-profile-information-form.blade.php` (quedó sin uso desde que se reemplazó el layout de Breeze por uno custom). Cualquier campo nuevo de perfil debe agregarse directamente en `edit.blade.php`.
+
+**E) Reporte de Estudios agrupado y compartible** (`MedicalDocumentGroup`):
+- Se seleccionan estudios ya cargados, se agrupan con título/médico destinatario/notas, y se comparte por link (7 días) reutilizando el mismo `ReportShare` que ya existía para los reportes semanal/mensual/médico (`report_type='medical_documents_group'`)
+- El link público muestra cada estudio con preview individual + botón de descarga en ZIP (`ZipArchive` nativo de PHP)
+- **Decisión de diseño explícita:** se descartó fusionar los PDFs en un solo archivo (requeriría una librería nueva de merge y es frágil ante PDFs raros/protegidos) a favor de este enfoque de grupo + link
+- Separado a propósito del reporte de entrenamiento para el cardiólogo — sin detalle de running
+
+**F) Submódulo de Órdenes Médicas** (`MedicalOrder`, `/salud/ordenes`): historial de órdenes/certificados que el médico entrega en papel — se sube una foto (JPG/PNG) o PDF. Navegación por tabs desde `/salud`. Mismo patrón de preview/edición que los documentos. Sin estado de "cumplida" (solo historial, no fue pedido trackeo).
+
+**G) Bug fix — "POR VENCER" siempre activo:** `Carbon::diffInDays()` cambió de comportamiento en Carbon 3.10 (usado por este proyecto) — ya no es absoluto por defecto. `isExpiringSoon()` daba siempre `true` para cualquier certificado con vencimiento futuro. Corregido usando `now()->diffInDays($this->expires_at, false)` con flag de signo explícito. **Revisar el resto del código por el mismo patrón** (`diffInDays`/`diffInX` sin flag de signo) si aparecen bugs de fechas similares.
+
+**Modelos y datos nuevos:**
+- `Doctor`: `user_id`, `name`, `specialty`, `phone`, `email`, `address`, `notes`
+- `MedicalDocumentGroup`: `user_id`, `doctor_id`, `title`, `notes` — `belongsToMany(MedicalDocument)` vía pivote `medical_document_group_items`
+- `MedicalOrder`: `user_id`, `doctor_id`, `title`, `notes`, `file_path`, `original_name`, `issued_at`
+- `MedicalDocument` ampliado: `doctor_id` nullable
+- `users` ampliado: `health_insurance_provider`, `health_insurance_plan`, `health_insurance_member_number`
+- `report_shares.report_type` (ENUM de MySQL) ampliado con `medical_documents_group`
+
+**Archivos principales:**
+- `app/Models/{Doctor,MedicalDocumentGroup,MedicalOrder}.php`
+- `app/Http/Controllers/{DoctorController,MedicalDocumentGroupController,MedicalOrderController}.php`
+- `resources/views/medical/orders.blade.php`, `resources/views/medical/public/documents-group.blade.php`
+- 8 migraciones nuevas + `tests/Feature/{DoctorControllerTest,MedicalDocumentGroupControllerTest,MedicalOrderControllerTest}.php` + `tests/Unit/MedicalDocumentTest.php` — 48 tests nuevos/ampliados ✅
+
+**Ver:** `docs/SESSION_LOG.md` → Sesión 10 (2026-09-01) para el detalle completo, incluido el debugging de producción.
+
+---
+
+#### 27. Deploy Automático Robustecido — Migraciones + Cron de Respaldo (2026-09-01)
+
+**Contexto:** tras desplegar la ampliación de salud médica, `/profile` y `/salud` tiraban 500 en producción porque las 8 migraciones nuevas nunca se aplicaron — el script de deploy las dejaba como paso manual a propósito.
+
+**Cambios implementados:**
+1. **Migraciones automáticas**: `deploy_cpanel.sh` corre `artisan migrate --force` entre `optimize:clear` y el recacheo final
+2. **Wrapper unificado**: `/home/srojasw1/deploy_mientreno.sh` (lo que el webhook ejecuta realmente, fuera del repo) era una copia independiente de `deploy_cpanel.sh` que había que sincronizar a mano — se convirtió en un wrapper de una línea que siempre delega al script versionado
+3. **Cron de respaldo contra el WAF**: se descubrió que el WAF del hosting (parece Imunify360) intercepta el webhook de forma intermitente con una página de verificación anti-bot — GitHub Actions ve HTTP 200 pero es el HTML del challenge, no la respuesta real de `DeployController`, y el deploy nunca se ejecuta en esos casos sin que nada lo reporte como error. Se agregó `deploy_check.sh`, corrido cada 5 minutos por cron en el servidor, que compara el commit local contra `origin/main` y dispara el deploy si difieren — no depende de ningún request HTTP entrante, así que el WAF no lo puede bloquear
+
+**Status:** ✅ RESUELTO — documentado en detalle en `docs/AUTO_DEPLOY.md` y `docs/DEPLOY_CPANEL.md`
 
 ---
 
