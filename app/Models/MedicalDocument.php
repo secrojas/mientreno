@@ -60,7 +60,7 @@ class MedicalDocument extends Model
             return false;
         }
 
-        return $this->expires_at->diffInDays(now()) <= 30;
+        return now()->diffInDays($this->expires_at, false) <= 30;
     }
 
     public function getDaysUntilExpiryAttribute(): ?int
