@@ -81,12 +81,26 @@ done
 echo "✅ Public sincronizado"
 
 # ================================
-# 5. LIMPIAR Y RECACHEAR LARAVEL
+# 5. LIMPIAR CACHES PREVIOS
 # ================================
 echo ">> Limpiando caches"
 
 $PHP_BIN artisan optimize:clear
 
+echo "✅ Caches limpiados"
+
+# ================================
+# 6. MIGRACIONES
+# ================================
+echo ">> Ejecutando migraciones pendientes"
+
+$PHP_BIN artisan migrate --force
+
+echo "✅ Migraciones OK"
+
+# ================================
+# 7. RECACHEAR LARAVEL
+# ================================
 echo ">> Cacheando configuración"
 
 $PHP_BIN artisan config:cache
@@ -96,7 +110,7 @@ $PHP_BIN artisan view:cache
 echo "✅ Laravel optimizado"
 
 # ================================
-# 6. PERMISOS
+# 8. PERMISOS
 # ================================
 echo ">> Ajustando permisos"
 
@@ -110,9 +124,5 @@ echo "✅ Permisos OK"
 # ================================
 echo ""
 echo "======================================"
-echo "✅ Deploy completado correctamente"
+echo "✅ Deploy completado correctamente (código + migraciones)"
 echo "======================================"
-echo ""
-
-echo "Si hay migraciones pendientes ejecutar:"
-echo "cd $APP_DIR && $PHP_BIN artisan migrate --force"
