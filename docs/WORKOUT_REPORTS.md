@@ -241,6 +241,40 @@ Route::middleware('auth')->prefix('reports')->name('reports.')->group(function (
 
 ---
 
+### ✅ FASE 2.5 - Rediseño Visual PDFs (COMPLETADA 2026-03-27)
+
+**Motivación:** Los PDFs originales eran funcionales pero visualmente pobres. Se rediseñaron desde cero con criterio de diseño profesional.
+
+**Diseño aplicado:**
+- Header dark (`#0A0B0F`) con barra de acento roja (`#FF3B5C`) y logotipo MI·ENTRENO
+- Hero section: KM total en `34pt` verde brillante (`#2DE38E`), badge de tendencia con colores semánticos
+- Distribución por tipo: barras CSS proporcionales con colores por tipo de entrenamiento
+- Tabla de comparativa: header dark, filas alternadas light/gris
+- Insights en grid 2 columnas (PDF semanal)
+- Página 2 con mini-header oscuro y tabla completa de entrenamientos
+
+**Restricciones de DomPDF documentadas:**
+- No soporta `flexbox` ni CSS Grid → usar `display: table` / `display: table-cell`
+- Fuente usada: `DejaVu Sans` (bundled en DomPDF) → soporte Unicode completo (●, ○, ↑, ↓)
+- HTML entities dentro de `{{ }}` Blade son escapadas (& → &amp;) → usar UTF-8 directo
+
+**Bug crítico resuelto — dificultad con entidades HTML:**
+- ❌ `{{ str_repeat('&#9679;', $filled) }}` → renderiza `&#9679;&#9679;` como texto literal
+- ✅ `{{ str_repeat('●', $filled) }}` / `{{ str_repeat('○', $empty) }}` → UTF-8 directo
+- Mismo problema con flechas: `{{ '&#8593; Mejora' }}` → literales. Fix: `{{ '↑ Mejora' }}`
+
+**Optimización de espacio (fit en páginas):**
+- Semanal: target 1 página (con hasta ~7 workouts + notas truncadas)
+- Mensual: target 2 páginas (página 1 = stats/comparativa/distribución, página 2 = tabla)
+- Reducción de paddings: header `18px` → `12px`, hero `18px` → `12px`, KM `44-48pt` → `34pt`
+- Notas truncadas: `mb_strimwidth($workout->notes, 0, 120, '…')`
+
+**Archivos modificados:**
+- `resources/views/reports/pdf/weekly.blade.php` — rediseño completo
+- `resources/views/reports/pdf/monthly.blade.php` — rediseño completo
+
+---
+
 ### ✅ FASE 2 - Exportación PDF (COMPLETADA 2025-12-15)
 
 **Setup:**
@@ -865,15 +899,16 @@ Route::middleware('auth')->prefix('reports')->name('reports.')->group(function (
 
 **✅ Fase 1 - Core Report Views: COMPLETADA** (2025-12-15)
 **✅ Fase 2 - Exportación PDF: COMPLETADA** (2025-12-15)
+**✅ Fase 2.5 - Rediseño Visual PDFs: COMPLETADA** (2026-03-27)
 **✅ Fase 3 - Links Compartibles: COMPLETADA** (2025-12-15)
 **⏸️ Fase 4 - Gráficos y Visualizaciones: Pendiente** (~2 horas estimadas)
 **⏸️ Fase 5 - Comparativas Avanzadas: Pendiente** (~2.5 horas estimadas)
 **⏸️ Fase 6 - UX Enhancements: Pendiente** (~2 horas estimadas)
 
-**Progreso:** 8 de 14.5 horas completadas (55.2%)
+**Progreso:** ~10 de 14.5 horas completadas
 
 ---
 
 **Documento creado**: 2025-12-12
-**Última actualización**: 2025-12-15
-**Estado**: Fases 1, 2 y 3 completadas - Sistema completamente funcional con reportes web, PDF y links compartibles con expiración
+**Última actualización**: 2026-03-27
+**Estado**: Fases 1, 2, 2.5 y 3 completadas - PDFs con diseño profesional, corrección de bugs Unicode, optimización de espacio
