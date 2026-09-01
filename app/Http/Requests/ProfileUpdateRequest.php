@@ -31,6 +31,9 @@ class ProfileUpdateRequest extends FormRequest
             'weight' => ['nullable', 'numeric', 'min:20', 'max:300'],
             'height' => ['nullable', 'integer', 'min:100', 'max:250'],
             'bio' => ['nullable', 'string', 'max:150'],
+            'health_insurance_provider' => ['nullable', 'string', 'max:255'],
+            'health_insurance_plan' => ['nullable', 'string', 'max:255'],
+            'health_insurance_member_number' => ['nullable', 'string', 'max:100'],
         ];
     }
 }

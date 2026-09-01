@@ -41,6 +41,15 @@
         </span>
     </div>
 
+    @if($share->user->health_insurance_provider || $share->user->health_insurance_plan || $share->user->health_insurance_member_number)
+        <div style="border:1px solid var(--border-subtle);border-radius:0.5rem;padding:0.85rem 1.25rem;margin-bottom:1.5rem;font-size:0.85rem;color:#94A3B8;">
+            <strong style="color:var(--text-main);">Obra Social:</strong>
+            {{ $share->user->health_insurance_provider ?: '—' }}
+            @if($share->user->health_insurance_plan) &bull; Plan {{ $share->user->health_insurance_plan }} @endif
+            @if($share->user->health_insurance_member_number) &bull; N° Credencial: {{ $share->user->health_insurance_member_number }} @endif
+        </div>
+    @endif
+
     {{-- TOTALES --}}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;">
         <x-metric-card

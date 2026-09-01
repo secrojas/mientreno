@@ -62,8 +62,29 @@ Route::middleware('auth')->group(function () {
         Route::post('/reporte/share', [\App\Http\Controllers\MedicalController::class, 'shareReport'])->name('report.share');
         Route::prefix('documentos')->name('documents.')->group(function () {
             Route::post('/', [\App\Http\Controllers\MedicalController::class, 'store'])->name('store');
+            Route::put('/{document}', [\App\Http\Controllers\MedicalController::class, 'update'])->name('update');
             Route::get('/{document}/descargar', [\App\Http\Controllers\MedicalController::class, 'download'])->name('download');
+            Route::get('/{document}/preview', [\App\Http\Controllers\MedicalController::class, 'preview'])->name('preview');
             Route::delete('/{document}', [\App\Http\Controllers\MedicalController::class, 'destroy'])->name('destroy');
+        });
+        Route::prefix('medicos')->name('doctors.')->group(function () {
+            Route::post('/', [\App\Http\Controllers\DoctorController::class, 'store'])->name('store');
+            Route::put('/{doctor}', [\App\Http\Controllers\DoctorController::class, 'update'])->name('update');
+            Route::delete('/{doctor}', [\App\Http\Controllers\DoctorController::class, 'destroy'])->name('destroy');
+        });
+        Route::prefix('ordenes')->name('orders.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\MedicalOrderController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\MedicalOrderController::class, 'store'])->name('store');
+            Route::put('/{order}', [\App\Http\Controllers\MedicalOrderController::class, 'update'])->name('update');
+            Route::get('/{order}/descargar', [\App\Http\Controllers\MedicalOrderController::class, 'download'])->name('download');
+            Route::get('/{order}/preview', [\App\Http\Controllers\MedicalOrderController::class, 'preview'])->name('preview');
+            Route::delete('/{order}', [\App\Http\Controllers\MedicalOrderController::class, 'destroy'])->name('destroy');
+        });
+        Route::prefix('grupos')->name('groups.')->group(function () {
+            Route::post('/', [\App\Http\Controllers\MedicalDocumentGroupController::class, 'store'])->name('store');
+            Route::post('/{group}/share', [\App\Http\Controllers\MedicalDocumentGroupController::class, 'share'])->name('share');
+            Route::get('/{group}/zip', [\App\Http\Controllers\MedicalDocumentGroupController::class, 'downloadZip'])->name('zip');
+            Route::delete('/{group}', [\App\Http\Controllers\MedicalDocumentGroupController::class, 'destroy'])->name('destroy');
         });
     });
 
@@ -132,6 +153,8 @@ Route::prefix('{business}')->name('business.')->middleware(['auth', 'business.co
 
 // Public shared report (no auth required)
 Route::get('/share/{token}', [\App\Http\Controllers\ReportController::class, 'showShared'])->name('reports.shared');
+Route::get('/share/{token}/zip', [\App\Http\Controllers\MedicalDocumentGroupController::class, 'downloadSharedZip'])->name('medical.groups.shared-zip');
+Route::get('/share/{token}/documento/{document}', [\App\Http\Controllers\MedicalDocumentGroupController::class, 'previewSharedDocument'])->name('medical.groups.shared-document-preview');
 
 // Deploy webhook (no auth required, uses token)
 Route::post('/deploy/webhook', [\App\Http\Controllers\DeployController::class, 'deploy'])->name('deploy.webhook');

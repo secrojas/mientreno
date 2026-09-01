@@ -170,6 +170,33 @@
                                 </div>
                             </section>
 
+                            <!-- Obra Social -->
+                            <section>
+                                <h3 class="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-accent-secondary mb-6">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                        <path d="M12 8v8M8 12h8"></path>
+                                    </svg>
+                                    Obra Social
+                                    <span class="flex-1 h-px bg-gradient-to-r from-accent-secondary/30 to-transparent"></span>
+                                </h3>
+                                <p class="text-xs text-text-muted -mt-4 mb-6">Estos datos aparecen en los reportes médicos que compartís.</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                    <div>
+                                        <label for="health_insurance_provider" class="form-label">Obra Social</label>
+                                        <input type="text" id="health_insurance_provider" name="health_insurance_provider" value="{{ old('health_insurance_provider', $user->health_insurance_provider) }}" placeholder="ej: OSDE" class="form-input">
+                                    </div>
+                                    <div>
+                                        <label for="health_insurance_plan" class="form-label">Plan</label>
+                                        <input type="text" id="health_insurance_plan" name="health_insurance_plan" value="{{ old('health_insurance_plan', $user->health_insurance_plan) }}" placeholder="ej: 310" class="form-input">
+                                    </div>
+                                    <div>
+                                        <label for="health_insurance_member_number" class="form-label">N° de Credencial</label>
+                                        <input type="text" id="health_insurance_member_number" name="health_insurance_member_number" value="{{ old('health_insurance_member_number', $user->health_insurance_member_number) }}" class="form-input">
+                                    </div>
+                                </div>
+                            </section>
+
                             <!-- Bio -->
                             <section>
                                 <h3 class="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-accent-secondary mb-6">

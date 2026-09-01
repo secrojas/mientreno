@@ -30,6 +30,9 @@ class User extends Authenticatable
         'weight',
         'height',
         'bio',
+        'health_insurance_provider',
+        'health_insurance_plan',
+        'health_insurance_member_number',
     ];
 
     /**
@@ -115,5 +118,20 @@ class User extends Authenticatable
     public function medicalDocuments(): HasMany
     {
         return $this->hasMany(MedicalDocument::class);
+    }
+
+    public function doctors(): HasMany
+    {
+        return $this->hasMany(Doctor::class);
+    }
+
+    public function medicalDocumentGroups(): HasMany
+    {
+        return $this->hasMany(MedicalDocumentGroup::class);
+    }
+
+    public function medicalOrders(): HasMany
+    {
+        return $this->hasMany(MedicalOrder::class);
     }
 }

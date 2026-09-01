@@ -6,6 +6,7 @@ use App\Enums\MedicalDocumentType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class MedicalDocument extends Model
 {
@@ -13,6 +14,7 @@ class MedicalDocument extends Model
 
     protected $fillable = [
         'user_id',
+        'doctor_id',
         'type',
         'title',
         'notes',
@@ -34,6 +36,17 @@ class MedicalDocument extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function doctor(): BelongsTo
+    {
+        return $this->belongsTo(Doctor::class);
+    }
+
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(MedicalDocumentGroup::class, 'medical_document_group_items')
+            ->withTimestamps();
     }
 
     public function isExpired(): bool

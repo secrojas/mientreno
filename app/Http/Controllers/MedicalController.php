@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\MedicalDocumentType;
 use App\Http\Requests\StoreMedicalDocumentRequest;
+use App\Http\Requests\UpdateMedicalDocumentRequest;
 use App\Models\MedicalDocument;
 use App\Models\ReportShare;
 use App\Services\MetricsService;
@@ -28,6 +29,7 @@ class MedicalController extends Controller
         $user = $request->user();
 
         $documents = $user->medicalDocuments()
+            ->with('doctor')
             ->orderByDesc('issued_at')
             ->orderByDesc('created_at')
             ->get();
@@ -35,6 +37,13 @@ class MedicalController extends Controller
         $fitnessCertificate = $documents
             ->where('type', MedicalDocumentType::FitnessCertificate)
             ->first();
+
+        $doctors = $user->doctors()->orderBy('name')->get();
+
+        $documentGroups = $user->medicalDocumentGroups()
+            ->with('doctor', 'documents')
+            ->latest()
+            ->get();
 
         $totalMetrics = $this->metricsService->getTotalMetrics($user);
         $yearlyMetrics = $this->metricsService->getYearlyMetrics($user);
@@ -44,6 +53,8 @@ class MedicalController extends Controller
             'user',
             'documents',
             'fitnessCertificate',
+            'doctors',
+            'documentGroups',
             'totalMetrics',
             'yearlyMetrics',
             'firstWorkout'
@@ -56,6 +67,7 @@ class MedicalController extends Controller
         $path = $file->store('medical/'.$request->user()->id, 'local');
 
         $request->user()->medicalDocuments()->create([
+            'doctor_id' => $request->doctor_id ?: null,
             'type' => $request->type,
             'title' => $request->title,
             'notes' => $request->notes,
@@ -68,11 +80,44 @@ class MedicalController extends Controller
         return back()->with('status', 'document-uploaded');
     }
 
+    public function update(UpdateMedicalDocumentRequest $request, MedicalDocument $document): RedirectResponse
+    {
+        $data = [
+            'doctor_id' => $request->doctor_id ?: null,
+            'type' => $request->type,
+            'title' => $request->title,
+            'notes' => $request->notes,
+            'issued_at' => $request->issued_at ?: null,
+            'expires_at' => $request->expires_at ?: null,
+        ];
+
+        if ($request->hasFile('document')) {
+            Storage::disk('local')->delete($document->file_path);
+
+            $file = $request->file('document');
+            $data['file_path'] = $file->store('medical/'.$document->user_id, 'local');
+            $data['original_name'] = $file->getClientOriginalName();
+        }
+
+        $document->update($data);
+
+        return back()->with('status', 'document-updated');
+    }
+
     public function download(MedicalDocument $document): StreamedResponse
     {
         abort_if($document->user_id !== auth()->id(), 403);
 
         return Storage::disk('local')->download($document->file_path, $document->original_name);
+    }
+
+    public function preview(MedicalDocument $document): \Symfony\Component\HttpFoundation\Response
+    {
+        abort_if($document->user_id !== auth()->id(), 403);
+
+        return Storage::disk('local')->response($document->file_path, $document->original_name, [
+            'Content-Disposition' => 'inline; filename="'.$document->original_name.'"',
+        ]);
     }
 
     public function destroy(MedicalDocument $document): RedirectResponse

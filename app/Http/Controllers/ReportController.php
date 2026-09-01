@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\MedicalDocumentType;
+use App\Models\MedicalDocumentGroup;
 use App\Models\ReportShare;
 use App\Services\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -161,6 +162,12 @@ class ReportController extends Controller
                 ->first();
 
             return view('medical.public.report', compact('report', 'share', 'fitnessCertificate'));
+        } elseif ($share->report_type === 'medical_documents_group') {
+            $group = MedicalDocumentGroup::with(['doctor', 'documents' => function ($query) {
+                $query->orderByDesc('issued_at');
+            }])->findOrFail($share->period);
+
+            return view('medical.public.documents-group', compact('group', 'share'));
         } else {
             $report = $this->reportService->getMonthlyReport(
                 $user,

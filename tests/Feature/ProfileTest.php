@@ -43,6 +43,31 @@ class ProfileTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
+    public function test_health_insurance_fields_can_be_updated(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'health_insurance_provider' => 'OSDE',
+                'health_insurance_plan' => '310',
+                'health_insurance_member_number' => '123456789',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+
+        $this->assertSame('OSDE', $user->health_insurance_provider);
+        $this->assertSame('310', $user->health_insurance_plan);
+        $this->assertSame('123456789', $user->health_insurance_member_number);
+    }
+
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
     {
         $user = User::factory()->create();
