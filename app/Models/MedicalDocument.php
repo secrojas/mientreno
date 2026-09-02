@@ -20,6 +20,7 @@ class MedicalDocument extends Model
         'notes',
         'file_path',
         'original_name',
+        'images_url',
         'issued_at',
         'expires_at',
     ];

@@ -62,6 +62,13 @@
                    style="display:inline-flex;align-items:center;gap:0.4rem;border:1px solid var(--border-subtle);color:var(--text-main);padding:0.5rem 1rem;border-radius:0.5rem;font-size:0.8rem;font-weight:600;">
                     Ver
                 </a>
+                @if($document->images_url)
+                    <a href="{{ $document->images_url }}"
+                       target="_blank" rel="noopener noreferrer"
+                       style="display:inline-flex;align-items:center;gap:0.4rem;border:1px solid var(--border-subtle);color:var(--text-main);padding:0.5rem 1rem;border-radius:0.5rem;font-size:0.8rem;font-weight:600;">
+                        Imágenes
+                    </a>
+                @endif
             </div>
         </div>
     @endforeach

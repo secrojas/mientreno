@@ -73,6 +73,7 @@ class MedicalController extends Controller
             'notes' => $request->notes,
             'file_path' => $path,
             'original_name' => $file->getClientOriginalName(),
+            'images_url' => $request->images_url ?: null,
             'issued_at' => $request->issued_at ?: null,
             'expires_at' => $request->expires_at ?: null,
         ]);
@@ -87,6 +88,7 @@ class MedicalController extends Controller
             'type' => $request->type,
             'title' => $request->title,
             'notes' => $request->notes,
+            'images_url' => $request->images_url ?: null,
             'issued_at' => $request->issued_at ?: null,
             'expires_at' => $request->expires_at ?: null,
         ];

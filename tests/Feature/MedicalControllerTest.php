@@ -310,6 +310,74 @@ class MedicalControllerTest extends TestCase
         $this->assertNotSame('Hackeado', $document->fresh()->title);
     }
 
+    public function test_store_accepts_optional_images_url(): void
+    {
+        Storage::fake('local');
+
+        $user = User::factory()->create();
+        $file = UploadedFile::fake()->create('resultado.pdf', 500, 'application/pdf');
+        $imagesUrl = 'https://imagenes.iradiologico.com.ar/portal/?urltoken=abc123';
+
+        $response = $this->actingAs($user)->post(route('medical.documents.store'), [
+            'type' => MedicalDocumentType::Echocardiogram->value,
+            'title' => 'Ecocardiograma',
+            'document' => $file,
+            'images_url' => $imagesUrl,
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('medical_documents', [
+            'user_id' => $user->id,
+            'title' => 'Ecocardiograma',
+            'images_url' => $imagesUrl,
+        ]);
+    }
+
+    public function test_store_rejects_invalid_images_url(): void
+    {
+        Storage::fake('local');
+
+        $user = User::factory()->create();
+        $file = UploadedFile::fake()->create('resultado.pdf', 500, 'application/pdf');
+
+        $response = $this->actingAs($user)->post(route('medical.documents.store'), [
+            'type' => MedicalDocumentType::Echocardiogram->value,
+            'title' => 'Ecocardiograma',
+            'document' => $file,
+            'images_url' => 'no-es-una-url',
+        ]);
+
+        $response->assertSessionHasErrors('images_url');
+    }
+
+    public function test_update_modifies_images_url(): void
+    {
+        Storage::fake('local');
+
+        $user = User::factory()->create();
+        $file = UploadedFile::fake()->create('test.pdf', 100, 'application/pdf');
+        $path = $file->store('medical/'.$user->id, 'local');
+
+        $document = MedicalDocument::factory()->create([
+            'user_id' => $user->id,
+            'file_path' => $path,
+        ]);
+
+        $imagesUrl = 'https://imagenes.iradiologico.com.ar/portal/?urltoken=xyz789';
+
+        $response = $this->actingAs($user)->put(route('medical.documents.update', $document), [
+            'type' => $document->type->value,
+            'title' => $document->title,
+            'images_url' => $imagesUrl,
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('medical_documents', [
+            'id' => $document->id,
+            'images_url' => $imagesUrl,
+        ]);
+    }
+
     public function test_store_accepts_optional_doctor_id(): void
     {
         Storage::fake('local');

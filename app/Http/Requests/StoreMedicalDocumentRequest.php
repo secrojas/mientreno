@@ -21,6 +21,7 @@ class StoreMedicalDocumentRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'document' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+            'images_url' => ['nullable', 'url', 'max:2048'],
             'issued_at' => ['nullable', 'date'],
             'expires_at' => ['nullable', 'date'],
             'doctor_id' => [
@@ -38,6 +39,7 @@ class StoreMedicalDocumentRequest extends FormRequest
             'document.required' => 'Seleccioná un archivo PDF.',
             'document.mimes' => 'Solo se aceptan archivos PDF.',
             'document.max' => 'El archivo no puede superar 10MB.',
+            'images_url.url' => 'Ingresá un link válido.',
         ];
     }
 }

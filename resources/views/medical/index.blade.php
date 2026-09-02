@@ -378,6 +378,19 @@
                                     <span class="text-sm text-text-muted">Seleccioná un archivo PDF</span>
                                 </label>
                             </div>
+
+                            <div class="sm:col-span-2">
+                                <label class="form-label">
+                                    Link de imágenes del estudio
+                                    <span class="text-xs text-text-muted">(opcional — ej: ecografías, radiografías)</span>
+                                </label>
+                                <input type="url"
+                                       name="images_url"
+                                       value="{{ old('images_url') }}"
+                                       placeholder="https://imagenes.iradiologico.com.ar/..."
+                                       maxlength="2048"
+                                       class="form-input">
+                            </div>
                         </div>
 
                         <div class="flex justify-end gap-3 mt-6 pt-5 border-t border-white/5">
@@ -533,6 +546,19 @@
                                 Ver
                             </button>
 
+                            @if($document->images_url)
+                                <a href="{{ $document->images_url }}"
+                                   target="_blank" rel="noopener noreferrer"
+                                   class="btn-ghost text-sm px-3 py-2">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <path d="M21 15l-5-5L5 21"/>
+                                    </svg>
+                                    Imágenes
+                                </a>
+                            @endif
+
                             <button @click="editing = !editing" class="btn-ghost text-sm px-3 py-2">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -626,6 +652,19 @@
                                 <div>
                                     <label class="form-label">Reemplazar archivo <span class="text-xs text-text-muted">(opcional)</span></label>
                                     <input type="file" name="document" accept=".pdf" class="form-input">
+                                </div>
+
+                                <div class="sm:col-span-2">
+                                    <label class="form-label">
+                                        Link de imágenes del estudio
+                                        <span class="text-xs text-text-muted">(opcional)</span>
+                                    </label>
+                                    <input type="url"
+                                           name="images_url"
+                                           value="{{ $document->images_url }}"
+                                           placeholder="https://imagenes.iradiologico.com.ar/..."
+                                           maxlength="2048"
+                                           class="form-input">
                                 </div>
 
                                 <div class="sm:col-span-2">
