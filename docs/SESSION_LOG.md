@@ -1051,4 +1051,90 @@ Sesión larga, múltiples pedidos encadenados (~4-5 horas estimadas: módulo mé
 
 ---
 
-**Última actualización**: 2026-09-01
+## Sesión 11 - 2026-09-02
+
+### Objetivos de la sesión
+- Agregar un campo de link de imágenes a los estudios médicos (muchos estudios entregan las imágenes vía un portal externo, separado del PDF de resultados)
+- Diagnosticar y corregir un bug reportado en producción: los links de documentos dentro de un reporte de estudios compartido (`/share/{token}/documento/{id}`) tiraban 404
+
+### Lo que se hizo
+
+#### 1. Link de imágenes en estudios médicos
+
+**Contexto:** estudios como ecografías o radiografías (ej. iRadiológico) entregan, además del PDF de resultados, un link de acceso a un portal de imágenes (`imagenes.iradiologico.com.ar/portal/?urltoken=...`). No había forma de guardar ese link junto al estudio.
+
+**Solución:** campo opcional `images_url` en `MedicalDocument`, junto al PDF (que sigue siendo obligatorio). Visible en:
+- Formulario de alta y edición inline en `/salud`
+- Listado propio de documentos — botón "Imágenes" que abre el link en pestaña nueva (solo si está cargado)
+- Vista pública del reporte de estudios compartido (`medical.public.documents-group`) — mismo botón, para que el médico acceda directo sin pedirlo aparte
+
+**Archivos:** migración `add_images_url_to_medical_documents_table`, `app/Models/MedicalDocument.php`, `app/Http/Requests/{Store,Update}MedicalDocumentRequest.php`, `app/Http/Controllers/MedicalController.php`, `resources/views/medical/index.blade.php`, `resources/views/medical/public/documents-group.blade.php`, `tests/Feature/MedicalControllerTest.php` (3 tests nuevos: alta con link válido, rechazo de link inválido, edición del link)
+
+#### 2. Bug fix crítico: links de estudios compartidos expiraban al instante
+
+**Problema reportado:** el usuario generó un reporte de 2 estudios (ecografía abdominal y placa de tórax), lo compartió, y al clickear en cada estudio individual (`/share/{token}/documento/7` y `/8`) obtenía 404.
+
+**Investigación:**
+- Se descartó primero la hipótesis obvia (que `git clean -fd` del script de deploy borrara los PDFs subidos) — se confirmó con `git clean -ndf` en local que los `.gitignore` anidados en `storage/app/private/` y `storage/app/public/` protegen bien esos archivos.
+- Con acceso SSH a producción (`ssh mientreno-prod`) se hizo diagnóstico de solo lectura vía `tinker`: el share existía, el grupo y el pivote documento-grupo estaban bien, y los PDFs físicamente existían en disco (`Storage::disk('local')->exists()` → `true`). Es decir, los datos y archivos estaban perfectos — el problema era la validez del share.
+- Comparando `created_at` vs `expires_at` del share se notó algo imposible: `expires_at` era ~3 horas **anterior** a `created_at`, pese a que `createShare()` siempre suma `+168 horas` (o `+24h` para otros tipos). El patrón se repetía en los 3 shares existentes en la tabla, sin importar las horas de validez usadas.
+- `SHOW CREATE TABLE report_shares` reveló la causa exacta: la columna quedó creada como `expires_at timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()`. La migración original (`create_report_shares_table`) declaraba `$table->timestamp('expires_at')` sin `nullable()` ni default explícito, y MariaDB le agregó ese `ON UPDATE` por su cuenta.
+
+**Causa raíz:** `ReportShare::incrementViews()` hace dos `UPDATE` a la fila cada vez que alguien abre el link compartido (`increment('view_count')` + `update(['last_viewed_at' => now()])`). Por el `ON UPDATE CURRENT_TIMESTAMP` de la columna, **cada uno de esos updates resetea `expires_at` al reloj del servidor MySQL**, sin que el código lo pida. Y ese reloj corre ~3 horas atrás de PHP/UTC (`@@session.time_zone = SYSTEM`, confirmado comparando `NOW()` de MySQL contra `now()` de PHP). Resultado: el share "expiraba" prácticamente en el momento de la primera vista — el usuario entraba al reporte (dispara `incrementViews`), y segundos después, al clickear un estudio puntual, el share ya figuraba vencido.
+
+**Fix:** migración `fix_report_shares_expires_at_on_update` — `$table->timestamp('expires_at')->change()` sin `useCurrent()`/`useCurrentOnUpdate()`, quitando el default y el `ON UPDATE` de la columna. Verificado en producción tras el deploy: `SHOW CREATE TABLE` ahora muestra `expires_at timestamp NOT NULL` limpio.
+
+**No hizo falta** reparar los shares viejos (ya corruptos) a mano — al haber "expirado", `createShare()` genera uno nuevo automáticamente la próxima vez que se comparte.
+
+**Ojo a futuro:** ninguna otra columna del proyecto tiene este patrón (`timestamp` NOT NULL sin `nullable()` ni default explícito) fuera de `report_shares`, pero vale revisar cualquier migración nueva que declare `$table->timestamp(...)` sin esas opciones — MariaDB puede repetir el mismo comportamiento.
+
+**Archivos:** `database/migrations/2026_09_02_165746_fix_report_shares_expires_at_on_update.php`
+
+### Decisiones tomadas
+
+1. **El PDF sigue siendo obligatorio, `images_url` es un campo adicional opcional** — no se reemplaza el mecanismo existente, se complementa
+2. **No se repararon los shares corruptos existentes en producción** — al estar ya expirados, se regeneran solos al volver a compartir; una reparación manual (UPDATE directo en prod) no aportaba nada
+3. **Diagnóstico de producción por SSH, siempre de solo lectura hasta confirmar la causa** — un intento de crear un share de prueba con `tinker` para reproducir el bug fue bloqueado por el clasificador de permisos (escritura en prod); se optó por seguir con `SHOW CREATE TABLE` y consultas de lectura en su lugar, que alcanzaron para confirmar la causa exacta
+
+### Archivos modificados/creados
+
+**Creados:**
+- `database/migrations/2026_09_02_162830_add_images_url_to_medical_documents_table.php`
+- `database/migrations/2026_09_02_165746_fix_report_shares_expires_at_on_update.php`
+
+**Modificados:**
+- `app/Models/MedicalDocument.php`
+- `app/Http/Requests/StoreMedicalDocumentRequest.php`, `UpdateMedicalDocumentRequest.php`
+- `app/Http/Controllers/MedicalController.php`
+- `resources/views/medical/index.blade.php`, `resources/views/medical/public/documents-group.blade.php`
+- `tests/Feature/MedicalControllerTest.php`
+
+### Testing validado
+
+- 3 tests nuevos en `MedicalControllerTest` (link válido, link inválido, edición) — 19/19 en verde en ese archivo
+- Migración del fix probada en local con `migrate` → `migrate:rollback` → `migrate` sin errores
+- `vendor/bin/pint --dirty` limpio en ambas tandas de cambios
+- Fix verificado en producción post-deploy: `SHOW CREATE TABLE report_shares` confirma que `expires_at` ya no tiene `DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`
+
+### Estado al final de la sesión
+
+- **Link de imágenes en estudios**: ✅ **Implementado** (alta, edición, listado propio, reporte compartido)
+- **Bug de links compartidos expirando al instante**: ✅ **Corregido y verificado en producción**
+- **Documentación**: ✅ **Actualizada** (este archivo, `PROJECT_STATUS.md`)
+
+### Próximos pasos sugeridos
+
+1. Pedirle al usuario que vuelva a compartir el reporte de esos 2 estudios y confirme que el link a cada documento ya abre bien (el share viejo quedó vencido por el bug, hace falta uno nuevo)
+2. Revisar si conviene fijar explícitamente `'timezone' => '+00:00'` en la conexión `mysql` de `config/database.php`, para que la sesión de MySQL hable siempre en UTC igual que PHP — el fix de esta sesión resuelve el síntoma puntual (la columna ya no se auto-resetea), pero el desalineamiento de reloj entre PHP y MySQL en el hosting sigue existiendo de fondo
+
+### Notas adicionales
+
+- Acceso SSH a producción (`ssh mientreno-prod`) usado activamente para el diagnóstico — todas las consultas antes de confirmar la causa fueron de solo lectura a propósito
+- El hallazgo de la causa raíz se armó encadenando evidencia de tres consultas de solo lectura: comparación `created_at`/`expires_at` de los shares existentes, comparación de reloj `NOW()` MySQL vs `now()` PHP, y finalmente `SHOW CREATE TABLE` para confirmar el DDL real de la columna
+
+### Tiempo invertido
+~1.5-2 horas (feature de link de imágenes + investigación y fix del bug de producción)
+
+---
+
+**Última actualización**: 2026-09-02

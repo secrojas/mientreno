@@ -6,7 +6,7 @@
 
 ---
 
-## Estado Actual (2026-09-01)
+## Estado Actual (2026-09-02)
 
 ### ✨ FASE 2 COMPLETADA - Races & Goals ✅
 ### ✨ UX IMPROVEMENTS COMPLETADAS ✅
@@ -21,6 +21,8 @@
 ### ✨ MÓDULO SALUD MÉDICA COMPLETADO ✅ (2026-06-03)
 ### ✨ SALUD MÉDICA AMPLIADA — Médicos, Órdenes, Reportes Compartibles ✅ (2026-09-01)
 ### ✨ DEPLOY AUTOMÁTICO ROBUSTECIDO — Migraciones + Cron de Respaldo ✅ (2026-09-01)
+### ✨ SALUD MÉDICA — Link de Imágenes de Estudios ✅ (2026-09-02)
+### ✨ FIX CRÍTICO — Links Compartidos Expiraban al Instante ✅ (2026-09-02)
 
 ### Lo que ya está implementado
 
