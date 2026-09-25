@@ -18,6 +18,15 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [2026-09-25] - Entrenamientos en el Reporte de Estudios 🏃
+
+### ✨ Agregado
+- Al compartir un Reporte de Estudios (`/salud`) se puede tildar "Incluir detalle de entrenamientos" y elegir el período (último mes, últimos 3 meses, últimos 6 meses)
+- El link público para el médico suma al final un resumen del período (km, tiempo, sesiones, pace, FC), volumen semanal y el detalle de cada entrenamiento completado
+- Nueva columna `medical_document_groups.training_period_months` (nullable)
+
+---
+
 ## [2026-06-03] - Módulo de Salud Médica 🏥
 
 ### ✨ Agregado

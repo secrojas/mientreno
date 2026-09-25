@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TrainingReportPeriod;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -416,6 +417,57 @@ class ReportService
             'first_workout' => $allWorkouts->first(),
             'generated_at' => now(),
         ];
+    }
+
+    /**
+     * Obtener detalle de entrenamientos de un período reciente (para reportes médicos compartidos)
+     *
+     * @return array{period: TrainingReportPeriod, from: Carbon, to: Carbon, summary: array<string, mixed>, hr_stats: array<string, mixed>, weekly_breakdown: array<int, array<string, mixed>>, workouts: Collection<int, \App\Models\Workout>}
+     */
+    public function getTrainingPeriodReport(User $user, TrainingReportPeriod $period): array
+    {
+        $from = $period->startDate();
+        $to = now()->endOfDay();
+
+        $workouts = $user->workouts()
+            ->completed()
+            ->whereBetween('date', [$from, $to])
+            ->orderByDesc('date')
+            ->get();
+
+        return [
+            'period' => $period,
+            'from' => $from,
+            'to' => $to,
+            'summary' => $this->calculateSummary($workouts),
+            'hr_stats' => $this->getHeartRateStats($workouts),
+            'weekly_breakdown' => $this->getWeeklyBreakdown($workouts),
+            'workouts' => $workouts,
+        ];
+    }
+
+    /**
+     * Descomponer workouts por semana (lunes a domingo), de la más reciente a la más antigua
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function getWeeklyBreakdown(Collection $workouts): array
+    {
+        return $workouts
+            ->groupBy(fn ($w) => $w->date->copy()->startOfWeek()->format('Y-m-d'))
+            ->sortKeysDesc()
+            ->map(function ($weekWorkouts, $weekStart) {
+                $start = Carbon::parse($weekStart);
+                $withHR = $weekWorkouts->whereNotNull('avg_heart_rate')->where('avg_heart_rate', '>', 0);
+
+                return array_merge($this->calculateSummary($weekWorkouts), [
+                    'week_start' => $start,
+                    'week_end' => $start->copy()->endOfWeek(),
+                    'avg_heart_rate_week' => $withHR->isNotEmpty() ? round($withHR->avg('avg_heart_rate')) : null,
+                ]);
+            })
+            ->values()
+            ->toArray();
     }
 
     /**

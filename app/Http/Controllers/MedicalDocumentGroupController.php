@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ShareMedicalDocumentGroupRequest;
 use App\Http\Requests\StoreMedicalDocumentGroupRequest;
 use App\Models\MedicalDocument;
 use App\Models\MedicalDocumentGroup;
@@ -27,9 +28,11 @@ class MedicalDocumentGroupController extends Controller
         return back()->with('status', 'group-created');
     }
 
-    public function share(MedicalDocumentGroup $group): JsonResponse
+    public function share(ShareMedicalDocumentGroupRequest $request, MedicalDocumentGroup $group): JsonResponse
     {
-        abort_if($group->user_id !== auth()->id(), 403);
+        $group->update([
+            'training_period_months' => $request->trainingPeriod(),
+        ]);
 
         $share = ReportShare::createShare(
             userId: $group->user_id,

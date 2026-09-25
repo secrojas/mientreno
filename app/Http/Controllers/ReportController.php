@@ -167,7 +167,11 @@ class ReportController extends Controller
                 $query->orderByDesc('issued_at');
             }])->findOrFail($share->period);
 
-            return view('medical.public.documents-group', compact('group', 'share'));
+            $trainingReport = $group->includesTrainingReport()
+                ? $this->reportService->getTrainingPeriodReport($user, $group->training_period_months)
+                : null;
+
+            return view('medical.public.documents-group', compact('group', 'share', 'trainingReport'));
         } else {
             $report = $this->reportService->getMonthlyReport(
                 $user,

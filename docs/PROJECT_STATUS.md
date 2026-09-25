@@ -6,7 +6,7 @@
 
 ---
 
-## Estado Actual (2026-09-02)
+## Estado Actual (2026-09-25)
 
 ### ✨ FASE 2 COMPLETADA - Races & Goals ✅
 ### ✨ UX IMPROVEMENTS COMPLETADAS ✅
@@ -23,6 +23,7 @@
 ### ✨ DEPLOY AUTOMÁTICO ROBUSTECIDO — Migraciones + Cron de Respaldo ✅ (2026-09-01)
 ### ✨ SALUD MÉDICA — Link de Imágenes de Estudios ✅ (2026-09-02)
 ### ✨ FIX CRÍTICO — Links Compartidos Expiraban al Instante ✅ (2026-09-02)
+### ✨ SALUD MÉDICA — Entrenamientos en Reporte de Estudios ✅ (2026-09-25)
 
 ### Lo que ya está implementado
 
@@ -1970,7 +1971,7 @@ public function boot(): void
 - Se seleccionan estudios ya cargados, se agrupan con título/médico destinatario/notas, y se comparte por link (7 días) reutilizando el mismo `ReportShare` que ya existía para los reportes semanal/mensual/médico (`report_type='medical_documents_group'`)
 - El link público muestra cada estudio con preview individual + botón de descarga en ZIP (`ZipArchive` nativo de PHP)
 - **Decisión de diseño explícita:** se descartó fusionar los PDFs en un solo archivo (requeriría una librería nueva de merge y es frágil ante PDFs raros/protegidos) a favor de este enfoque de grupo + link
-- Separado a propósito del reporte de entrenamiento para el cardiólogo — sin detalle de running
+- Separado a propósito del reporte de entrenamiento para el cardiólogo — sin detalle de running (desde #28 se puede sumar opcionalmente el detalle de un período reciente)
 
 **F) Submódulo de Órdenes Médicas** (`MedicalOrder`, `/salud/ordenes`): historial de órdenes/certificados que el médico entrega en papel — se sube una foto (JPG/PNG) o PDF. Navegación por tabs desde `/salud`. Mismo patrón de preview/edición que los documentos. Sin estado de "cumplida" (solo historial, no fue pedido trackeo).
 
@@ -2004,6 +2005,26 @@ public function boot(): void
 3. **Cron de respaldo contra el WAF**: se descubrió que el WAF del hosting (parece Imunify360) intercepta el webhook de forma intermitente con una página de verificación anti-bot — GitHub Actions ve HTTP 200 pero es el HTML del challenge, no la respuesta real de `DeployController`, y el deploy nunca se ejecuta en esos casos sin que nada lo reporte como error. Se agregó `deploy_check.sh`, corrido cada 5 minutos por cron en el servidor, que compara el commit local contra `origin/main` y dispara el deploy si difieren — no depende de ningún request HTTP entrante, así que el WAF no lo puede bloquear
 
 **Status:** ✅ RESUELTO — documentado en detalle en `docs/AUTO_DEPLOY.md` y `docs/DEPLOY_CPANEL.md`
+
+---
+
+#### 28. Entrenamientos en el Reporte de Estudios (2026-09-25)
+
+**Objetivo:** que el médico pueda contrastar los estudios con el rendimiento reciente sin salir del link compartido.
+
+**Funcionalidades:**
+- Al tocar "Compartir" en un Reporte de Estudios se abre un paso previo con el tilde "Incluir detalle de entrenamientos" y el período: último mes / últimos 3 meses / últimos 6 meses
+- La elección se guarda en el grupo (`training_period_months`, nullable = no incluir), queda precargada la próxima vez y se muestra en la tarjeta del grupo
+- El link público (`medical.public.documents-group`) suma al final: métricas del período (km, tiempo, sesiones, pace), FC promedio/máx/mín, volumen semanal y detalle de cada entrenamiento (fecha, tipo, distancia, tiempo, pace, FC, esfuerzo)
+- Solo entrenamientos `completed`; la ventana se calcula al momento de ver el link (hasta hoy), con las fechas explícitas en el encabezado
+- Como `ReportShare::createShare()` reutiliza el share vigente del grupo, cambiar el período actualiza el mismo link
+
+**Archivos:**
+- `app/Enums/TrainingReportPeriod.php` (int-backed: 1/3/6, `label()`, `startDate()`)
+- `app/Http/Requests/ShareMedicalDocumentGroupRequest.php` (valida y autoriza el share)
+- `ReportService::getTrainingPeriodReport()` + `getWeeklyBreakdown()`
+- `database/migrations/2026_09_25_115409_add_training_period_months_to_medical_document_groups_table.php`
+- `tests/Feature/MedicalDocumentGroupControllerTest.php` — 9 tests nuevos ✅
 
 ---
 
