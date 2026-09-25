@@ -79,102 +79,129 @@
             $trainingHrStats = $trainingReport['hr_stats'];
             $trainingHours = floor($trainingSummary['total_duration'] / 3600);
             $trainingMins = floor(($trainingSummary['total_duration'] % 3600) / 60);
-            $workoutTypeLabels = \App\Models\Workout::typeLabels();
+            $trainingStats = [
+                ['label' => 'Kilómetros', 'value' => number_format($trainingSummary['total_distance'], 1), 'unit' => 'km', 'accent' => '#2DE38E'],
+                ['label' => 'Tiempo', 'value' => ($trainingHours > 0 ? $trainingHours.'h ' : '').$trainingMins.'m', 'unit' => 'en movimiento', 'accent' => '#60A5FA'],
+                ['label' => 'Sesiones', 'value' => $trainingSummary['total_sessions'], 'unit' => 'entrenamientos', 'accent' => '#F59E0B'],
+                ['label' => 'Pace Promedio', 'value' => str_replace('/km', '', $trainingSummary['formatted_pace']), 'unit' => 'min/km', 'accent' => '#FF3B5C'],
+            ];
+
+            if (! empty($trainingHrStats)) {
+                $trainingStats[] = ['label' => 'FC Promedio', 'value' => $trainingHrStats['overall_avg'], 'unit' => 'bpm', 'accent' => '#EF4444'];
+                $trainingStats[] = ['label' => 'FC Máx / Mín', 'value' => $trainingHrStats['max'].' / '.$trainingHrStats['min'], 'unit' => 'bpm (promedio por sesión)', 'accent' => '#EF4444'];
+            }
         @endphp
 
-        <div style="margin-top:2.5rem;padding-top:1.5rem;border-top:2px solid var(--border-subtle);">
-            <h3 style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#94A3B8;margin-bottom:0.25rem;">
-                Entrenamientos — {{ $trainingReport['period']->label() }}
-            </h3>
-            <p style="font-size:0.8rem;color:#64748B;margin-bottom:1rem;">
-                Del {{ $trainingReport['from']->format('d/m/Y') }} al {{ $trainingReport['to']->format('d/m/Y') }} &bull; Solo entrenamientos completados
-            </p>
-
-            @if($trainingReport['workouts']->isEmpty())
-                <div style="border:1px dashed var(--border-subtle);border-radius:0.5rem;padding:1rem 1.25rem;font-size:0.85rem;color:#94A3B8;">
-                    No hay entrenamientos registrados en este período.
-                </div>
-            @else
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;">
-                    <x-metric-card label="Kilómetros" :value="number_format($trainingSummary['total_distance'], 1) . ' km'" />
-                    <x-metric-card label="Tiempo total" :value="($trainingHours > 0 ? $trainingHours . 'h ' : '') . $trainingMins . 'm'" />
-                    <x-metric-card label="Sesiones" :value="$trainingSummary['total_sessions']" />
-                    <x-metric-card label="Pace promedio" :value="$trainingSummary['formatted_pace']" />
-                </div>
-
-                @if(! empty($trainingHrStats))
-                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:1.5rem;">
-                        <x-metric-card label="FC Promedio" :value="$trainingHrStats['overall_avg'] . ' bpm'" />
-                        <x-metric-card label="FC Máxima" :value="$trainingHrStats['max'] . ' bpm'" />
-                        <x-metric-card label="FC Mínima" :value="$trainingHrStats['min'] . ' bpm'" />
+        <div style="margin-top:2.5rem;">
+            <x-report-card
+                :title="'Entrenamientos — '.$trainingReport['period']->label()"
+                :subtitle="'Del '.$trainingReport['from']->format('d/m/Y').' al '.$trainingReport['to']->format('d/m/Y').' • Solo entrenamientos completados'"
+            >
+                @if($trainingReport['workouts']->isEmpty())
+                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.9rem;">
+                        No hay entrenamientos registrados en este período.
+                    </div>
+                @else
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;">
+                        @foreach($trainingStats as $stat)
+                            <div style="padding:.75rem 1rem;border-radius:.6rem;background:rgba(30,41,59,.3);border-left:3px solid {{ $stat['accent'] }};">
+                                <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.25rem;">{{ $stat['label'] }}</div>
+                                <div style="font-family:'Space Grotesk',sans-serif;font-size:1.35rem;font-weight:700;line-height:1.2;">{{ $stat['value'] }}</div>
+                                <div style="font-size:.7rem;color:{{ $stat['accent'] }};margin-top:.15rem;">{{ $stat['unit'] }}</div>
+                            </div>
+                        @endforeach
                     </div>
                 @endif
+            </x-report-card>
 
-                <h4 style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#94A3B8;margin-bottom:0.5rem;">
-                    Volumen semanal
-                </h4>
-                <div style="overflow-x:auto;margin-bottom:1.5rem;">
-                    <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
-                        <thead>
-                            <tr style="background:#F8FAFC;border-bottom:2px solid #E2E8F0;">
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:left;color:#94A3B8;">Semana</th>
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:right;color:#94A3B8;">Sesiones</th>
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:right;color:#2DE38E;">Km</th>
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:right;color:#94A3B8;">Tiempo</th>
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:right;color:#94A3B8;">Pace</th>
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:right;color:#EF4444;">FC</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($trainingReport['weekly_breakdown'] as $week)
-                                <tr style="border-bottom:1px solid #F1F5F9;">
-                                    <td style="padding:6px 10px;white-space:nowrap;">{{ $week['week_start']->locale('es')->isoFormat('D MMM') }} – {{ $week['week_end']->locale('es')->isoFormat('D MMM') }}</td>
-                                    <td style="padding:6px 10px;text-align:right;color:#64748B;">{{ $week['total_sessions'] }}</td>
-                                    <td style="padding:6px 10px;text-align:right;font-weight:700;color:#2DE38E;">{{ number_format($week['total_distance'], 1) }}</td>
-                                    <td style="padding:6px 10px;text-align:right;color:#64748B;">{{ $week['formatted_duration'] }}</td>
-                                    <td style="padding:6px 10px;text-align:right;color:#64748B;">{{ $week['formatted_pace'] }}</td>
-                                    <td style="padding:6px 10px;text-align:right;{{ $week['avg_heart_rate_week'] ? 'color:#EF4444;font-weight:600;' : 'color:#CBD5E1;' }}">
-                                        {{ $week['avg_heart_rate_week'] ? $week['avg_heart_rate_week'] . ' bpm' : '—' }}
-                                    </td>
+            @if($trainingReport['workouts']->isNotEmpty())
+                <x-report-card title="Volumen Semanal" subtitle="De la semana más reciente a la más antigua">
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+                            <thead>
+                                <tr style="border-bottom:2px solid var(--border-subtle);">
+                                    <th style="text-align:left;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">Semana</th>
+                                    <th style="text-align:right;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">Sesiones</th>
+                                    <th style="text-align:right;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">Distancia</th>
+                                    <th style="text-align:right;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">Tiempo</th>
+                                    <th style="text-align:right;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">Pace</th>
+                                    <th style="text-align:right;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">FC</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                @foreach($trainingReport['weekly_breakdown'] as $week)
+                                    <tr style="border-bottom:1px solid var(--border-subtle);">
+                                        <td style="padding:.5rem;white-space:nowrap;">{{ $week['week_start']->locale('es')->isoFormat('D MMM') }} – {{ $week['week_end']->locale('es')->isoFormat('D MMM') }}</td>
+                                        <td style="padding:.5rem;text-align:right;color:var(--text-muted);">{{ $week['total_sessions'] }}</td>
+                                        <td style="padding:.5rem;text-align:right;font-weight:600;color:var(--accent-secondary);white-space:nowrap;">{{ number_format($week['total_distance'], 1) }} km</td>
+                                        <td style="padding:.5rem;text-align:right;">{{ $week['formatted_duration'] }}</td>
+                                        <td style="padding:.5rem;text-align:right;font-family:monospace;white-space:nowrap;">{{ $week['formatted_pace'] }}</td>
+                                        <td style="padding:.5rem;text-align:right;white-space:nowrap;color:{{ $week['avg_heart_rate_week'] ? '#F87171' : 'var(--text-muted)' }};">
+                                            {{ $week['avg_heart_rate_week'] ? $week['avg_heart_rate_week'].' bpm' : '–' }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </x-report-card>
 
-                <h4 style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#94A3B8;margin-bottom:0.5rem;">
-                    Detalle de entrenamientos ({{ $trainingReport['workouts']->count() }})
-                </h4>
-                <div style="overflow-x:auto;">
-                    <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
-                        <thead>
-                            <tr style="background:#F8FAFC;border-bottom:2px solid #E2E8F0;">
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:left;color:#94A3B8;">Fecha</th>
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:left;color:#94A3B8;">Tipo</th>
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:right;color:#D97706;">Distancia</th>
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:right;color:#94A3B8;">Tiempo</th>
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:right;color:#94A3B8;">Pace</th>
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:right;color:#EF4444;">FC</th>
-                                <th style="padding:6px 10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;text-align:right;color:#94A3B8;">Esfuerzo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($trainingReport['workouts'] as $i => $workout)
-                                <tr style="border-bottom:1px solid #F1F5F9;{{ $i % 2 !== 0 ? 'background:#F8FAFC;' : '' }}">
-                                    <td style="padding:6px 10px;white-space:nowrap;">{{ $workout->date->locale('es')->isoFormat('ddd D MMM YYYY') }}</td>
-                                    <td style="padding:6px 10px;color:#64748B;">{{ $workoutTypeLabels[$workout->type] ?? $workout->type }}{{ $workout->is_race ? ' 🏁' : '' }}</td>
-                                    <td style="padding:6px 10px;text-align:right;font-weight:700;color:#D97706;">{{ number_format($workout->distance, 2) }} km</td>
-                                    <td style="padding:6px 10px;text-align:right;color:#64748B;">{{ $workout->formatted_duration }}</td>
-                                    <td style="padding:6px 10px;text-align:right;color:#64748B;">{{ $workout->formatted_pace }}</td>
-                                    <td style="padding:6px 10px;text-align:right;{{ $workout->avg_heart_rate ? 'color:#EF4444;font-weight:600;' : 'color:#CBD5E1;' }}">
-                                        {{ $workout->avg_heart_rate ? $workout->avg_heart_rate . ' bpm' : '—' }}
-                                    </td>
-                                    <td style="padding:6px 10px;text-align:right;color:#64748B;">{{ $workout->difficulty ? $workout->difficulty . '/5' : '—' }}</td>
+                <x-report-card
+                    title="Detalle de Entrenamientos"
+                    :subtitle="$trainingReport['workouts']->count().' '.($trainingReport['workouts']->count() === 1 ? 'sesión registrada' : 'sesiones registradas')"
+                >
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+                            <thead>
+                                <tr style="border-bottom:2px solid var(--border-subtle);">
+                                    <th style="text-align:left;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">Fecha</th>
+                                    <th style="text-align:left;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">Tipo</th>
+                                    <th style="text-align:right;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">Distancia</th>
+                                    <th style="text-align:right;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">Tiempo</th>
+                                    <th style="text-align:right;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">Pace</th>
+                                    <th style="text-align:right;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">FC</th>
+                                    <th style="text-align:center;padding:.5rem;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">Esfuerzo</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                @foreach($trainingReport['workouts'] as $workout)
+                                    <tr style="border-bottom:1px solid var(--border-subtle);">
+                                        <td style="padding:.5rem;white-space:nowrap;">
+                                            {{ $workout->date->format('d/m/Y') }}
+                                            <span style="font-size:.75rem;color:var(--text-muted);margin-left:.25rem;">{{ $workout->date->locale('es')->isoFormat('ddd') }}</span>
+                                        </td>
+                                        <td style="padding:.5rem;">
+                                            <span style="padding:.2rem .5rem;border-radius:.4rem;background:rgba(59,130,246,.1);color:rgb(96,165,250);font-size:.75rem;white-space:nowrap;">
+                                                {{ $workout->type_label }}{{ $workout->is_race ? ' 🏁' : '' }}
+                                            </span>
+                                        </td>
+                                        <td style="padding:.5rem;text-align:right;font-weight:500;white-space:nowrap;">{{ number_format($workout->distance, 2) }} km</td>
+                                        <td style="padding:.5rem;text-align:right;">{{ $workout->formatted_duration }}</td>
+                                        <td style="padding:.5rem;text-align:right;font-family:monospace;white-space:nowrap;">{{ $workout->formatted_pace }}</td>
+                                        <td style="padding:.5rem;text-align:right;white-space:nowrap;color:{{ $workout->avg_heart_rate ? '#F87171' : 'var(--text-muted)' }};">
+                                            {{ $workout->avg_heart_rate ? $workout->avg_heart_rate.' bpm' : '–' }}
+                                        </td>
+                                        <td style="padding:.5rem;text-align:center;white-space:nowrap;">
+                                            @if($workout->difficulty)
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    <span style="font-size:.7rem;color:{{ $i <= $workout->difficulty ? 'rgb(251,191,36)' : 'rgba(251,191,36,.2)' }};">●</span>
+                                                @endfor
+                                            @else
+                                                <span style="color:var(--text-muted);">–</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-subtle);font-size:.85rem;color:var(--text-muted);">
+                        <strong>Total:</strong> {{ $trainingSummary['total_sessions'] }} {{ $trainingSummary['total_sessions'] === 1 ? 'entrenamiento' : 'entrenamientos' }}
+                        • {{ number_format($trainingSummary['total_distance'], 2) }} km
+                        • {{ $trainingSummary['formatted_duration'] }}
+                    </div>
+                </x-report-card>
             @endif
         </div>
     @endif

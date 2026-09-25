@@ -211,7 +211,7 @@ class MedicalDocumentGroupControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertViewHas('trainingReport', null);
-        $response->assertDontSee('Detalle de entrenamientos');
+        $response->assertDontSee('Detalle de Entrenamientos');
     }
 
     public function test_shared_group_with_training_shows_only_completed_workouts_within_period(): void
@@ -233,7 +233,7 @@ class MedicalDocumentGroupControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Entrenamientos — Último mes');
-        $response->assertSee('Detalle de entrenamientos (1)');
+        $response->assertSee('1 sesión registrada');
         $response->assertViewHas('trainingReport', function (array $trainingReport) use ($recent): bool {
             return $trainingReport['workouts']->pluck('id')->all() === [$recent->id]
                 && $trainingReport['summary']['total_distance'] == 10
