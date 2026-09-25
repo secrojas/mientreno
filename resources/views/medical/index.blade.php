@@ -723,6 +723,9 @@
                                         <span>Para: Dr. {{ $group->doctor->name }}</span>
                                     @endif
                                     <span>Creado: {{ $group->created_at->format('d/m/Y') }}</span>
+                                    @if($group->includesTrainingReport())
+                                        <span>Incluye entrenamientos: {{ $group->training_period_months->label() }}</span>
+                                    @endif
                                     @if($group->notes)
                                         <span class="truncate max-w-xs">{{ $group->notes }}</span>
                                     @endif
@@ -730,7 +733,7 @@
                             </div>
 
                             <div class="flex items-center gap-2 shrink-0">
-                                <button @click="shareGroup({{ $group->id }}, '{{ route('medical.groups.share', $group) }}')"
+                                <button @click="openShareOptions({{ $group->id }}, '{{ route('medical.groups.share', $group) }}', {{ $group->training_period_months?->value ?? 'null' }})"
                                         :disabled="sharingGroup === {{ $group->id }}"
                                         class="btn-secondary text-sm px-3 py-2">
                                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -926,6 +929,39 @@
             </div>
         </div>
 
+        {{-- Share Group Options Modal --}}
+        <div x-show="shareOptions.groupId !== null"
+             x-cloak
+             class="fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-4"
+             @click.self="closeShareOptions()"
+             style="display: none;">
+            <div class="bg-bg-card border border-accent-secondary/30 rounded-card w-full max-w-md shadow-2xl p-6">
+                <h3 class="font-display text-responsive-lg mb-1 text-accent-secondary">Compartir Reporte</h3>
+                <p class="text-xs text-text-muted mb-4">Podés sumar al final del reporte el detalle de tus entrenamientos para que el médico lo contraste con los estudios.</p>
+
+                <label class="flex items-center gap-3 cursor-pointer mb-4">
+                    <input type="checkbox" x-model="shareOptions.includeTraining" class="w-4 h-4 rounded border-border-subtle text-accent-secondary focus:ring-accent-secondary/50">
+                    <span class="text-sm">Incluir detalle de entrenamientos</span>
+                </label>
+
+                <div x-show="shareOptions.includeTraining" class="mb-2">
+                    <label class="form-label">Período</label>
+                    <select x-model.number="shareOptions.period" class="form-select">
+                        @foreach(\App\Enums\TrainingReportPeriod::cases() as $trainingPeriod)
+                            <option value="{{ $trainingPeriod->value }}">{{ $trainingPeriod->label() }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" @click="closeShareOptions()" class="btn-ghost text-sm">Cancelar</button>
+                    <button type="button" @click="shareGroup()" :disabled="sharingGroup !== null" class="btn-primary text-sm">
+                        <span x-text="sharingGroup !== null ? 'Generando...' : 'Generar Link'">Generar Link</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         {{-- New Group Modal --}}
         <div x-show="showGroupForm"
              x-cloak
@@ -989,6 +1025,7 @@
                 previewTitle: '',
                 selectedDocs: [],
                 sharingGroup: null,
+                shareOptions: { groupId: null, url: null, includeTraining: false, period: 3 },
                 docsMap: docsMap,
                 openPreview(url, title) {
                     this.previewUrl = url;
@@ -997,19 +1034,39 @@
                 closePreview() {
                     this.previewUrl = null;
                 },
-                shareGroup(groupId, shareUrl) {
-                    this.sharingGroup = groupId;
-                    fetch(shareUrl, {
+                openShareOptions(groupId, shareUrl, trainingPeriod) {
+                    this.shareOptions = {
+                        groupId: groupId,
+                        url: shareUrl,
+                        includeTraining: trainingPeriod !== null,
+                        period: trainingPeriod ?? 3,
+                    };
+                },
+                closeShareOptions() {
+                    this.shareOptions = { groupId: null, url: null, includeTraining: false, period: 3 };
+                },
+                shareGroup() {
+                    this.sharingGroup = this.shareOptions.groupId;
+                    fetch(this.shareOptions.url, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        }
+                        },
+                        body: JSON.stringify({
+                            include_training: this.shareOptions.includeTraining,
+                            training_period_months: this.shareOptions.includeTraining ? this.shareOptions.period : null,
+                        })
                     })
                     .then(r => r.json())
                     .then(data => {
-                        if (data.success) { showShareModal(data.url, data.expires_at); }
-                        else { alert('Error al generar el link.'); }
+                        if (data.success) {
+                            this.closeShareOptions();
+                            showShareModal(data.url, data.expires_at);
+                        } else {
+                            alert(data.message || 'Error al generar el link.');
+                        }
                     })
                     .catch(() => alert('Error al generar el link.'))
                     .finally(() => { this.sharingGroup = null; });
