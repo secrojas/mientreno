@@ -10,16 +10,10 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-// Previous landing versions, kept for reference
-Route::get('/v1', function () {
-    return view('welcomev1');
-})->name('welcome.v1');
-
-Route::get('/v2', function () {
-    return view('welcomev2');
-})->name('welcome.v2');
-
-Route::permanentRedirect('/v3', '/')->name('welcome.v3');
+// Previous landing versions were removed; keep old URLs working
+Route::permanentRedirect('/v1', '/');
+Route::permanentRedirect('/v2', '/');
+Route::permanentRedirect('/v3', '/');
 
 // Authentication routes (no business required)
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');

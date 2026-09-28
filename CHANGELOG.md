@@ -37,7 +37,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 - Hero con collage del producto (semana, zapatillas, apto médico, próximo turno), secciones destacadas de **Salud médica** y **Zapatillas**, reportes + modo coach en bento, FAQ en acordeón y CTA final
 - Mismos colores y tipografías de la marca; sin dependencias nuevas (CSS y JS inline), responsive y con `prefers-reduced-motion`
 - La sección de zapatillas de la landing se implementó en la app en la entrega siguiente (ver "Zapatillas 👟")
-- Con las zapatillas ya implementadas, la v3 pasa a ser la **página principal** (`/`, vista `welcome`). La landing original queda en `/v1` (`welcomev1`), la v2 en `/v2`, y `/v3` redirige con 301 a `/`
+- Con las zapatillas ya implementadas, la v3 pasa a ser la **página principal** (`/`, vista `welcome`). Las landings anteriores (v1 y v2) se eliminaron; `/v1`, `/v2` y `/v3` redirigen con 301 a `/`
 
 ---
 

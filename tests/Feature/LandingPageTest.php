@@ -18,14 +18,10 @@ class LandingPageTest extends TestCase
         $response->assertSee(route('login'));
     }
 
-    public function test_v3_url_redirects_permanently_to_home(): void
+    public function test_previous_landing_urls_redirect_permanently_to_home(): void
     {
-        $this->get('/v3')->assertStatus(301)->assertRedirect('/');
-    }
-
-    public function test_previous_landing_versions_are_still_available(): void
-    {
-        $this->get(route('welcome.v1'))->assertOk()->assertViewIs('welcomev1');
-        $this->get(route('welcome.v2'))->assertOk()->assertViewIs('welcomev2');
+        foreach (['/v1', '/v2', '/v3'] as $previousLandingUrl) {
+            $this->get($previousLandingUrl)->assertStatus(301)->assertRedirect('/');
+        }
     }
 }
