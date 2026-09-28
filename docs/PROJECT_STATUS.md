@@ -6,7 +6,7 @@
 
 ---
 
-## Estado Actual (2026-09-25)
+## Estado Actual (2026-09-28)
 
 ### ✨ FASE 2 COMPLETADA - Races & Goals ✅
 ### ✨ UX IMPROVEMENTS COMPLETADAS ✅
@@ -24,6 +24,7 @@
 ### ✨ SALUD MÉDICA — Link de Imágenes de Estudios ✅ (2026-09-02)
 ### ✨ FIX CRÍTICO — Links Compartidos Expiraban al Instante ✅ (2026-09-02)
 ### ✨ SALUD MÉDICA — Entrenamientos en Reporte de Estudios ✅ (2026-09-25)
+### ✨ SALUD MÉDICA — Turnos Médicos con Indicaciones y Pendientes ✅ (2026-09-28)
 
 ### Lo que ya está implementado
 
@@ -2025,6 +2026,36 @@ public function boot(): void
 - `ReportService::getTrainingPeriodReport()` + `getWeeklyBreakdown()`
 - `database/migrations/2026_09_25_115409_add_training_period_months_to_medical_document_groups_table.php`
 - `tests/Feature/MedicalDocumentGroupControllerTest.php` — 9 tests nuevos ✅
+
+---
+
+#### 29. Turnos Médicos (2026-09-28)
+
+**Objetivo:** registrar los turnos médicos y, sobre todo, documentar qué pasó en cada uno (qué dijo el médico, qué indicó) y trackear lo que queda pendiente.
+
+**Funcionalidades (`/salud/turnos`, nueva pestaña entre Estudios y Órdenes):**
+- Alta de turno: médico (o alta de médico nuevo en el mismo formulario), fecha/hora, lugar (por defecto el consultorio del médico) y motivo
+- Estados: Programado / Realizado / Cancelado / No asistí. Un turno programado cuya fecha pasó aparece en **"¿Cómo te fue?"** hasta que se completa
+- Al completar: observaciones (texto largo), indicaciones nuevas, estudios que se llevaron (`MedicalDocument`) y órdenes recibidas (`MedicalOrder`)
+- **Indicaciones/pendientes** (`MedicalAppointmentTask`) con tipo (Medicación, Derivación, Estudio a realizar, Control, Otro), fecha límite opcional y tilde de hecho. Sección "Pendientes" con las abiertas de todos los turnos; vencidas en rojo
+- **Derivaciones:** una indicación de tipo Derivación tiene "Agendar turno", que crea el turno nuevo con `referred_from_id` y marca la indicación como hecha (queda vinculada vía `follow_up_appointment_id`)
+- Subir una orden (receta, etc.) directo desde el turno — reutiliza `medical.orders.store` con `medical_appointment_id`
+- Historial agrupado por mes con filtros por médico y especialidad; adelanto de observaciones y contador de indicaciones pendientes en cada tarjeta
+- **Agregar al calendario:** descarga `.ics` (RFC 5545) del turno, con recordatorios 1 día y 2 horas antes. La hora se exporta como hora local "flotante" (sin zona), porque la app guarda la hora tal cual la carga el usuario (`app.timezone = UTC`)
+
+**Modelos y datos:**
+- `MedicalAppointment`: `user_id`, `doctor_id`, `referred_from_id` (self), `scheduled_at`, `location`, `reason`, `status` (enum `AppointmentStatus`), `observations`
+- `MedicalAppointmentTask`: `medical_appointment_id`, `follow_up_appointment_id`, `type` (enum `AppointmentTaskType`), `description`, `due_date`, `completed_at`
+- Pivote `medical_appointment_documents`; `medical_orders.medical_appointment_id` nullable
+- `User::medicalAppointmentTasks()` (`hasManyThrough`)
+
+**Archivos principales:**
+- `app/Http/Controllers/{MedicalAppointmentController,MedicalAppointmentTaskController}.php`
+- `app/Http/Requests/{Store,Update}MedicalAppointmentRequest.php`, `StoreMedicalAppointmentTaskRequest.php`
+- `resources/views/medical/appointments.blade.php` + `medical/partials/{appointment-card,appointment-task,tabs}.blade.php` (las pestañas de `/salud` pasaron a un partial compartido, con etiquetas cortas en mobile)
+- 4 migraciones + `tests/Feature/{MedicalAppointmentControllerTest,MedicalAppointmentTaskControllerTest}.php` — 28 tests ✅
+
+> ⚠️ **Pendiente conocido (previo a este cambio):** en mobile (390px) `/salud` y `/salud/ordenes` tienen scroll horizontal por botones/encabezados que no achican.
 
 ---
 

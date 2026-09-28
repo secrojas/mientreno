@@ -36,6 +36,7 @@ class MedicalOrderController extends Controller
 
         $request->user()->medicalOrders()->create([
             'doctor_id' => $request->doctor_id ?: null,
+            'medical_appointment_id' => $request->medical_appointment_id ?: null,
             'title' => $request->title,
             'notes' => $request->notes,
             'file_path' => $path,

@@ -18,6 +18,20 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [2026-09-28] - Turnos Médicos 🩺
+
+### ✨ Agregado
+- Nueva pestaña **Turnos** en `/salud/turnos`: alta de turnos (con alta de médico en el mismo formulario), próximos turnos con cuenta regresiva e historial filtrable por médico y especialidad
+- "¿Cómo te fue?": los turnos que ya pasaron piden completar observaciones, indicaciones, estudios llevados y órdenes recibidas
+- Indicaciones con tipo (medicación, derivación, estudio, control, otro), fecha límite y tilde de hecho; sección de pendientes de todos los turnos
+- Derivaciones: "Agendar turno" desde la indicación crea el turno vinculado al anterior
+- Subida de órdenes desde el turno y descarga `.ics` para agregar el turno al calendario (con recordatorios)
+
+### 🔧 Cambiado
+- Las pestañas de `/salud` se unificaron en un partial y usan etiquetas cortas en mobile
+
+---
+
 ## [2026-09-25] - Entrenamientos en el Reporte de Estudios 🏃
 
 ### ✨ Agregado
