@@ -14,6 +14,7 @@ class MedicalOrder extends Model
     protected $fillable = [
         'user_id',
         'doctor_id',
+        'medical_appointment_id',
         'title',
         'notes',
         'file_path',
@@ -36,5 +37,10 @@ class MedicalOrder extends Model
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class);
+    }
+
+    public function appointment(): BelongsTo
+    {
+        return $this->belongsTo(MedicalAppointment::class, 'medical_appointment_id');
     }
 }

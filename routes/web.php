@@ -80,6 +80,16 @@ Route::middleware('auth')->group(function () {
             Route::get('/{order}/preview', [\App\Http\Controllers\MedicalOrderController::class, 'preview'])->name('preview');
             Route::delete('/{order}', [\App\Http\Controllers\MedicalOrderController::class, 'destroy'])->name('destroy');
         });
+        Route::prefix('turnos')->name('appointments.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\MedicalAppointmentController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\MedicalAppointmentController::class, 'store'])->name('store');
+            Route::put('/{appointment}', [\App\Http\Controllers\MedicalAppointmentController::class, 'update'])->name('update');
+            Route::delete('/{appointment}', [\App\Http\Controllers\MedicalAppointmentController::class, 'destroy'])->name('destroy');
+            Route::get('/{appointment}/calendario', [\App\Http\Controllers\MedicalAppointmentController::class, 'calendar'])->name('calendar');
+            Route::post('/{appointment}/indicaciones', [\App\Http\Controllers\MedicalAppointmentTaskController::class, 'store'])->name('tasks.store');
+            Route::patch('/indicaciones/{task}', [\App\Http\Controllers\MedicalAppointmentTaskController::class, 'toggle'])->name('tasks.toggle');
+            Route::delete('/indicaciones/{task}', [\App\Http\Controllers\MedicalAppointmentTaskController::class, 'destroy'])->name('tasks.destroy');
+        });
         Route::prefix('grupos')->name('groups.')->group(function () {
             Route::post('/', [\App\Http\Controllers\MedicalDocumentGroupController::class, 'store'])->name('store');
             Route::post('/{group}/share', [\App\Http\Controllers\MedicalDocumentGroupController::class, 'share'])->name('share');

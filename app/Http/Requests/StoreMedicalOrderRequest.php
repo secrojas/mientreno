@@ -26,6 +26,10 @@ class StoreMedicalOrderRequest extends FormRequest
                 'nullable',
                 Rule::exists('doctors', 'id')->where('user_id', $this->user()->id),
             ],
+            'medical_appointment_id' => [
+                'nullable',
+                Rule::exists('medical_appointments', 'id')->where('user_id', $this->user()->id),
+            ],
         ];
     }
 

@@ -11,15 +11,7 @@
             </p>
         </header>
 
-        {{-- Submenú --}}
-        <div class="flex gap-1 mb-8 border-b border-white/5">
-            <a href="{{ route('medical.index') }}" class="px-4 py-2.5 text-sm font-medium text-text-muted hover:text-text-main transition-colors">
-                Documentos y Estudios
-            </a>
-            <span class="px-4 py-2.5 text-sm font-medium text-accent-secondary border-b-2 border-accent-secondary">
-                Órdenes Médicas
-            </span>
-        </div>
+        @include('medical.partials.tabs', ['active' => 'orders'])
 
         {{-- Flash messages --}}
         @php
