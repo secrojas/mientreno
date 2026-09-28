@@ -5,20 +5,21 @@ use App\Http\Controllers\Auth\v1\RegisterController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
-// Landing page
+// Landing page (v3: entrenamientos + salud + zapatillas)
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-// Landing page v2 (improved design)
+// Previous landing versions, kept for reference
+Route::get('/v1', function () {
+    return view('welcomev1');
+})->name('welcome.v1');
+
 Route::get('/v2', function () {
     return view('welcomev2');
 })->name('welcome.v2');
 
-// Landing page v3 (salud + zapatillas)
-Route::get('/v3', function () {
-    return view('welcomev3');
-})->name('welcome.v3');
+Route::permanentRedirect('/v3', '/')->name('welcome.v3');
 
 // Authentication routes (no business required)
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');

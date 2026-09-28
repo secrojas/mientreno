@@ -2077,6 +2077,8 @@ public function boot(): void
 - `resources/views/shoes/{index,partials/card,partials/form}.blade.php`, `resources/views/components/shoe-illustration.blade.php`, `resources/views/workouts/partials/shoe-select.blade.php`
 - 2 migraciones + `tests/Feature/{ShoeControllerTest,WorkoutShoeTest}.php`
 
+**Landing:** con esta funcionalidad disponible, la landing v3 pasa a ser la página principal (`/` → `resources/views/welcome.blade.php`). Versiones anteriores: `/v1` (`welcomev1`) y `/v2` (`welcomev2`); `/v3` redirige con 301 a `/`.
+
 ---
 
 ## 📋 Análisis de Gaps y Plan de Desarrollo
