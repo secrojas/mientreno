@@ -15,6 +15,11 @@ Route::get('/v2', function () {
     return view('welcomev2');
 })->name('welcome.v2');
 
+// Landing page v3 (salud + zapatillas)
+Route::get('/v3', function () {
+    return view('welcomev3');
+})->name('welcome.v3');
+
 // Authentication routes (no business required)
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);

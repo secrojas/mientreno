@@ -18,6 +18,16 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [2026-09-28] - Landing v3 🚀
+
+### ✨ Agregado
+- Nueva landing en `/v3` (`resources/views/welcomev3.blade.php`), la v2 queda intacta en `/v2` para comparar
+- Hero con collage del producto (semana, zapatillas, apto médico, próximo turno), secciones destacadas de **Salud médica** y **Zapatillas**, reportes + modo coach en bento, FAQ en acordeón y CTA final
+- Mismos colores y tipografías de la marca; sin dependencias nuevas (CSS y JS inline), responsive y con `prefers-reduced-motion`
+- ⚠️ La sección de zapatillas presenta una funcionalidad **todavía no implementada** en la app (km por par, vida útil, alertas, rotación, costo por km)
+
+---
+
 ## [2026-09-28] - Turnos Médicos 🩺
 
 ### ✨ Agregado
