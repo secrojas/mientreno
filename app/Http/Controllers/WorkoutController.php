@@ -6,6 +6,7 @@ use App\Models\Workout;
 use App\Services\GoalProgressService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class WorkoutController extends Controller
 {
@@ -15,6 +16,7 @@ class WorkoutController extends Controller
     {
         $this->goalProgressService = $goalProgressService;
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -43,7 +45,7 @@ class WorkoutController extends Controller
 
         // Buscar por notas
         if ($request->filled('search')) {
-            $query->where('notes', 'like', '%' . $request->search . '%');
+            $query->where('notes', 'like', '%'.$request->search.'%');
         }
 
         // Eager load race relationship to avoid N+1
@@ -62,7 +64,10 @@ class WorkoutController extends Controller
     {
         $types = Workout::typeLabels();
         $upcomingRaces = Auth::user()->races()->upcoming()->get();
-        return view('workouts.create', compact('types', 'upcomingRaces'));
+        $shoes = $this->selectableShoes();
+        $defaultShoeId = $shoes->firstWhere('is_default', true)?->id;
+
+        return view('workouts.create', compact('types', 'upcomingRaces', 'shoes', 'defaultShoeId'));
     }
 
     /**
@@ -81,6 +86,7 @@ class WorkoutController extends Controller
             'difficulty' => 'nullable|integer|min:1|max:5',
             'notes' => 'nullable|string|max:5000',
             'race_id' => 'nullable|exists:races,id',
+            'shoe_id' => ['nullable', Rule::exists('shoes', 'id')->where('user_id', Auth::id())],
         ]);
 
         $validated['user_id'] = Auth::id();
@@ -94,7 +100,7 @@ class WorkoutController extends Controller
         }
 
         // Si no tiene difficulty, poner 3 por defecto
-        if (!isset($validated['difficulty'])) {
+        if (! isset($validated['difficulty'])) {
             $validated['difficulty'] = 3;
         }
 
@@ -135,7 +141,9 @@ class WorkoutController extends Controller
 
         $types = Workout::typeLabels();
         $upcomingRaces = Auth::user()->races()->upcoming()->get();
-        return view('workouts.edit', compact('workout', 'types', 'upcomingRaces'));
+        $shoes = $this->selectableShoes($workout->shoe_id);
+
+        return view('workouts.edit', compact('workout', 'types', 'upcomingRaces', 'shoes'));
     }
 
     /**
@@ -158,6 +166,7 @@ class WorkoutController extends Controller
             'difficulty' => 'required|integer|min:1|max:5',
             'notes' => 'nullable|string|max:5000',
             'race_id' => 'nullable|exists:races,id',
+            'shoe_id' => ['nullable', Rule::exists('shoes', 'id')->where('user_id', Auth::id())],
         ]);
 
         // Recalcular pace solo si distance y duration son > 0
@@ -204,14 +213,16 @@ class WorkoutController extends Controller
         }
 
         // Solo workouts planificados pueden marcarse como completados
-        if (!$workout->isPlanned()) {
+        if (! $workout->isPlanned()) {
             return redirect()->route('workouts.index')->with('error', 'Solo entrenamientos planificados pueden marcarse como completados.');
         }
 
         $types = Workout::typeLabels();
         $upcomingRaces = Auth::user()->races()->upcoming()->get();
+        $shoes = $this->selectableShoes($workout->shoe_id);
+        $defaultShoeId = $workout->shoe_id ?? $shoes->firstWhere('is_default', true)?->id;
 
-        return view('workouts.mark-completed', compact('workout', 'types', 'upcomingRaces'));
+        return view('workouts.mark-completed', compact('workout', 'types', 'upcomingRaces', 'shoes', 'defaultShoeId'));
     }
 
     /**
@@ -231,6 +242,7 @@ class WorkoutController extends Controller
             'elevation_gain' => 'nullable|integer|min:0',
             'difficulty' => 'required|integer|min:1|max:5',
             'notes' => 'nullable|string|max:5000',
+            'shoe_id' => ['nullable', Rule::exists('shoes', 'id')->where('user_id', Auth::id())],
         ]);
 
         $workout->markAsCompleted($validated);
@@ -261,5 +273,21 @@ class WorkoutController extends Controller
         $this->goalProgressService->updateUserGoalsProgress(Auth::user());
 
         return redirect()->route('workouts.index')->with('success', 'Entrenamiento marcado como saltado.');
+    }
+
+    /**
+     * Zapatillas activas para elegir en el formulario, más la ya asignada aunque esté retirada.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Shoe>
+     */
+    private function selectableShoes(?int $currentShoeId = null): \Illuminate\Database\Eloquent\Collection
+    {
+        return Auth::user()->shoes()
+            ->withUsageStats()
+            ->where(fn ($query) => $query->whereNull('retired_at')->when($currentShoeId, fn ($query) => $query->orWhere('id', $currentShoeId)))
+            ->orderByDesc('is_default')
+            ->orderBy('brand')
+            ->orderBy('model')
+            ->get();
     }
 }

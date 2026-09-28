@@ -135,6 +135,9 @@
                           class="form-input resize-y">{{ old('notes', $workout->notes) }}</textarea>
             </div>
 
+            <!-- Zapatillas -->
+            @include('workouts.partials.shoe-select', ['selectedShoeId' => $workout->shoe_id])
+
             <!-- Carrera asociada -->
             @if($upcomingRaces->count() > 0)
                 <div>

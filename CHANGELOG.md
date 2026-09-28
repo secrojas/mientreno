@@ -18,13 +18,25 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [2026-09-28] - Zapatillas 👟
+
+### ✨ Agregado
+- Nueva sección **Zapatillas** (`/zapatillas`, en el sidebar debajo de Entrenamientos): alta con marca, modelo, apodo, uso, vida útil, km previos, fecha y precio de compra, foto opcional y notas
+- Catálogo de ~60 modelos comunes en `config/running_shoes.php`: al elegir uno se completan uso y vida útil orientativa. Editable sin tocar la base de datos
+- Ilustración SVG de zapatilla que se pinta con el color elegido; la foto propia (guardada en disco privado) la reemplaza
+- Cada entrenamiento puede tener zapatillas asignadas (alta, edición y "marcar como completado"); se preselecciona la predeterminada
+- Km por par (km previos + entrenamientos completados), estado (En forma / Cerca del límite desde el 80% / Para retirar), km restantes, costo por km, último uso y reparto por tipo de entrenamiento (rotación)
+- Alertas de recambio en `/zapatillas` y en el dashboard; retirar/reactivar pares y marcar uno como predeterminado
+
+---
+
 ## [2026-09-28] - Landing v3 🚀
 
 ### ✨ Agregado
 - Nueva landing en `/v3` (`resources/views/welcomev3.blade.php`), la v2 queda intacta en `/v2` para comparar
 - Hero con collage del producto (semana, zapatillas, apto médico, próximo turno), secciones destacadas de **Salud médica** y **Zapatillas**, reportes + modo coach en bento, FAQ en acordeón y CTA final
 - Mismos colores y tipografías de la marca; sin dependencias nuevas (CSS y JS inline), responsive y con `prefers-reduced-motion`
-- ⚠️ La sección de zapatillas presenta una funcionalidad **todavía no implementada** en la app (km por par, vida útil, alertas, rotación, costo por km)
+- La sección de zapatillas de la landing se implementó en la app en la entrega siguiente (ver "Zapatillas 👟")
 
 ---
 

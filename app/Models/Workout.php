@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Workout extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'user_id',
         'training_group_id',
         'race_id',
+        'shoe_id',
         'date',
         'type',
         'status',
@@ -60,13 +62,18 @@ class Workout extends Model
         return $this->belongsTo(Race::class);
     }
 
+    public function shoe(): BelongsTo
+    {
+        return $this->belongsTo(Shoe::class);
+    }
+
     // Scopes
 
     public function scopeThisWeek($query)
     {
         return $query->whereBetween('date', [
             now()->startOfWeek(),
-            now()->endOfWeek()
+            now()->endOfWeek(),
         ]);
     }
 
@@ -74,7 +81,7 @@ class Workout extends Model
     {
         return $query->whereBetween('date', [
             now()->startOfMonth(),
-            now()->endOfMonth()
+            now()->endOfMonth(),
         ]);
     }
 
@@ -82,7 +89,7 @@ class Workout extends Model
     {
         return $query->whereBetween('date', [
             now()->startOfYear(),
-            now()->endOfYear()
+            now()->endOfYear(),
         ]);
     }
 
@@ -115,7 +122,7 @@ class Workout extends Model
     {
         return $query->planned()->whereBetween('date', [
             now()->startOfWeek(),
-            now()->endOfWeek()
+            now()->endOfWeek(),
         ]);
     }
 
@@ -123,7 +130,7 @@ class Workout extends Model
     {
         return $query->completed()->whereBetween('date', [
             now()->startOfWeek(),
-            now()->endOfWeek()
+            now()->endOfWeek(),
         ]);
     }
 
@@ -146,14 +153,14 @@ class Workout extends Model
      */
     public function getFormattedPaceAttribute(): string
     {
-        if (!$this->avg_pace) {
+        if (! $this->avg_pace) {
             return '–';
         }
 
         $minutes = floor($this->avg_pace / 60);
         $seconds = $this->avg_pace % 60;
 
-        return sprintf("%d:%02d/km", $minutes, $seconds);
+        return sprintf('%d:%02d/km', $minutes, $seconds);
     }
 
     /**
@@ -166,10 +173,10 @@ class Workout extends Model
         $seconds = $this->duration % 60;
 
         if ($hours > 0) {
-            return sprintf("%d:%02d:%02d", $hours, $minutes, $seconds);
+            return sprintf('%d:%02d:%02d', $hours, $minutes, $seconds);
         }
 
-        return sprintf("%d:%02d", $minutes, $seconds);
+        return sprintf('%d:%02d', $minutes, $seconds);
     }
 
     /**
@@ -182,7 +189,7 @@ class Workout extends Model
             'easy_run' => 'Fondo Suave',
             'long_run' => 'Fondo Largo',
             'intervals' => 'Series/Intervalos',
-            'tempo' => 'Ritmo Sostenido',            
+            'tempo' => 'Ritmo Sostenido',
             'recovery' => 'Recuperación',
             'race' => 'Carrera/Competencia',
         ];
@@ -221,7 +228,7 @@ class Workout extends Model
      */
     public function getDifferenceFromPlanAttribute(): ?float
     {
-        if (!$this->planned_distance || $this->status !== 'completed') {
+        if (! $this->planned_distance || $this->status !== 'completed') {
             return null;
         }
 
@@ -258,7 +265,7 @@ class Workout extends Model
     public function markAsCompleted(array $data): bool
     {
         // Si estaba planificado, guardar la distancia planificada
-        if ($this->isPlanned() && !$this->planned_distance) {
+        if ($this->isPlanned() && ! $this->planned_distance) {
             $this->planned_distance = $this->distance;
         }
 

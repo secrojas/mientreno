@@ -121,6 +121,16 @@
                         <span>Entrenamientos</span>
                     </a>
 
+                    <a href="{{ route('shoes.index') }}"
+                       class="sidebar-link {{ request()->routeIs('shoes.*') ? 'active' : '' }}"
+                       @click="close">
+                        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 17h17a3 3 0 0 0 3-3v-1l-6-2-3-5H8L6 9 2 10z"></path>
+                            <path d="M2 20h20"></path>
+                        </svg>
+                        <span>Zapatillas</span>
+                    </a>
+
                     <a href="{{ businessRoute('races.index') }}"
                        class="sidebar-link {{ request()->routeIs('races.*') || request()->routeIs('business.races.*') ? 'active' : '' }}"
                        @click="close">

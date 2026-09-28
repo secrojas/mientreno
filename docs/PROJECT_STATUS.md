@@ -25,6 +25,7 @@
 ### ✨ FIX CRÍTICO — Links Compartidos Expiraban al Instante ✅ (2026-09-02)
 ### ✨ SALUD MÉDICA — Entrenamientos en Reporte de Estudios ✅ (2026-09-25)
 ### ✨ SALUD MÉDICA — Turnos Médicos con Indicaciones y Pendientes ✅ (2026-09-28)
+### ✨ LANDING V3 + ZAPATILLAS — Km por par, vida útil y alertas ✅ (2026-09-28)
 
 ### Lo que ya está implementado
 
@@ -2056,6 +2057,25 @@ public function boot(): void
 - 4 migraciones + `tests/Feature/{MedicalAppointmentControllerTest,MedicalAppointmentTaskControllerTest}.php` — 28 tests ✅
 
 > ⚠️ **Pendiente conocido (previo a este cambio):** en mobile (390px) `/salud` y `/salud/ordenes` tienen scroll horizontal por botones/encabezados que no achican.
+
+---
+
+#### 30. Zapatillas (2026-09-28)
+
+**Objetivo:** llevar los km de cada par de zapatillas para saber cuándo rotar y cuándo cambiarlas (promocionado en la landing v3, `/v3`).
+
+**Funcionalidades (`/zapatillas`, sidebar debajo de Entrenamientos):**
+- Alta/edición con marca, modelo, apodo, uso (`ShoeUsage`: diario, series/tempo, fondos, competencia, trail), vida útil en km, km previos (si no es nueva), fecha y precio de compra, foto opcional y notas
+- **Catálogo** de ~60 modelos comunes en `config/running_shoes.php` (autocompletado con `<datalist>` por marca): al elegir uno se precargan uso y vida útil orientativa. Si el modelo no está, la vida útil se sugiere según el uso
+- **Imagen:** no hay API pública gratuita de zapatillas con fotos (Strava solo da marca/modelo; usar fotos de marcas/tiendas tiene problemas de derechos). Se resolvió con una ilustración SVG (`<x-shoe-illustration>`) que se pinta con el color elegido, y foto propia opcional guardada en disco privado (`shoes.photo`)
+- Asignación de zapatillas en alta/edición de entrenamiento y en "marcar como completado" (`workouts.shoe_id`, nullable); se preselecciona la predeterminada. En edición se mantiene la asignada aunque esté retirada
+- Por par: km totales (`initial_km` + entrenamientos completados), anillo de desgaste, estado (`ShoeCondition`: En forma / Cerca del límite ≥80% / Para retirar ≥100% / Retirada), km restantes, costo por km, último uso y reparto de km por tipo de entrenamiento (rotación)
+- Alertas de recambio en `/zapatillas` y en el dashboard (fuera del cache del dashboard); retirar/reactivar y marcar predeterminada (solo una por usuario)
+
+**Archivos principales:**
+- `app/Models/Shoe.php`, `app/Enums/{ShoeUsage,ShoeCondition}.php`, `app/Http/Controllers/ShoeController.php`, `app/Http/Requests/{Store,Update}ShoeRequest.php`
+- `resources/views/shoes/{index,partials/card,partials/form}.blade.php`, `resources/views/components/shoe-illustration.blade.php`, `resources/views/workouts/partials/shoe-select.blade.php`
+- 2 migraciones + `tests/Feature/{ShoeControllerTest,WorkoutShoeTest}.php`
 
 ---
 
