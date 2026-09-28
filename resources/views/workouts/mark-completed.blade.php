@@ -124,6 +124,9 @@
                           class="form-input resize-y">{{ old('notes') }}</textarea>
             </div>
 
+            <!-- Zapatillas -->
+            @include('workouts.partials.shoe-select', ['selectedShoeId' => $defaultShoeId])
+
             <!-- Botones -->
             <div class="flex flex-col sm:flex-row gap-3 mt-2">
                 <button type="submit" class="btn-primary flex-1 justify-center py-3">

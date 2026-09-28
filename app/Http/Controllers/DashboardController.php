@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ShoeCondition;
+use App\Models\Shoe;
 use App\Services\MetricsService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -19,7 +21,7 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        $cacheKey = "dashboard_data_user_{$user->id}_week_" . now()->weekOfYear();
+        $cacheKey = "dashboard_data_user_{$user->id}_week_".now()->weekOfYear();
         $cacheTTL = now()->addMinutes(5);
 
         $dashboardData = Cache::remember($cacheKey, $cacheTTL, function () use ($user) {
@@ -48,6 +50,13 @@ class DashboardController extends Controller
 
             return compact('weekStats', 'recentWorkouts', 'nextRace', 'activeGoals', 'weeklyCompletion');
         });
+
+        $dashboardData['shoesNeedingAttention'] = $user->shoes()
+            ->active()
+            ->withUsageStats()
+            ->get()
+            ->filter(fn (Shoe $shoe) => in_array($shoe->condition(), [ShoeCondition::NearLimit, ShoeCondition::Worn], true))
+            ->values();
 
         return view('dashboard', $dashboardData);
     }

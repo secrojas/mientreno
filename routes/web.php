@@ -59,6 +59,17 @@ Route::middleware('auth')->group(function () {
         Route::post('/monthly/{year}/{month}/share', [\App\Http\Controllers\ReportController::class, 'shareMonthly'])->name('monthly.share');
     });
 
+    // Shoes
+    Route::prefix('zapatillas')->name('shoes.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ShoeController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\ShoeController::class, 'store'])->name('store');
+        Route::put('/{shoe}', [\App\Http\Controllers\ShoeController::class, 'update'])->name('update');
+        Route::delete('/{shoe}', [\App\Http\Controllers\ShoeController::class, 'destroy'])->name('destroy');
+        Route::patch('/{shoe}/predeterminada', [\App\Http\Controllers\ShoeController::class, 'makeDefault'])->name('default');
+        Route::patch('/{shoe}/retirar', [\App\Http\Controllers\ShoeController::class, 'toggleRetired'])->name('retire');
+        Route::get('/{shoe}/foto', [\App\Http\Controllers\ShoeController::class, 'photo'])->name('photo');
+    });
+
     // Medical records
     Route::prefix('salud')->name('medical.')->group(function () {
         Route::get('/', [\App\Http\Controllers\MedicalController::class, 'index'])->name('index');

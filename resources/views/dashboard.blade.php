@@ -15,6 +15,33 @@
         </div>
     </header>
 
+    <!-- Shoes alert -->
+    @if($shoesNeedingAttention->isNotEmpty())
+        @php
+            $wornShoe = $shoesNeedingAttention->first(fn ($shoe) => $shoe->condition() === \App\Enums\ShoeCondition::Worn);
+            $alertShoe = $wornShoe ?? $shoesNeedingAttention->first();
+        @endphp
+        <a href="{{ route('shoes.index') }}"
+           class="mb-6 px-5 py-4 rounded-card border flex items-center gap-3 transition-colors {{ $wornShoe ? 'bg-accent-primary/10 border-accent-primary/30 hover:border-accent-primary/60' : 'bg-amber-400/10 border-amber-400/30 hover:border-amber-400/60' }}">
+            <svg class="w-5 h-5 shrink-0 {{ $wornShoe ? 'text-accent-primary' : 'text-amber-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 17h17a3 3 0 0 0 3-3v-1l-6-2-3-5H8L6 9 2 10z"/><path d="M2 20h20"/>
+            </svg>
+            <span class="text-sm flex-1">
+                @if($wornShoe)
+                    <strong>Tus {{ $alertShoe->name() }} superaron su vida útil</strong>
+                    <span class="text-text-muted">({{ number_format($alertShoe->totalKm(), 0, ',', '.') }} km).</span>
+                @else
+                    <strong>Tus {{ $alertShoe->name() }} se acercan al límite</strong>
+                    <span class="text-text-muted">— les quedan {{ number_format($alertShoe->remainingKm(), 0, ',', '.') }} km.</span>
+                @endif
+                @if($shoesNeedingAttention->count() > 1)
+                    <span class="text-text-muted">Y {{ $shoesNeedingAttention->count() - 1 }} {{ $shoesNeedingAttention->count() - 1 === 1 ? 'par más' : 'pares más' }} para revisar.</span>
+                @endif
+            </span>
+            <span class="text-xs text-text-muted hidden sm:inline">Ver zapatillas →</span>
+        </a>
+    @endif
+
     <!-- Metric Cards -->
     <section class="grid-responsive-4 gap-4 mb-6">
         @php
